@@ -2,7 +2,6 @@ package system
 
 import (
 	"player/internal/core"
-	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -11,49 +10,36 @@ import (
 func HandleInput(inputState *core.InputState) {
 	// poll input from keyboard and mouse
 	// player movement
-
-	num := inpututil.AppendPressedKeys([]ebiten.Key{})
+	w := ebiten.IsKeyPressed(ebiten.KeyW)
+	s := ebiten.IsKeyPressed(ebiten.KeyS)
+	a := ebiten.IsKeyPressed(ebiten.KeyA)
+	d := ebiten.IsKeyPressed(ebiten.KeyD)
 
 	// ---------------- up down ----------------
-	x := 0
-	if slices.Contains(num, ebiten.KeyW) {
+	switch {
+	case w && !s:
 		inputState.Direction.UpDown = 1
-		x++
-	}
-	if slices.Contains(num, ebiten.KeyS) {
+	case s && !w:
 		inputState.Direction.UpDown = -1
-		x++
-	}
-	if x&1 == 0 {
+	default:
 		inputState.Direction.UpDown = 0
 	}
 
-	x = 0
-	if slices.Contains(num, ebiten.KeyA) {
+	// ---------------- left right ----------------
+	switch {
+	case a && !d:
 		inputState.Direction.LeftRight = -1
-		x++
-	}
-	if slices.Contains(num, ebiten.KeyD) {
+	case d && !a:
 		inputState.Direction.LeftRight = 1
-		x++
-	}
-	if x&1 == 0 {
+	default:
 		inputState.Direction.LeftRight = 0
 	}
 
 	// ---------------- jump ----------------
-	if slices.Contains(num, ebiten.KeySpace) {
-		inputState.JumpJustPressed = true
-	} else {
-		inputState.JumpJustPressed = false
-	}
+	inputState.JumpJustPressed = ebiten.IsKeyPressed(ebiten.KeySpace)
 
 	// ---------------- dash ----------------
-	if slices.Contains(num, ebiten.KeyShiftLeft) {
-		inputState.DashJustPressed = true
-	} else {
-		inputState.DashJustPressed = false
-	}
+	inputState.DashJustPressed = ebiten.IsKeyPressed(ebiten.KeyShiftLeft)
 
 	// ---------------- menu ----------------
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
@@ -61,25 +47,8 @@ func HandleInput(inputState *core.InputState) {
 	}
 
 	// ---------------- skills ----------------
-	if slices.Contains(num, ebiten.KeyJ) {
-		inputState.Skills.WeakAttack = true
-	} else {
-		inputState.Skills.WeakAttack = false
-	}
-
-	if slices.Contains(num, ebiten.KeyK) {
-		inputState.Skills.StrongAttack = true
-	} else {
-		inputState.Skills.StrongAttack = false
-	}
-	if slices.Contains(num, ebiten.KeyL) {
-		inputState.Skills.Defense = true
-	} else {
-		inputState.Skills.Defense = false
-	}
-	if slices.Contains(num, ebiten.KeyI) {
-		inputState.Skills.UsePotion = true
-	} else {
-		inputState.Skills.UsePotion = false
-	}
+	inputState.Skills.WeakAttack = ebiten.IsKeyPressed(ebiten.KeyJ)
+	inputState.Skills.StrongAttack = ebiten.IsKeyPressed(ebiten.KeyK)
+	inputState.Skills.Defense = ebiten.IsKeyPressed(ebiten.KeyL)
+	inputState.Skills.UsePotion = ebiten.IsKeyPressed(ebiten.KeyI)
 }
