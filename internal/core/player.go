@@ -1,9 +1,5 @@
 package core
 
-import (
-	"fmt"
-)
-
 // ------------------------ physics constants ------------------------
 const (
 	AccX         = 10
@@ -20,6 +16,9 @@ const (
 
 func InitPlayer() PlayerRuntime {
 	return PlayerRuntime{
+		State:         PlayerState{CurrentState: PlayerStateIdle},
+		PreviousState: PlayerState{CurrentState: PlayerStateIdle},
+		Animations:    InitPlayerAnimations(),
 		Pos: Position{
 			X: 0,
 			Y: 0,
@@ -42,21 +41,6 @@ func InitPlayer() PlayerRuntime {
 			HP:       100,
 			MaxHP:    100,
 			InvulnMs: 0,
-		},
-		Anim: Animation{
-			State: PlayerState{
-				IsIdle:     true,
-				IsMoving:   false,
-				IsJumping:  false,
-				IsFalling:  false,
-				IsGrounded: false,
-				IsInAir:    false,
-				IsDamaged:  false,
-				IsDead:     false,
-				IsMenuOpen: false,
-			},
-			Frame: 0,
-			FlipX: false,
 		},
 		CheckpointID: "default",
 	}
@@ -99,16 +83,16 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState) {
 	// if player is in free fall / jumping then only we can alter the y velocity
 
 	// inputY := float64(inputState.Direction.UpDown)
-	// targetVY := inputY * player.Physics.MaxSpeed
-	// step = player.Physics.AccY
+	// targetVY := inputY * player.physics.MaxSpeed
+	// step = player.physics.AccY
 	// if inputY == 0 {
 	// 	step = player.Physics.DecY // friction when no input
-	// } else if inputY < 0 && player.Physics.VelY > 0 {
-	// 	player.Physics.VelY = 0
-	// } else if inputY > 0 && player.Physics.VelY < 0 {
-	// 	player.Physics.VelY = 0
+	// } else if inputY < 0 && player.physics.VelY > 0 {
+	// 	player.physics.VelY = 0
+	// } else if inputY > 0 && player.physics.VelY < 0 {
+	// 	player.physics.VelY = 0
 	// }
 	// player.Physics.VelY = approach(player.Physics.VelY, targetVY, step)
 
-	fmt.Println("VelX:", player.Physics.VelX, "VelY:", player.Physics.VelY)
+	// fmt.Println("VelX:", player.Physics.VelX, "VelY:", player.Physics.VelY)
 }

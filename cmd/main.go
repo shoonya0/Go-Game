@@ -1,20 +1,12 @@
 package main
 
 import (
-	"image"
 	"log"
 	"player/internal/core"
 	"player/internal/system"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-)
-
-// image dimensions
-const (
-	frameWidth  = 40
-	frameHeight = 80
-	numFrames   = 6
 )
 
 type Game struct {
@@ -31,7 +23,7 @@ type Game struct {
 	isDebug   bool
 }
 
-var num = "HELL YAAA"
+// var num = "HELL YAAA"
 var frame = 0
 
 // run 60 TPS
@@ -51,6 +43,8 @@ func (g *Game) Update() error {
 		frame %= 6
 	}
 
+	g.player.UpdateAnimation()
+
 	// update player animation
 	// check for collisions
 	// update camera position
@@ -62,19 +56,21 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	// draw game state
 
-	sx := frame * 40
-	sy := 80 // 0 = idle
+	// sx := frame * 40
+	// sy := 80 // 0 = idle
 
-	rect := image.Rect(sx, sy, sx+40, sy+80)
+	// rect := image.Rect(sx, sy, sx+40, sy+80)
 
-	subImage := g.spriteSheet.SubImage(rect).(*ebiten.Image)
+	// subImage := g.spriteSheet.SubImage(rect).(*ebiten.Image)
 
-	// op is the options for the image uses the player's position
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(g.player.Pos.X, g.player.Pos.Y)
-	op.GeoM.Scale(1, 1)
+	// // op is the options for the image uses the player's position
+	// op := &ebiten.DrawImageOptions{}
+	// op.GeoM.Translate(g.player.Pos.X, g.player.Pos.Y)
+	// op.GeoM.Scale(1, 1)
 
-	screen.DrawImage(subImage, op)
+	// screen.DrawImage(subImage, op)
+
+	g.player.DrawAnimation(screen)
 
 	// draw UI
 	// num = fmt.Sprintf("Direction: %v", g.input.Direction)

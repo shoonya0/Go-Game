@@ -48,11 +48,14 @@ type Position struct{ X, Y float64 } // position of the player in the world
 
 // ---------------- player runtime ----------------
 type PlayerRuntime struct {
-	Pos          Position
-	Physics      Physics
-	Combat       Combat
-	Anim         Animation
-	CheckpointID string
+	State         PlayerState
+	PreviousState PlayerState
+	Animations    map[int]*Animation
+	CurrAnimFrame int // current frame of the current animation
+	Pos           Position
+	Physics       Physics
+	Combat        Combat
+	CheckpointID  string
 }
 
 // ---------------- game state ----------------
