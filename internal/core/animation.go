@@ -2,10 +2,12 @@ package core
 
 import (
 	"image"
+	"image/color"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 // ---------------- states ----------------
@@ -36,6 +38,7 @@ type Animation struct {
 	FlipX                bool
 	FrameTimer           float64 // time in seconds that the current frame has been displayed for ie: if FrameTimer is x, then the current frame is displayed for x/AnimationSpeed seconds
 	AnimationSpeed       float64 // no of frames to display per second in seconds
+	Looping              bool    // true if the animation should loop
 }
 
 // image dimensions
@@ -68,16 +71,18 @@ func InitPlayerAnimations() map[int]*Animation {
 		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       6,
+		Looping:              true,
 	}
 	animations[Moving] = &Animation{
 		CurrentState:         PlayerStateMoving,
 		SpriteSheetYPosition: 1,
-		TotalFrames:          6,
+		TotalFrames:          5,
 		FrameWidth:           frameWidth_minimum,
 		FrameHeight:          frameHeight_small,
 		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       6,
+		Looping:              true,
 	}
 	animations[Running] = &Animation{
 		CurrentState:         PlayerStateRunning,
@@ -88,6 +93,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       10,
+		Looping:              true,
 	}
 	animations[Jumping] = &Animation{
 		CurrentState:         PlayerStateJumping,
@@ -98,17 +104,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       10,
-	}
-	// animation yet to make
-	animations[Grounded] = &Animation{
-		CurrentState:         PlayerStateGrounded,
-		SpriteSheetYPosition: 6,
-		TotalFrames:          6,
-		FrameWidth:           frameWidth_small,
-		FrameHeight:          frameHeight_small,
-		FlipX:                false,
-		FrameTimer:           0,
-		AnimationSpeed:       1,
+		Looping:              false,
 	}
 	// animation yet to make
 	animations[InAir] = &Animation{
@@ -120,6 +116,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
+		Looping:              true,
 	}
 	animations[Damaged] = &Animation{
 		CurrentState:         PlayerStateDamaged,
@@ -130,6 +127,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
+		Looping:              false,
 	}
 	animations[Dead] = &Animation{
 		CurrentState:         PlayerStateDead,
@@ -140,6 +138,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
+		Looping:              false,
 	}
 	animations[WeakAttack] = &Animation{
 		CurrentState:         PlayerStateWeakAttack,
@@ -150,6 +149,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
+		Looping:              false,
 	}
 	animations[StrongAttack] = &Animation{
 		CurrentState:         PlayerStateStrongAttack,
@@ -160,6 +160,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
+		Looping:              false,
 	}
 	animations[Defense] = &Animation{
 		CurrentState:         PlayerStateDefense,
@@ -170,6 +171,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
+		Looping:              false,
 	}
 	animations[UsePotion] = &Animation{
 		CurrentState:         PlayerStateUsePotion,
@@ -180,6 +182,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
+		Looping:              false,
 	}
 
 	var err error
@@ -206,6 +209,7 @@ func (player *PlayerRuntime) UpdateAnimation() {
 	dt := 1.0 / tps                           // time in seconds between each frame
 	anim.FrameTimer += dt                     // add the time in seconds between each frame to the frame timer
 
+	// the for loop helps to keep the animation running at the correct speed
 	for anim.FrameTimer >= timePerFrame {
 		anim.FrameTimer -= timePerFrame
 
@@ -213,11 +217,18 @@ func (player *PlayerRuntime) UpdateAnimation() {
 
 		if player.CurrAnimFrame >= anim.TotalFrames {
 			player.CurrAnimFrame = 0
+			if !anim.Looping {
+				// anim.FrameTimer = 0
+				// player.State.SetPlayerState(int(PlayerStateIdle))
+			}
 		}
 	}
 }
 
 func (player *PlayerRuntime) DrawAnimation(screen *ebiten.Image) {
+
+	vector.StrokeRect(screen, float32(player.Pos.X), float32(player.Pos.Y), 40, 80, 1, color.White, false)
+
 	currState := player.State.GetPlayerState()
 	width := player.Animations[currState].FrameWidth
 	height := player.Animations[currState].FrameHeight

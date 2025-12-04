@@ -5,7 +5,7 @@ package core
 type Physics struct {
 	VelX, VelY   float64 // current velocity of the object
 	AccX, AccY   float64 // acceleration of the object
-	DecX, DecY   float64 // deceleration of the object
+	DecX         float64 // deceleration of the object
 	MaxSpeed     float64 // maximum speed of the object
 	JumpForce    float64 // force applied to the object when jumping
 	GravityScale float64 // scale of the gravity applied to the object
