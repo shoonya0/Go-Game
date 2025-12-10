@@ -1,7 +1,5 @@
 package core
 
-import "fmt"
-
 const (
 	MaxObjects = 10
 	MaxLevels  = 5
@@ -126,8 +124,6 @@ func (q *Quadtree) Retrieve(returnObjects []Collider, rect AABB) []Collider {
 	// Refined Retrieve logic:
 	// 1. Add objects from this node (they might overlap the rect or be parent containers)
 	returnObjects = append(returnObjects, q.Objects...)
-
-	fmt.Println("returnObjects", len(returnObjects))
 
 	// 2. If we have children...
 	if q.Nodes[0] != nil {

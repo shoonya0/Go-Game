@@ -6,11 +6,12 @@ import (
 
 // ------------------------ physics constants ------------------------
 const (
-	AccX         = 10
+	AccX         = 5
 	AccY         = 10
 	DecX         = 15
 	DecY         = 10
-	MaxSpeed     = 300
+	MaxSpeed     = 150
+	MaxRunSpeed  = 300
 	JumpForce    = 500
 	GravityScale = 10
 	TerminalVelY = 10
@@ -23,9 +24,12 @@ func InitPlayer() PlayerRuntime {
 		State:         PlayerState{CurrentState: PlayerStateIdle},
 		PreviousState: PlayerState{CurrentState: PlayerStateIdle},
 		Animations:    InitPlayerAnimations(),
+		FlipX:         false,
+		Scale:         1.0,
+		Camera:        Camera{Zoom: 1.0},
 		Pos: Position{
-			X: 0,
-			Y: 0,
+			X: 100,
+			Y: 100,
 		},
 		Physics: Physics{
 			VelX:         0,
@@ -72,7 +76,7 @@ func (player *PlayerRuntime) GetBounds() AABB {
 	return AABB{
 		X:      player.Pos.X,
 		Y:      player.Pos.Y,
-		Width:  40,
+		Width:  30,
 		Height: 80,
 	}
 }
@@ -100,14 +104,13 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 
 	step := accX
 	if inputX == 0 && player.State.IsGrounded() {
-		player.State.SetPlayerState(int(PlayerStateIdle))
 		step = decX
-	} else {
-		if player.State.IsGrounded() {
-			if inputX != 0 {
-				player.State.SetPlayerState(int(PlayerStateMoving))
-			}
-		}
+	}
+
+	if inputX < 0 {
+		player.FlipX = true
+	} else if inputX > 0 {
+		player.FlipX = false
 	}
 
 	player.Physics.VelX = approach(player.Physics.VelX, targetVX, step)
@@ -118,7 +121,7 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 
 	if jump && player.State.IsGrounded() {
 		player.State.SetPlayerState(int(PlayerStateJumping))
-		player.Physics.VelY = -player.Physics.JumpForce // Instant impulse
+		player.Physics.VelY = -player.Physics.JumpForce // Instant impulse is usually better
 	}
 
 	// Apply X Movement
@@ -146,6 +149,9 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 	// Apply Y Movement
 	player.Pos.Y += player.Physics.VelY * dt
 
+	// Ground check flag
+	onGround := false
+
 	// Check Y Collisions
 	if qt != nil {
 		objs := qt.Retrieve(player.GetBounds())
@@ -157,7 +163,7 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 					if player.Physics.VelY > 0 { // Falling
 						player.Pos.Y = bounds.Y - player.GetBounds().Height
 						player.Physics.VelY = 0
-						player.State.SetPlayerState(int(PlayerStateIdle))
+						onGround = true
 					} else if player.Physics.VelY < 0 { // Jumping into ceiling
 						player.Pos.Y = bounds.Y + bounds.Height
 						player.Physics.VelY = 0
@@ -167,7 +173,7 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 		}
 	}
 
-	if player.State.IsGrounded() {
+	if onGround {
 		if player.Physics.VelX == 0 {
 			player.State.SetPlayerState(int(PlayerStateIdle))
 		} else {
@@ -177,5 +183,39 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 		if player.Physics.VelY > 0 {
 			// player.State.SetPlayerState(int(PlayerStateFalling))
 		}
+	}
+
+	qt.Update(player)
+}
+
+func (player *PlayerRuntime) UpdateCamera(screenWidth, screenHeight, levelWidth, levelHeight float64) {
+	minX := player.Pos.X - 2*screenWidth/3
+	maxX := player.Pos.X - screenWidth/3
+	if player.Camera.Pos.X < minX {
+		player.Camera.Pos.X = minX
+	} else if player.Camera.Pos.X > maxX {
+		player.Camera.Pos.X = maxX
+	}
+
+	minY := player.Pos.Y - 2*screenHeight/3
+	maxY := player.Pos.Y - screenHeight/3
+	if player.Camera.Pos.Y < minY {
+		player.Camera.Pos.Y = minY
+	} else if player.Camera.Pos.Y > maxY {
+		player.Camera.Pos.Y = maxY
+	}
+
+	// Clamp camera to level bounds
+	if player.Camera.Pos.X < 0 {
+		player.Camera.Pos.X = 0
+	}
+	if player.Camera.Pos.Y < 0 {
+		player.Camera.Pos.Y = 0
+	}
+	if player.Camera.Pos.X > levelWidth-screenWidth {
+		player.Camera.Pos.X = levelWidth - screenWidth
+	}
+	if player.Camera.Pos.Y > levelHeight-screenHeight {
+		player.Camera.Pos.Y = levelHeight - screenHeight
 	}
 }

@@ -2,14 +2,20 @@ package main
 
 import (
 	"fmt"
-	"image/color"
 	"log"
 	"player/internal/core"
 	"player/internal/system"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
+)
+
+const (
+	playerSpriteSheetPath = "../assets/GideonGraves.png"
+	screenWidth           = 1360
+	screenHeight          = 768
+	// screenWidth  = 1920
+	// screenHeight = 1080
 )
 
 type Game struct {
@@ -21,6 +27,7 @@ type Game struct {
 	player *core.PlayerRuntime
 
 	LevelData       *ebiten.Image
+	Tileset         *ebiten.Image
 	Level           []core.Platform
 	DynamicQuadtree *core.DynamicQuadtree
 
@@ -34,8 +41,8 @@ var doOnce = false
 
 func (g *Game) loadLevel() {
 	if !doOnce {
-		Level := core.LoadLevel(g.LevelData)
-		g.Level = Level
+		core.WorldInit()
+		g.Level = g.player.LoadLevel(g.LevelData)
 		for i := range g.Level {
 			g.DynamicQuadtree.Insert(&g.Level[i])
 		}
@@ -43,8 +50,6 @@ func (g *Game) loadLevel() {
 		doOnce = true
 	}
 }
-
-// var frame = 0
 
 // run 60 TPS
 // run automatically every frame
@@ -59,29 +64,24 @@ func (g *Game) Update() error {
 
 	g.player.UpdateAnimation()
 
-	// update player animation
-	// check for collisions
 	// update camera position
+	g.player.UpdateCamera(float64(screenWidth), float64(screenHeight), float64(core.Level_1_Width), float64(core.Level_1_Height))
+
 	// render game state
 	return nil
 }
 
 // run automatically every frame
 func (g *Game) Draw(screen *ebiten.Image) {
-	// Draw platforms
-	for _, p := range g.Level {
-		vector.DrawFilledRect(screen, float32(p.X), float32(p.Y), float32(p.Width), float32(p.Height), color.RGBA{100, 100, 100, 255}, false)
-	}
+	g.player.DrawLevel(screen, g.DynamicQuadtree, float64(screenWidth), float64(screenHeight), g.Tileset)
 
 	g.player.DrawAnimation(screen)
-
 	// draw UI
 }
 
 // run automatically every frame
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	// return 640, 480
-	return 1360, 768
+	return outsideWidth, outsideHeight
 }
 
 func LoadImage(path string) *ebiten.Image {
@@ -92,40 +92,27 @@ func LoadImage(path string) *ebiten.Image {
 	return img
 }
 
-const (
-	playerSpriteSheetPath = "../assets/GideonGraves.png"
-	screenWidth           = 1360
-	screenHeight          = 768
-)
-
 // run Once
 func main() {
 	img := LoadImage(playerSpriteSheetPath)
 	levelData := LoadImage(core.Level_1)
+	TileData := LoadImage(core.Tileset)
 
 	game := &Game{
 		state: core.ModeMenu,
 		player: func() *core.PlayerRuntime {
 			p := core.InitPlayer()
-			// Set initial position above ground
-			p.Pos.X = 100
-			p.Pos.Y = 100
 			return &p
 		}(),
-		spriteSheet: img,
-		LevelData:   levelData,
-		score:       0,
-		tickCount:   0,
-		isDebug:     false,
-		Level:       []core.Platform{},
-		// DynamicQuadtree: nil,
+		spriteSheet:     img,
+		LevelData:       levelData,
+		Tileset:         TileData,
+		score:           0,
+		tickCount:       0,
+		isDebug:         false,
+		Level:           []core.Platform{},
 		DynamicQuadtree: core.NewDynamicQuadtree(core.AABB{X: 0, Y: 0, Width: float64(core.Level_1_Width), Height: float64(core.Level_1_Height)}),
 	}
-
-	// Add platforms to Quadtree
-	// for i := range game.Level {
-	// 	game.DynamicQuadtree.Insert(&game.Level[i])
-	// }
 
 	// ebiten.SetWindowSize(640, 480) // 640, 480
 	ebiten.SetWindowSize(screenWidth, screenHeight)

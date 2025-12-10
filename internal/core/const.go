@@ -46,16 +46,25 @@ type InputState struct {
 // ---------------- position ----------------
 type Position struct{ X, Y float64 } // position of the player in the world
 
+// ---------------- camera ----------------
+type Camera struct {
+	Pos  Position
+	Zoom float64
+}
+
 // ---------------- player runtime ----------------
 type PlayerRuntime struct {
 	State         PlayerState
 	PreviousState PlayerState
 	Animations    map[int]*Animation
-	CurrAnimFrame int // current frame of the current animation
+	CurrAnimFrame int     // current frame of the current animation
+	FlipX         bool    // true if the player is facing left
+	Scale         float64 // scale of the player image
 	Pos           Position
 	Physics       Physics
 	Combat        Combat
 	CheckpointID  string
+	Camera        Camera
 }
 
 // ---------------- game state ----------------

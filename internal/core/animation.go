@@ -35,7 +35,6 @@ type Animation struct {
 	TotalFrames          int
 	FrameWidth           int
 	FrameHeight          int
-	FlipX                bool
 	FrameTimer           float64 // time in seconds that the current frame has been displayed for ie: if FrameTimer is x, then the current frame is displayed for x/AnimationSpeed seconds
 	AnimationSpeed       float64 // no of frames to display per second in seconds
 	Looping              bool    // true if the animation should loop
@@ -68,7 +67,6 @@ func InitPlayerAnimations() map[int]*Animation {
 		TotalFrames:          4,
 		FrameWidth:           frameWidth_minimum,
 		FrameHeight:          frameHeight_small,
-		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       6,
 		Looping:              true,
@@ -79,7 +77,6 @@ func InitPlayerAnimations() map[int]*Animation {
 		TotalFrames:          5,
 		FrameWidth:           frameWidth_minimum,
 		FrameHeight:          frameHeight_small,
-		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       6,
 		Looping:              true,
@@ -90,7 +87,6 @@ func InitPlayerAnimations() map[int]*Animation {
 		TotalFrames:          8,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
-		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       10,
 		Looping:              true,
@@ -101,7 +97,6 @@ func InitPlayerAnimations() map[int]*Animation {
 		TotalFrames:          9,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
-		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       10,
 		Looping:              false,
@@ -113,7 +108,6 @@ func InitPlayerAnimations() map[int]*Animation {
 		TotalFrames:          6,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
-		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
 		Looping:              true,
@@ -124,7 +118,6 @@ func InitPlayerAnimations() map[int]*Animation {
 		TotalFrames:          6,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
-		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
 		Looping:              false,
@@ -135,7 +128,6 @@ func InitPlayerAnimations() map[int]*Animation {
 		TotalFrames:          6,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
-		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
 		Looping:              false,
@@ -146,7 +138,6 @@ func InitPlayerAnimations() map[int]*Animation {
 		TotalFrames:          6,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
-		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
 		Looping:              false,
@@ -157,7 +148,6 @@ func InitPlayerAnimations() map[int]*Animation {
 		TotalFrames:          6,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
-		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
 		Looping:              false,
@@ -168,7 +158,6 @@ func InitPlayerAnimations() map[int]*Animation {
 		TotalFrames:          6,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
-		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
 		Looping:              false,
@@ -179,7 +168,6 @@ func InitPlayerAnimations() map[int]*Animation {
 		TotalFrames:          6,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
-		FlipX:                false,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
 		Looping:              false,
@@ -227,7 +215,12 @@ func (player *PlayerRuntime) UpdateAnimation() {
 
 func (player *PlayerRuntime) DrawAnimation(screen *ebiten.Image) {
 
-	vector.StrokeRect(screen, float32(player.Pos.X), float32(player.Pos.Y), 40, 80, 1, color.White, false)
+	bounds := player.GetBounds()
+	// Adjust bounds for camera
+	drawBoundsX := float32(bounds.X - player.Camera.Pos.X)
+	drawBoundsY := float32(bounds.Y - player.Camera.Pos.Y)
+
+	vector.StrokeRect(screen, drawBoundsX, drawBoundsY, float32(bounds.Width), float32(bounds.Height), 1, color.White, false)
 
 	currState := player.State.GetPlayerState()
 	width := player.Animations[currState].FrameWidth
@@ -239,8 +232,32 @@ func (player *PlayerRuntime) DrawAnimation(screen *ebiten.Image) {
 	subImage := playerSpriteSheet.SubImage(rect).(*ebiten.Image)
 
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(player.Pos.X, player.Pos.Y)
-	op.GeoM.Scale(1, 1)
+
+	// Scale factor to resize the player image
+	// Change this value to make the player smaller (e.g., 0.5) or larger (e.g., 2.0)
+
+	if player.FlipX {
+		// Flip horizontally
+		op.GeoM.Scale(-player.Scale, player.Scale)
+		// Translate back because flipping moves the image to the left of the axis
+		op.GeoM.Translate(float64(width)*player.Scale, 0)
+	} else {
+		op.GeoM.Scale(player.Scale, player.Scale)
+	}
+
+	// Calculate draw position to center the sprite on the collision box
+	// Center horizontally: bounds.X + (bounds.Width - spriteWidth) / 2
+	drawX := bounds.X + (bounds.Width-float64(width)*player.Scale)/2
+
+	// Align bottom vertically: bounds.Y + (bounds.Height - spriteHeight)
+	drawY := bounds.Y + (bounds.Height - float64(height)*player.Scale)
+
+	// Apply Camera Offset
+	drawX -= player.Camera.Pos.X
+	drawY -= player.Camera.Pos.Y
+
+	// Move to the calculated position
+	op.GeoM.Translate(drawX, drawY)
 
 	screen.DrawImage(subImage, op)
 }
