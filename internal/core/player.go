@@ -6,13 +6,13 @@ import (
 
 // ------------------------ physics constants ------------------------
 const (
-	AccX         = 5
+	AccX         = 100
 	AccY         = 10
 	DecX         = 15
 	DecY         = 10
-	MaxSpeed     = 150
+	MaxSpeed     = 1050
 	MaxRunSpeed  = 300
-	JumpForce    = 500
+	JumpForce    = 1000
 	GravityScale = 10
 	TerminalVelY = 10
 	CoyoteMs     = 1

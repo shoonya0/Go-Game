@@ -75,7 +75,7 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.player.DrawLevel(screen, g.DynamicQuadtree, float64(screenWidth), float64(screenHeight), g.Tileset)
 
-	g.player.DrawAnimation(screen)
+	g.player.DrawPlayerAnimation(screen)
 	// draw UI
 }
 
