@@ -2,10 +2,12 @@ package core
 
 import (
 	"image"
+	"image/color"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 // ---------------- states ----------------
@@ -215,10 +217,10 @@ func (player *PlayerRuntime) DrawPlayerAnimation(screen *ebiten.Image) {
 
 	bounds := player.GetBounds()
 	// Adjust bounds for camera
-	// drawBoundsX := float32(bounds.X - player.Camera.Pos.X)
-	// drawBoundsY := float32(bounds.Y - player.Camera.Pos.Y)
+	drawBoundsX := float32(bounds.X - player.Camera.Pos.X)
+	drawBoundsY := float32(bounds.Y - player.Camera.Pos.Y)
 
-	// vector.StrokeRect(screen, drawBoundsX, drawBoundsY, float32(bounds.Width), float32(bounds.Height), 1, color.White, false)
+	vector.StrokeRect(screen, drawBoundsX, drawBoundsY, float32(bounds.Width), float32(bounds.Height), 1, color.White, false)
 
 	currState := player.State.GetPlayerState()
 	width := player.Animations[currState].FrameWidth

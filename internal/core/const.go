@@ -7,6 +7,7 @@ type Physics struct {
 	AccX, AccY   float64 // acceleration of the object
 	DecX         float64 // deceleration of the object
 	MaxSpeed     float64 // maximum speed of the object
+	MaxRunSpeed  float64 // maximum running speed of the object
 	JumpForce    float64 // force applied to the object when jumping
 	GravityScale float64 // scale of the gravity applied to the object
 	TerminalVelY float64 // maximum falling speed
@@ -39,6 +40,7 @@ type InputState struct {
 	JumpJustPressed bool // true if the jump button was just pressed
 	JumpHeld        bool // true if the jump button is held down means player is in the air
 	DashJustPressed bool // true if the dash button was just pressed
+	RunJustPressed  bool // true if the run button was just pressed
 	Menu            bool // true if the menu button was just pressed
 	Skills          Skills
 }

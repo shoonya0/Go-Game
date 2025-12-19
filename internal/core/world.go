@@ -12,44 +12,39 @@ type TileType string
 type TileLvl string
 type TileLength int
 
-// L -> 703
-// B -> 193
-
-// height -> 192
-
 const (
-	Tileset          = "../assets/LevelTile.png"
-	Grass   TileType = "grass"
-	Rock    TileType = "stone"
-	Ice     TileType = "ice"
-	Sand    TileType = "sand"
-	Larva   TileType = "larva"
-	Metal   TileType = "metal"
-	Water   TileType = "water"
-	Wood    TileType = "wood"
-	Empty   TileType = "empty"
+	// tileset constants
+	Tileset                     = "../assets/LevelTile.png"
+	Grass            TileType   = "grass"
+	Rock             TileType   = "stone"
+	Ice              TileType   = "ice"
+	Sand             TileType   = "sand"
+	Larva            TileType   = "larva"
+	Metal            TileType   = "metal"
+	Water            TileType   = "water"
+	Wood             TileType   = "wood"
+	Empty            TileType   = "empty"
+	TopTileLen       TileLength = 11
+	BottomTileLen    TileLength = 4
+	TopTile          TileLvl    = "top"
+	BottomTile       TileLvl    = "bottom"
+	PixelTileWidth              = 192 // before it was 4
+	PixelTileHeight             = 192 // before it was 4
+	TotTopTilesWidth            = 2112
+	TotBotTilesWidth            = 768
+	TopTileXStart               = 0
+	BotTileXStart               = TotTopTilesWidth
 
-	TopTileLen    TileLength = 11
-	BottomTileLen TileLength = 4
+	// level 1 constants
+	Level_1      = "../assets/Level_1.png"
+	Background_1 = "../assets/LBackground_3.png"
 
-	TopTile    TileLvl = "top"
-	BottomTile TileLvl = "bottom"
-
-	PixelTileWidth  = 192 // before it was 4
-	PixelTileHeight = 192 // before it was 4
-
-	TotTopTilesWidth = 2112
-	TotBotTilesWidth = 768
-
-	TopTileXStart = 0
-	BotTileXStart = TotTopTilesWidth
-)
-
-const (
-	Level_1             = "../assets/Level_1.png"
+	// ---------------- level constants ----------------
 	LevelTileWidth      = 60      // before it was 40
 	LevelTileHeight     = 60      // before it was 40
 	TopTileVisualOffset = 26.5625 // for water ,grass ,sand
+	Level_1_Width       = 6000
+	Level_1_Height      = 2040
 )
 
 type Tile struct {
@@ -114,12 +109,6 @@ func (p *Platform) GetBounds() AABB {
 		Height: p.Height,
 	}
 }
-
-// ---------------- level constants ----------------
-const (
-	Level_1_Width  = 6000
-	Level_1_Height = 2040
-)
 
 func getTileType(r, g, b uint32) TileType {
 	// larva color code -> 255 ,0 ,0
@@ -281,7 +270,45 @@ func (p *PlayerRuntime) LoadLevel(levelData *ebiten.Image) []Platform {
 	return level
 }
 
+func (player *PlayerRuntime) DrawParallaxBackground(screen *ebiten.Image, background *ebiten.Image, screenWidth, screenHeight float64) {
+	bgW := background.Bounds().Dx()
+	bgH := background.Bounds().Dy()
+
+	parallaxFactor := 0.3
+
+	baseScale := screenHeight / float64(bgH)
+	scale := baseScale * (1 + parallaxFactor)
+
+	scaledW := float64(bgW) * scale
+
+	// Calculate offset based on camera position relative to total level width
+	maxLevelWidth := float64(Level_1_Width)
+	maxCamX := maxLevelWidth - screenWidth
+	if maxCamX < 1 {
+		maxCamX = 1
+	}
+
+	currentCamX := player.Camera.Pos.X
+	if currentCamX < 0 {
+		currentCamX = 0
+	} else if currentCamX > maxCamX {
+		currentCamX = maxCamX
+	}
+
+	// Map camera progress (0-1) to background scroll
+	// We shift the background from 0 to -(scaledW - screenWidth)
+	progression := currentCamX / maxCamX
+	maxBgOffset := scaledW - screenWidth
+	bgOffset := progression * maxBgOffset
+
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(scale, scale)
+	op.GeoM.Translate(-bgOffset, 0)
+	screen.DrawImage(background, op)
+}
+
 func (player *PlayerRuntime) DrawLevel(screen *ebiten.Image, quadtree *DynamicQuadtree, screenWidth, screenHeight float64, tileset *ebiten.Image) {
+
 	// Define the camera viewport
 	viewport := AABB{
 		X:      player.Camera.Pos.X,
@@ -297,9 +324,6 @@ func (player *PlayerRuntime) DrawLevel(screen *ebiten.Image, quadtree *DynamicQu
 	for _, obj := range visibleObjects {
 		if p, ok := obj.(*Platform); ok {
 			// draw the tile image
-			// this is because the y axis is -ive upside and -ive x axis is to the left
-			// vector.DrawFilledRect(screen, float32(p.X-player.Camera.Pos.X), float32(p.Y-player.Camera.Pos.Y), float32(p.Width), float32(p.Height), color.RGBA{100, 100, 100, 255}, false)
-
 			op := &ebiten.DrawImageOptions{}
 			// Scale the tile image (PixelTileWidth/Height) to fit the platform size (LevelTileWidth/Height)
 			scaleX := float64(LevelTileWidth) / float64(PixelTileWidth)
@@ -307,7 +331,6 @@ func (player *PlayerRuntime) DrawLevel(screen *ebiten.Image, quadtree *DynamicQu
 			op.GeoM.Scale(scaleX, scaleY)
 
 			// translate is used to position the tile image on the screen
-			// op.GeoM.Translate(float64(p.X-player.Camera.Pos.X), float64(p.Y-player.Camera.Pos.Y))
 			op.GeoM.Translate(float64(p.X-player.Camera.Pos.X), float64(p.Y+p.DrawOffsetY-player.Camera.Pos.Y))
 
 			// Draw the sub-image from the tileset using coordinates from TileInfo

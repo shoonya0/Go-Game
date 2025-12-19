@@ -1,6 +1,8 @@
 package core
 
 import (
+	"math"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -8,11 +10,11 @@ import (
 const (
 	AccX         = 100
 	AccY         = 10
-	DecX         = 15
+	DecX         = 10
 	DecY         = 10
-	MaxSpeed     = 1050
-	MaxRunSpeed  = 300
-	JumpForce    = 1000
+	MaxSpeed     = 200
+	MaxRunSpeed  = 500
+	JumpForce    = 700
 	GravityScale = 10
 	TerminalVelY = 10
 	CoyoteMs     = 1
@@ -38,6 +40,7 @@ func InitPlayer() PlayerRuntime {
 			AccY:         AccY, // acceleration of the object when jumping
 			DecX:         DecX,
 			MaxSpeed:     MaxSpeed,
+			MaxRunSpeed:  MaxRunSpeed,
 			JumpForce:    JumpForce,
 			GravityScale: GravityScale,
 			TerminalVelY: TerminalVelY,
@@ -71,6 +74,28 @@ func approach(current, target, maxDelta float64) float64 {
 	return current
 }
 
+func reduceLeft(current, target, maxDelta float64) float64 {
+	if current < target {
+		current += maxDelta
+		if current > target {
+			return target
+		}
+		return current
+	}
+	return current
+}
+
+func reduceRight(current, target, maxDelta float64) float64 {
+	if current > target {
+		current -= maxDelta
+		if current < target {
+			return target
+		}
+		return current
+	}
+	return current
+}
+
 // GetBounds returns the bounding box of the player
 func (player *PlayerRuntime) GetBounds() AABB {
 	return AABB{
@@ -83,7 +108,6 @@ func (player *PlayerRuntime) GetBounds() AABB {
 
 func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuadtree) {
 	// update player physics
-
 	player.PreviousState = PlayerState{CurrentState: PlayerStateType(player.State.GetPlayerState())}
 
 	tps := float64(ebiten.TPS())
@@ -95,6 +119,14 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 
 	inputX := float64(inputState.Direction.LeftRight)
 	targetVX := inputX * player.Physics.MaxSpeed
+
+	if inputState.RunJustPressed {
+		if !player.State.IsGrounded() {
+			targetVX = inputX * (player.Physics.MaxRunSpeed / 1.5)
+		} else {
+			targetVX = inputX * player.Physics.MaxRunSpeed
+		}
+	}
 
 	// dtUnits scales the physics constants which seem tuned for a different timeframe (e.g. 1 unit = 1 frame at 60fps?)
 	dtUnits := 100.0 / tps
@@ -113,7 +145,16 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 		player.FlipX = false
 	}
 
-	player.Physics.VelX = approach(player.Physics.VelX, targetVX, step)
+	if math.Abs(player.Physics.VelX) > player.Physics.MaxSpeed && !inputState.RunJustPressed {
+		step = decX
+		if player.Physics.VelX > 0 {
+			player.Physics.VelX = reduceRight(player.Physics.VelX, player.Physics.MaxSpeed, step)
+		} else if player.Physics.VelX < 0 {
+			player.Physics.VelX = reduceLeft(player.Physics.VelX, -player.Physics.MaxSpeed, step)
+		}
+	} else {
+		player.Physics.VelX = approach(player.Physics.VelX, targetVX, step)
+	}
 
 	jump := inputState.JumpJustPressed
 
@@ -177,7 +218,11 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 		if player.Physics.VelX == 0 {
 			player.State.SetPlayerState(int(PlayerStateIdle))
 		} else {
-			player.State.SetPlayerState(int(PlayerStateMoving))
+			if math.Abs(player.Physics.VelX) > player.Physics.MaxSpeed {
+				player.State.SetPlayerState(int(PlayerStateRunning))
+			} else {
+				player.State.SetPlayerState(int(PlayerStateMoving))
+			}
 		}
 	} else {
 		if player.Physics.VelY > 0 {

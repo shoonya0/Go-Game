@@ -42,6 +42,10 @@ func (ps *PlayerState) IsFalling() bool {
 	return ps.CurrentState == PlayerStateFalling
 }
 
+func (ps *PlayerState) IsRunning() bool {
+	return ps.CurrentState == PlayerStateRunning
+}
+
 // currently we can not able to jump while attacking or defending
 func (ps *PlayerState) IsGrounded() bool {
 	return ps.CurrentState == PlayerStateIdle || ps.CurrentState == PlayerStateMoving || ps.CurrentState == PlayerStateRunning

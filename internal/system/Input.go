@@ -41,6 +41,9 @@ func HandleInput(inputState *core.InputState) {
 	// ---------------- dash ----------------
 	inputState.DashJustPressed = ebiten.IsKeyPressed(ebiten.KeyShiftLeft)
 
+	// ---------------- run ----------------
+	inputState.RunJustPressed = ebiten.IsKeyPressed(ebiten.KeyShiftLeft)
+
 	// ---------------- menu ----------------
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		inputState.Menu = !inputState.Menu

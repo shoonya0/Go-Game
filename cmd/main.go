@@ -26,6 +26,7 @@ type Game struct {
 	// ------ Entities ------
 	player *core.PlayerRuntime
 
+	Background      *ebiten.Image
 	LevelData       *ebiten.Image
 	Tileset         *ebiten.Image
 	Level           []core.Platform
@@ -73,8 +74,13 @@ func (g *Game) Update() error {
 
 // run automatically every frame
 func (g *Game) Draw(screen *ebiten.Image) {
+	// draw background
+	g.player.DrawParallaxBackground(screen, g.Background, float64(screenWidth), float64(screenHeight))
+
+	// draw level
 	g.player.DrawLevel(screen, g.DynamicQuadtree, float64(screenWidth), float64(screenHeight), g.Tileset)
 
+	// draw player animation
 	g.player.DrawPlayerAnimation(screen)
 	// draw UI
 }
@@ -94,9 +100,10 @@ func LoadImage(path string) *ebiten.Image {
 
 // run Once
 func main() {
-	img := LoadImage(playerSpriteSheetPath)
+	backGroundData := LoadImage(core.Background_1)
 	levelData := LoadImage(core.Level_1)
-	TileData := LoadImage(core.Tileset)
+	tileData := LoadImage(core.Tileset)
+	img := LoadImage(playerSpriteSheetPath)
 
 	game := &Game{
 		state: core.ModeMenu,
@@ -105,8 +112,9 @@ func main() {
 			return &p
 		}(),
 		spriteSheet:     img,
+		Background:      backGroundData,
 		LevelData:       levelData,
-		Tileset:         TileData,
+		Tileset:         tileData,
 		score:           0,
 		tickCount:       0,
 		isDebug:         false,
