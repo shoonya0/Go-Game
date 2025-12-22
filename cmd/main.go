@@ -88,6 +88,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 // run automatically every frame
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return outsideWidth, outsideHeight
+	// return 640, 480
 }
 
 func LoadImage(path string) *ebiten.Image {

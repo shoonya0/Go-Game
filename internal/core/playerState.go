@@ -10,7 +10,7 @@ const (
 	PlayerStateRunning
 	PlayerStateJumping
 	PlayerStateFalling
-	PlayerStateInAir
+	PlayerStateLanding
 	PlayerStateDamaged
 	PlayerStateDead
 	// ---------------- menu ----------------
@@ -42,6 +42,10 @@ func (ps *PlayerState) IsFalling() bool {
 	return ps.CurrentState == PlayerStateFalling
 }
 
+func (ps *PlayerState) IsLanding() bool {
+	return ps.CurrentState == PlayerStateLanding
+}
+
 func (ps *PlayerState) IsRunning() bool {
 	return ps.CurrentState == PlayerStateRunning
 }
@@ -49,10 +53,6 @@ func (ps *PlayerState) IsRunning() bool {
 // currently we can not able to jump while attacking or defending
 func (ps *PlayerState) IsGrounded() bool {
 	return ps.CurrentState == PlayerStateIdle || ps.CurrentState == PlayerStateMoving || ps.CurrentState == PlayerStateRunning
-}
-
-func (ps *PlayerState) IsInAir() bool {
-	return ps.CurrentState == PlayerStateInAir
 }
 
 func (ps *PlayerState) IsDamaged() bool {

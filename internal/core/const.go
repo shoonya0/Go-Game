@@ -8,6 +8,7 @@ type Physics struct {
 	DecX         float64 // deceleration of the object
 	MaxSpeed     float64 // maximum speed of the object
 	MaxRunSpeed  float64 // maximum running speed of the object
+	MaxFallSpeed float64 // maximum falling speed of the object
 	JumpForce    float64 // force applied to the object when jumping
 	GravityScale float64 // scale of the gravity applied to the object
 	TerminalVelY float64 // maximum falling speed
@@ -67,6 +68,7 @@ type PlayerRuntime struct {
 	Combat        Combat
 	CheckpointID  string
 	Camera        Camera
+	Grounded      bool // true if the player is touching the ground
 }
 
 // ---------------- game state ----------------

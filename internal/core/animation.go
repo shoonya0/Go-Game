@@ -12,13 +12,13 @@ import (
 
 // ---------------- states ----------------
 const (
-	Idle         = 0
-	Moving       = 1
-	Running      = 2
-	Jumping      = 3
-	Falling      = 4
-	Grounded     = 5
-	InAir        = 6
+	Idle    = 0
+	Moving  = 1
+	Running = 2
+	Jumping = 3
+	Falling = 4
+	Landing = 5
+
 	Damaged      = 7
 	Dead         = 8
 	MenuOpen     = 9
@@ -33,6 +33,7 @@ type Animation struct {
 	CurrentState         PlayerStateType // Use the enum instead of embedded PlayerState
 	SpriteSheetYPosition int             // the y position of the sprite sheet in the image
 	TotalFrames          int
+	AnimStartFrame       int
 	FrameWidth           int
 	FrameHeight          int
 	FrameTimer           float64 // time in seconds that the current frame has been displayed for ie: if FrameTimer is x, then the current frame is displayed for x/AnimationSpeed seconds
@@ -65,6 +66,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		CurrentState:         PlayerStateIdle,
 		SpriteSheetYPosition: 0,
 		TotalFrames:          4,
+		AnimStartFrame:       0,
 		FrameWidth:           frameWidth_minimum,
 		FrameHeight:          frameHeight_small,
 		FrameTimer:           0,
@@ -75,6 +77,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		CurrentState:         PlayerStateMoving,
 		SpriteSheetYPosition: 1,
 		TotalFrames:          5,
+		AnimStartFrame:       0,
 		FrameWidth:           frameWidth_minimum,
 		FrameHeight:          frameHeight_small,
 		FrameTimer:           0,
@@ -85,6 +88,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		CurrentState:         PlayerStateRunning,
 		SpriteSheetYPosition: 2,
 		TotalFrames:          8,
+		AnimStartFrame:       0,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
 		FrameTimer:           0,
@@ -94,24 +98,38 @@ func InitPlayerAnimations() map[int]*Animation {
 	animations[Jumping] = &Animation{
 		CurrentState:         PlayerStateJumping,
 		SpriteSheetYPosition: 5,
-		TotalFrames:          9,
+		TotalFrames:          3,
+		AnimStartFrame:       0,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
 		FrameTimer:           0,
 		AnimationSpeed:       10,
 		Looping:              false,
 	}
-	// animation yet to make
-	animations[InAir] = &Animation{
-		CurrentState:         PlayerStateInAir,
-		SpriteSheetYPosition: 6,
-		TotalFrames:          6,
+	animations[Falling] = &Animation{
+		CurrentState:         PlayerStateFalling,
+		SpriteSheetYPosition: 5,
+		TotalFrames:          1,
+		AnimStartFrame:       3,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
 		FrameTimer:           0,
-		AnimationSpeed:       1,
+		AnimationSpeed:       5,
 		Looping:              true,
 	}
+	animations[Landing] = &Animation{
+		CurrentState:         PlayerStateLanding,
+		SpriteSheetYPosition: 5,
+		TotalFrames:          3,
+		AnimStartFrame:       7,
+		FrameWidth:           frameWidth_small,
+		FrameHeight:          frameHeight_small,
+		FrameTimer:           0.5,
+		AnimationSpeed:       10,
+		Looping:              false,
+	}
+
+	// animation yet to make
 	animations[Damaged] = &Animation{
 		CurrentState:         PlayerStateDamaged,
 		SpriteSheetYPosition: 7,
@@ -193,9 +211,13 @@ func (player *PlayerRuntime) UpdateAnimation() {
 	currState := player.State.GetPlayerState()
 	anim := player.Animations[currState]
 
-	timePerFrame := 1.0 / anim.AnimationSpeed // time in seconds to display each frame
-	dt := 1.0 / tps                           // time in seconds between each frame
-	anim.FrameTimer += dt                     // add the time in seconds between each frame to the frame timer
+	if player.PreviousState.GetPlayerState() != player.State.GetPlayerState() {
+		player.CurrAnimFrame = anim.AnimStartFrame
+	}
+
+	timePerFrame := 1.0 / anim.AnimationSpeed // time (in seconds)to display each frame
+	dt := 1.0 / tps                           // time (in seconds) between each frame
+	anim.FrameTimer += dt                     // add the time (in seconds) between each frame to the frame timer
 
 	// the for loop helps to keep the animation running at the correct speed
 	for anim.FrameTimer >= timePerFrame {
@@ -203,11 +225,18 @@ func (player *PlayerRuntime) UpdateAnimation() {
 
 		player.CurrAnimFrame++
 
-		if player.CurrAnimFrame >= anim.TotalFrames {
-			player.CurrAnimFrame = 0
-			if !anim.Looping {
-				// anim.FrameTimer = 0
-				// player.State.SetPlayerState(int(PlayerStateIdle))
+		// fmt.Println("player.CurrAnimFrame", player.CurrAnimFrame, anim.AnimStartFrame+anim.TotalFrames, currState)
+		if player.CurrAnimFrame >= anim.AnimStartFrame+anim.TotalFrames {
+			if anim.Looping {
+				player.CurrAnimFrame = anim.AnimStartFrame
+			} else {
+				if player.State.IsJumping() {
+					player.State.SetPlayerState(int(PlayerStateFalling))
+				}
+				if player.State.IsLanding() {
+					player.State.SetPlayerState(int(PlayerStateIdle))
+					player.CurrAnimFrame = 0
+				}
 			}
 		}
 	}
@@ -221,6 +250,9 @@ func (player *PlayerRuntime) DrawPlayerAnimation(screen *ebiten.Image) {
 	drawBoundsY := float32(bounds.Y - player.Camera.Pos.Y)
 
 	vector.StrokeRect(screen, drawBoundsX, drawBoundsY, float32(bounds.Width), float32(bounds.Height), 1, color.White, false)
+	// draw ground sensor
+	groundSensor := player.GetGroundSensor()
+	vector.FillRect(screen, float32(groundSensor.X-player.Camera.Pos.X), float32(groundSensor.Y-player.Camera.Pos.Y), float32(groundSensor.Width), float32(groundSensor.Height), color.RGBA{255, 0, 0, 50}, false)
 
 	currState := player.State.GetPlayerState()
 	width := player.Animations[currState].FrameWidth

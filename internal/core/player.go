@@ -14,6 +14,7 @@ const (
 	DecY         = 10
 	MaxSpeed     = 200
 	MaxRunSpeed  = 500
+	MaxFallSpeed = 700
 	JumpForce    = 700
 	GravityScale = 10
 	TerminalVelY = 10
@@ -41,6 +42,7 @@ func InitPlayer() PlayerRuntime {
 			DecX:         DecX,
 			MaxSpeed:     MaxSpeed,
 			MaxRunSpeed:  MaxRunSpeed,
+			MaxFallSpeed: MaxFallSpeed,
 			JumpForce:    JumpForce,
 			GravityScale: GravityScale,
 			TerminalVelY: TerminalVelY,
@@ -106,21 +108,44 @@ func (player *PlayerRuntime) GetBounds() AABB {
 	}
 }
 
+func (player *PlayerRuntime) GetGroundSensor() AABB {
+	sensorHeight := 50.0
+	return AABB{
+		X:      player.Pos.X,
+		Y:      player.Pos.Y + 80,
+		Width:  30,
+		Height: sensorHeight,
+	}
+}
+
 func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuadtree) {
-	// update player physics
+	// Update previous state at the start of the frame
 	player.PreviousState = PlayerState{CurrentState: PlayerStateType(player.State.GetPlayerState())}
 
+	// Time Management
 	tps := float64(ebiten.TPS())
 	if tps <= 0 {
 		tps = 60
 	}
-
 	dt := 1.0 / tps
+	dtUnits := 100.0 / tps // Scaling factor for physics constants
 
-	inputX := float64(inputState.Direction.LeftRight)
+	// Check Permissions
+	// Define which states allow movement input.
+	// We allow movement in air, idle, run, etc., but block it during "Action" states.
+	canMove := player.State.IsIdle() || player.State.IsMoving() ||
+		player.State.IsRunning() || player.State.IsJumping() ||
+		player.State.IsFalling()
+
+	// Input Processing
+	inputX := 0.0
+	if canMove {
+		inputX = float64(inputState.Direction.LeftRight)
+	}
+
 	targetVX := inputX * player.Physics.MaxSpeed
-
 	if inputState.RunJustPressed {
+		// Run logic: slightly slower air control if not grounded
 		if !player.State.IsGrounded() {
 			targetVX = inputX * (player.Physics.MaxRunSpeed / 1.5)
 		} else {
@@ -128,24 +153,26 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 		}
 	}
 
-	// dtUnits scales the physics constants which seem tuned for a different timeframe (e.g. 1 unit = 1 frame at 60fps?)
-	dtUnits := 100.0 / tps
-
+	// X Physics (Acceleration & Friction)
 	accX := player.Physics.AccX * dtUnits
 	decX := player.Physics.DecX * dtUnits
 
 	step := accX
+	// Apply friction if no input and on the ground
 	if inputX == 0 && player.State.IsGrounded() {
 		step = decX
 	}
 
+	// Handle Flipping
 	if inputX < 0 {
 		player.FlipX = true
 	} else if inputX > 0 {
 		player.FlipX = false
 	}
 
+	// Apply Velocity Changes
 	if math.Abs(player.Physics.VelX) > player.Physics.MaxSpeed && !inputState.RunJustPressed {
+		// Decelerate from run speed to normal max speed
 		step = decX
 		if player.Physics.VelX > 0 {
 			player.Physics.VelX = reduceRight(player.Physics.VelX, player.Physics.MaxSpeed, step)
@@ -156,26 +183,25 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 		player.Physics.VelX = approach(player.Physics.VelX, targetVX, step)
 	}
 
-	jump := inputState.JumpJustPressed
-
+	// Y Physics (Gravity & Jumping)
 	player.Physics.VelY += player.Physics.GravityScale * dtUnits
 
-	if jump && player.State.IsGrounded() {
+	// Jump Input
+	if inputState.JumpJustPressed && player.State.IsGrounded() && canMove {
 		player.State.SetPlayerState(int(PlayerStateJumping))
-		player.Physics.VelY = -player.Physics.JumpForce // Instant impulse is usually better
+		player.Physics.VelY = -player.Physics.JumpForce // Instant impulse
 	}
 
-	// Apply X Movement
-	player.Pos.X += player.Physics.VelX * dt // Apply velocity over time
+	// Integration & Collision Resolution
 
-	// Check X Collisions
+	// Apply X
+	player.Pos.X += player.Physics.VelX * dt
 	if qt != nil {
 		objs := qt.Retrieve(player.GetBounds())
 		for _, obj := range objs {
 			if _, ok := obj.(*Platform); ok {
 				bounds := obj.GetBounds()
 				if player.GetBounds().Intersects(bounds) {
-					// Resolve X
 					if player.Physics.VelX > 0 { // Moving Right
 						player.Pos.X = bounds.X - player.GetBounds().Width
 					} else if player.Physics.VelX < 0 { // Moving Left
@@ -187,26 +213,38 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 		}
 	}
 
-	// Apply Y Movement
-	player.Pos.Y += player.Physics.VelY * dt
+	// Apply Y
+	if player.Physics.VelY < player.Physics.MaxFallSpeed {
+		player.Pos.Y += player.Physics.VelY * dt
+	} else {
+		player.Physics.VelY = player.Physics.MaxFallSpeed
+		player.Pos.Y += player.Physics.VelY * dt
+	}
 
-	// Ground check flag
 	onGround := false
+	detectGround := false
 
-	// Check Y Collisions
 	if qt != nil {
 		objs := qt.Retrieve(player.GetBounds())
+		sensorObjs := player.GetGroundSensor()
 		for _, obj := range objs {
 			if _, ok := obj.(*Platform); ok {
 				bounds := obj.GetBounds()
+
+				// Ground detection (sensor only)
+				if sensorObjs.Intersects(bounds) {
+					detectGround = true
+				}
+
+				// Physics collision (body only)
 				if player.GetBounds().Intersects(bounds) {
-					// Resolve Y
-					if player.Physics.VelY > 0 { // Falling
+					if player.Physics.VelY > 0 { // Falling/Landing
 						player.Pos.Y = bounds.Y - player.GetBounds().Height
-						player.Physics.VelY = 0
 						onGround = true
-					} else if player.Physics.VelY < 0 { // Jumping into ceiling
+						player.Physics.VelY = 0
+					} else if player.Physics.VelY < 0 { // Bonking head
 						player.Pos.Y = bounds.Y + bounds.Height
+						// fmt.Println("Bonking head and velY is", player.Physics.VelY)
 						player.Physics.VelY = 0
 					}
 				}
@@ -214,22 +252,34 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 		}
 	}
 
-	if onGround {
-		if player.Physics.VelX == 0 {
-			player.State.SetPlayerState(int(PlayerStateIdle))
-		} else {
-			if math.Abs(player.Physics.VelX) > player.Physics.MaxSpeed {
-				player.State.SetPlayerState(int(PlayerStateRunning))
+	// State Management
+	// Transition states based on the physical results of this frame
+	if detectGround {
+		if onGround {
+			if player.State.IsGrounded() {
+				if player.Physics.VelX == 0 {
+					player.State.SetPlayerState(int(PlayerStateIdle))
+				} else {
+					if math.Abs(player.Physics.VelX) > player.Physics.MaxSpeed {
+						player.State.SetPlayerState(int(PlayerStateRunning))
+					} else {
+						player.State.SetPlayerState(int(PlayerStateMoving))
+					}
+				}
 			} else {
-				player.State.SetPlayerState(int(PlayerStateMoving))
+				player.State.SetPlayerState(int(PlayerStateIdle))
 			}
+		} else if player.State.IsFalling() && player.Physics.VelY > 0 {
+			player.State.SetPlayerState(int(PlayerStateLanding))
 		}
 	} else {
-		if player.Physics.VelY > 0 {
-			// player.State.SetPlayerState(int(PlayerStateFalling))
+		// In Air
+		if player.Physics.VelY > 0 && !player.State.IsFalling() && !player.State.IsLanding() {
+			player.State.SetPlayerState(int(PlayerStateFalling))
 		}
 	}
 
+	// Update spatial partition
 	qt.Update(player)
 }
 
