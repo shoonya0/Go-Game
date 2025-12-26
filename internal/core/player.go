@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -257,7 +258,30 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 	if detectGround {
 		if onGround {
 			if player.State.IsGrounded() {
-				if player.Physics.VelX == 0 {
+
+				// Smug Face Input
+				if inputState.SmugFace {
+					fmt.Println("Smug Face Input")
+					player.State.SetPlayerState(int(PlayerStateSmugFace))
+				} else if inputState.Skills.SpecialAttack1 {
+					fmt.Println("Special Attack 1 Input")
+					player.State.SetPlayerState(int(PlayerStateSpecialAttack1))
+				} else if inputState.Skills.SpecialAttack2 {
+					fmt.Println("Special Attack 2 Input")
+					player.State.SetPlayerState(int(PlayerStateSpecialAttack2))
+				} else if inputState.Skills.SpecialAttack3 {
+					fmt.Println("Special Attack 3 Input")
+					player.State.SetPlayerState(int(PlayerStateSpecialAttack3))
+				} else if inputState.Skills.SpecialAttack4 {
+					fmt.Println("Special Attack 4 Input")
+					player.State.SetPlayerState(int(PlayerStateSpecialAttack4))
+				} else if inputState.Skills.WeakAttack {
+					fmt.Println("Weak Attack Input")
+					player.State.SetPlayerState(int(PlayerStateWeakAttack))
+				} else if inputState.Skills.StrongAttack {
+					fmt.Println("Strong Attack Input")
+					player.State.SetPlayerState(int(PlayerStateStrongAttack))
+				} else if player.Physics.VelX == 0 {
 					player.State.SetPlayerState(int(PlayerStateIdle))
 				} else {
 					if math.Abs(player.Physics.VelX) > player.Physics.MaxSpeed {
@@ -266,10 +290,10 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 						player.State.SetPlayerState(int(PlayerStateMoving))
 					}
 				}
-			} else {
+			} else if player.State.IsFalling() && player.Physics.VelY >= 0 {
 				player.State.SetPlayerState(int(PlayerStateIdle))
 			}
-		} else if player.State.IsFalling() && player.Physics.VelY > 0 {
+		} else if player.State.IsFalling() && player.Physics.VelY >= 0 {
 			player.State.SetPlayerState(int(PlayerStateLanding))
 		}
 	} else {

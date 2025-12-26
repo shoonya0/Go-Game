@@ -11,13 +11,20 @@ const (
 	PlayerStateJumping
 	PlayerStateFalling
 	PlayerStateLanding
+	PlayerStateSmugFace
+	PlayerStateWeakAttack
+	PlayerStateStrongAttack
+	PlayerStateSpecialAttack1
+	PlayerStateSpecialAttack2
+	PlayerStateSpecialAttack3
+	PlayerStateSpecialAttack4
+
+	// not used yet
 	PlayerStateDamaged
 	PlayerStateDead
 	// ---------------- menu ----------------
 	PlayerStateMenuOpen
 	// ---------------- skills ----------------
-	PlayerStateWeakAttack
-	PlayerStateStrongAttack
 	PlayerStateDefense
 	PlayerStateUsePotion
 )
@@ -48,6 +55,26 @@ func (ps *PlayerState) IsLanding() bool {
 
 func (ps *PlayerState) IsRunning() bool {
 	return ps.CurrentState == PlayerStateRunning
+}
+
+func (ps *PlayerState) IsSmugFace() bool {
+	return ps.CurrentState == PlayerStateSmugFace
+}
+
+func (ps *PlayerState) IsSpecialAttack1() bool {
+	return ps.CurrentState == PlayerStateSpecialAttack1
+}
+
+func (ps *PlayerState) IsSpecialAttack2() bool {
+	return ps.CurrentState == PlayerStateSpecialAttack2
+}
+
+func (ps *PlayerState) IsSpecialAttack3() bool {
+	return ps.CurrentState == PlayerStateSpecialAttack3
+}
+
+func (ps *PlayerState) IsSpecialAttack4() bool {
+	return ps.CurrentState == PlayerStateSpecialAttack4
 }
 
 // currently we can not able to jump while attacking or defending

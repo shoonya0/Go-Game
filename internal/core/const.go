@@ -29,10 +29,14 @@ type Direction struct {
 
 // ---------------- skills ----------------
 type Skills struct {
-	WeakAttack   bool
-	StrongAttack bool
-	Defense      bool
-	UsePotion    bool
+	WeakAttack     bool
+	StrongAttack   bool
+	Defense        bool
+	UsePotion      bool
+	SpecialAttack1 bool
+	SpecialAttack2 bool
+	SpecialAttack3 bool
+	SpecialAttack4 bool
 }
 
 // ---------------- input state ----------------
@@ -43,6 +47,7 @@ type InputState struct {
 	DashJustPressed bool // true if the dash button was just pressed
 	RunJustPressed  bool // true if the run button was just pressed
 	Menu            bool // true if the menu button was just pressed
+	SmugFace        bool // true if the smug face button was just pressed
 	Skills          Skills
 }
 

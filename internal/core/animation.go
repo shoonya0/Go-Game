@@ -12,20 +12,25 @@ import (
 
 // ---------------- states ----------------
 const (
-	Idle    = 0
-	Moving  = 1
-	Running = 2
-	Jumping = 3
-	Falling = 4
-	Landing = 5
-
-	Damaged      = 7
-	Dead         = 8
-	MenuOpen     = 9
-	WeakAttack   = 10
-	StrongAttack = 11
-	Defense      = 12
-	UsePotion    = 13
+	Idle int = iota
+	Moving
+	Running
+	Jumping
+	Falling
+	Landing
+	SmugFace
+	WeakAttack
+	StrongAttack
+	SpecialAttack1
+	SpecialAttack2
+	SpecialAttack3
+	SpecialAttack4
+	// not used yet
+	Damaged
+	Dead
+	MenuOpen
+	Defense
+	UsePotion
 )
 
 // ---------------- animation ----------------
@@ -46,13 +51,13 @@ const (
 	frameWidth_minimum = 40
 	frameWidth_small   = 80
 	// frameWidth_medium  = 120
-	// frameWidth_large   = 160
-	// frameWidth_maximum = 200
+	frameWidth_large   = 160
+	frameWidth_maximum = 200
 
-	// frameHeight_minimum = 40  // this frame is currently not used
-	frameHeight_small = 80 // this frame is used
-	// frameHeight_medium  = 120 // this frame is used
-	// frameHeight_large   = 160 // this frame is currently not used
+	frameHeight_minimum = 40  // this frame is used
+	frameHeight_small   = 80  // this frame is used
+	frameHeight_medium  = 120 // this frame is  not used
+	// frameHeight_large   = 160 // this frame is used
 	// frameHeight_maximum = 200 // this frame is currently not used
 
 	playerSpriteSheetPath = "../assets/GideonGraves.png"
@@ -75,7 +80,7 @@ func InitPlayerAnimations() map[int]*Animation {
 	}
 	animations[Moving] = &Animation{
 		CurrentState:         PlayerStateMoving,
-		SpriteSheetYPosition: 1,
+		SpriteSheetYPosition: 2,
 		TotalFrames:          5,
 		AnimStartFrame:       0,
 		FrameWidth:           frameWidth_minimum,
@@ -86,7 +91,7 @@ func InitPlayerAnimations() map[int]*Animation {
 	}
 	animations[Running] = &Animation{
 		CurrentState:         PlayerStateRunning,
-		SpriteSheetYPosition: 2,
+		SpriteSheetYPosition: 4,
 		TotalFrames:          8,
 		AnimStartFrame:       0,
 		FrameWidth:           frameWidth_small,
@@ -97,7 +102,7 @@ func InitPlayerAnimations() map[int]*Animation {
 	}
 	animations[Jumping] = &Animation{
 		CurrentState:         PlayerStateJumping,
-		SpriteSheetYPosition: 5,
+		SpriteSheetYPosition: 10,
 		TotalFrames:          3,
 		AnimStartFrame:       0,
 		FrameWidth:           frameWidth_small,
@@ -108,7 +113,7 @@ func InitPlayerAnimations() map[int]*Animation {
 	}
 	animations[Falling] = &Animation{
 		CurrentState:         PlayerStateFalling,
-		SpriteSheetYPosition: 5,
+		SpriteSheetYPosition: 10,
 		TotalFrames:          1,
 		AnimStartFrame:       3,
 		FrameWidth:           frameWidth_small,
@@ -119,13 +124,97 @@ func InitPlayerAnimations() map[int]*Animation {
 	}
 	animations[Landing] = &Animation{
 		CurrentState:         PlayerStateLanding,
-		SpriteSheetYPosition: 5,
+		SpriteSheetYPosition: 10,
 		TotalFrames:          3,
 		AnimStartFrame:       7,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_small,
 		FrameTimer:           0.5,
 		AnimationSpeed:       10,
+		Looping:              false,
+	}
+
+	animations[SmugFace] = &Animation{
+		CurrentState:         PlayerStateSmugFace,
+		SpriteSheetYPosition: 8,
+		TotalFrames:          11,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_minimum,
+		FrameHeight:          frameHeight_small,
+		FrameTimer:           0,
+		AnimationSpeed:       7,
+		Looping:              false,
+	}
+
+	animations[WeakAttack] = &Animation{
+		CurrentState:         PlayerStateWeakAttack,
+		SpriteSheetYPosition: 19,
+		TotalFrames:          8,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_large,
+		FrameHeight:          frameHeight_small,
+		FrameTimer:           0,
+		AnimationSpeed:       12,
+		Looping:              false,
+	}
+
+	animations[StrongAttack] = &Animation{
+		CurrentState:         PlayerStateStrongAttack,
+		SpriteSheetYPosition: 21,
+		TotalFrames:          8,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_large,
+		FrameHeight:          frameHeight_medium,
+		FrameTimer:           0,
+		AnimationSpeed:       10,
+		Looping:              false,
+	}
+
+	animations[SpecialAttack1] = &Animation{
+		CurrentState:         PlayerStateSpecialAttack1,
+		SpriteSheetYPosition: 24,
+		TotalFrames:          12,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_maximum,
+		FrameHeight:          frameHeight_medium,
+		FrameTimer:           0,
+		AnimationSpeed:       8,
+		Looping:              false,
+	}
+
+	animations[SpecialAttack2] = &Animation{
+		CurrentState:         PlayerStateSpecialAttack2,
+		SpriteSheetYPosition: 27,
+		TotalFrames:          13,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_maximum,
+		FrameHeight:          frameHeight_medium,
+		FrameTimer:           0,
+		AnimationSpeed:       8,
+		Looping:              false,
+	}
+
+	animations[SpecialAttack3] = &Animation{
+		CurrentState:         PlayerStateSpecialAttack3,
+		SpriteSheetYPosition: 30,
+		TotalFrames:          9,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_maximum,
+		FrameHeight:          frameHeight_medium,
+		FrameTimer:           0,
+		AnimationSpeed:       8,
+		Looping:              false,
+	}
+
+	animations[SpecialAttack4] = &Animation{
+		CurrentState:         PlayerStateSpecialAttack4,
+		SpriteSheetYPosition: 39,
+		TotalFrames:          17,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_maximum,
+		FrameHeight:          frameHeight_small,
+		FrameTimer:           0,
+		AnimationSpeed:       12,
 		Looping:              false,
 	}
 
@@ -150,26 +239,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		AnimationSpeed:       1,
 		Looping:              false,
 	}
-	animations[WeakAttack] = &Animation{
-		CurrentState:         PlayerStateWeakAttack,
-		SpriteSheetYPosition: 8,
-		TotalFrames:          6,
-		FrameWidth:           frameWidth_small,
-		FrameHeight:          frameHeight_small,
-		FrameTimer:           0,
-		AnimationSpeed:       1,
-		Looping:              false,
-	}
-	animations[StrongAttack] = &Animation{
-		CurrentState:         PlayerStateStrongAttack,
-		SpriteSheetYPosition: 9,
-		TotalFrames:          6,
-		FrameWidth:           frameWidth_small,
-		FrameHeight:          frameHeight_small,
-		FrameTimer:           0,
-		AnimationSpeed:       1,
-		Looping:              false,
-	}
+
 	animations[Defense] = &Animation{
 		CurrentState:         PlayerStateDefense,
 		SpriteSheetYPosition: 10,
@@ -233,7 +303,9 @@ func (player *PlayerRuntime) UpdateAnimation() {
 				if player.State.IsJumping() {
 					player.State.SetPlayerState(int(PlayerStateFalling))
 				}
-				if player.State.IsLanding() {
+				if player.State.IsLanding() || player.State.IsSmugFace() || player.State.IsWeakAttack() ||
+					player.State.IsStrongAttack() || player.State.IsSpecialAttack1() || player.State.IsSpecialAttack2() ||
+					player.State.IsSpecialAttack3() || player.State.IsSpecialAttack4() {
 					player.State.SetPlayerState(int(PlayerStateIdle))
 					player.CurrAnimFrame = 0
 				}
@@ -258,7 +330,7 @@ func (player *PlayerRuntime) DrawPlayerAnimation(screen *ebiten.Image) {
 	width := player.Animations[currState].FrameWidth
 	height := player.Animations[currState].FrameHeight
 	frameX := player.CurrAnimFrame * width
-	frameY := player.Animations[currState].SpriteSheetYPosition * height
+	frameY := player.Animations[currState].SpriteSheetYPosition * frameHeight_minimum
 
 	rect := image.Rect(frameX, frameY, frameX+width, frameY+height)
 	subImage := playerSpriteSheet.SubImage(rect).(*ebiten.Image)

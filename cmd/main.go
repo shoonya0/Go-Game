@@ -11,6 +11,7 @@ import (
 )
 
 const (
+	// playerSpriteSheetPath = "../assets/NewGideonGraves.png"
 	playerSpriteSheetPath = "../assets/GideonGraves.png"
 	screenWidth           = 1360
 	screenHeight          = 768

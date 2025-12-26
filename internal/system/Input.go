@@ -44,14 +44,21 @@ func HandleInput(inputState *core.InputState) {
 	// ---------------- run ----------------
 	inputState.RunJustPressed = ebiten.IsKeyPressed(ebiten.KeyShiftLeft)
 
+	// ---------------- smug face ----------------
+	inputState.SmugFace = ebiten.IsKeyPressed(ebiten.KeyF)
+
 	// ---------------- menu ----------------
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		inputState.Menu = !inputState.Menu
 	}
 
 	// ---------------- skills ----------------
-	inputState.Skills.WeakAttack = ebiten.IsKeyPressed(ebiten.KeyJ)
-	inputState.Skills.StrongAttack = ebiten.IsKeyPressed(ebiten.KeyK)
-	inputState.Skills.Defense = ebiten.IsKeyPressed(ebiten.KeyL)
-	inputState.Skills.UsePotion = ebiten.IsKeyPressed(ebiten.KeyI)
+	inputState.Skills.WeakAttack = ebiten.IsKeyPressed(ebiten.KeyI)
+	inputState.Skills.StrongAttack = ebiten.IsKeyPressed(ebiten.KeyJ)
+	inputState.Skills.Defense = ebiten.IsKeyPressed(ebiten.KeyR)
+	inputState.Skills.UsePotion = ebiten.IsKeyPressed(ebiten.KeyQ)
+	inputState.Skills.SpecialAttack1 = ebiten.IsKeyPressed(ebiten.KeyK)
+	inputState.Skills.SpecialAttack2 = ebiten.IsKeyPressed(ebiten.KeyL)
+	inputState.Skills.SpecialAttack3 = ebiten.IsKeyPressed(ebiten.KeyU)
+	inputState.Skills.SpecialAttack4 = ebiten.IsKeyPressed(ebiten.KeyO)
 }
