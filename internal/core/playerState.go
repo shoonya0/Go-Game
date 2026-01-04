@@ -18,6 +18,8 @@ const (
 	PlayerStateSpecialAttack2
 	PlayerStateSpecialAttack3
 	PlayerStateSpecialAttack4
+	PlayerStateWeakAttackInAir
+	PlayerStateStrongAttackInAir
 
 	// not used yet
 	PlayerStateDamaged
@@ -61,6 +63,14 @@ func (ps *PlayerState) IsSmugFace() bool {
 	return ps.CurrentState == PlayerStateSmugFace
 }
 
+func (ps *PlayerState) IsWeakAttack() bool {
+	return ps.CurrentState == PlayerStateWeakAttack
+}
+
+func (ps *PlayerState) IsStrongAttack() bool {
+	return ps.CurrentState == PlayerStateStrongAttack
+}
+
 func (ps *PlayerState) IsSpecialAttack1() bool {
 	return ps.CurrentState == PlayerStateSpecialAttack1
 }
@@ -77,6 +87,14 @@ func (ps *PlayerState) IsSpecialAttack4() bool {
 	return ps.CurrentState == PlayerStateSpecialAttack4
 }
 
+func (ps *PlayerState) IsWeakAttackInAir() bool {
+	return ps.CurrentState == PlayerStateWeakAttackInAir
+}
+
+func (ps *PlayerState) IsStrongAttackInAir() bool {
+	return ps.CurrentState == PlayerStateStrongAttackInAir
+}
+
 // currently we can not able to jump while attacking or defending
 func (ps *PlayerState) IsGrounded() bool {
 	return ps.CurrentState == PlayerStateIdle || ps.CurrentState == PlayerStateMoving || ps.CurrentState == PlayerStateRunning
@@ -88,14 +106,6 @@ func (ps *PlayerState) IsDamaged() bool {
 
 func (ps *PlayerState) IsDead() bool {
 	return ps.CurrentState == PlayerStateDead
-}
-
-func (ps *PlayerState) IsWeakAttack() bool {
-	return ps.CurrentState == PlayerStateWeakAttack
-}
-
-func (ps *PlayerState) IsStrongAttack() bool {
-	return ps.CurrentState == PlayerStateStrongAttack
 }
 
 func (ps *PlayerState) IsDefense() bool {

@@ -53,8 +53,8 @@ func HandleInput(inputState *core.InputState) {
 	}
 
 	// ---------------- skills ----------------
-	inputState.Skills.WeakAttack = ebiten.IsKeyPressed(ebiten.KeyI)
-	inputState.Skills.StrongAttack = ebiten.IsKeyPressed(ebiten.KeyJ)
+	inputState.Skills.WeakAttack = ebiten.IsKeyPressed(ebiten.KeyJ)
+	inputState.Skills.StrongAttack = ebiten.IsKeyPressed(ebiten.KeyI)
 	inputState.Skills.Defense = ebiten.IsKeyPressed(ebiten.KeyR)
 	inputState.Skills.UsePotion = ebiten.IsKeyPressed(ebiten.KeyQ)
 	inputState.Skills.SpecialAttack1 = ebiten.IsKeyPressed(ebiten.KeyK)

@@ -2,12 +2,10 @@ package core
 
 import (
 	"image"
-	"image/color"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 // ---------------- states ----------------
@@ -25,6 +23,8 @@ const (
 	SpecialAttack2
 	SpecialAttack3
 	SpecialAttack4
+	WeakAttackInAir
+	StrongAttackInAir
 	// not used yet
 	Damaged
 	Dead
@@ -218,6 +218,30 @@ func InitPlayerAnimations() map[int]*Animation {
 		Looping:              false,
 	}
 
+	animations[WeakAttackInAir] = &Animation{
+		CurrentState:         PlayerStateWeakAttackInAir,
+		SpriteSheetYPosition: 36,
+		TotalFrames:          6,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_maximum,
+		FrameHeight:          frameHeight_medium,
+		FrameTimer:           0,
+		AnimationSpeed:       10,
+		Looping:              false,
+	}
+
+	animations[StrongAttackInAir] = &Animation{
+		CurrentState:         PlayerStateStrongAttackInAir,
+		SpriteSheetYPosition: 33,
+		TotalFrames:          10,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_maximum,
+		FrameHeight:          frameHeight_medium,
+		FrameTimer:           0,
+		AnimationSpeed:       8,
+		Looping:              false,
+	}
+
 	// animation yet to make
 	animations[Damaged] = &Animation{
 		CurrentState:         PlayerStateDamaged,
@@ -300,14 +324,13 @@ func (player *PlayerRuntime) UpdateAnimation() {
 			if anim.Looping {
 				player.CurrAnimFrame = anim.AnimStartFrame
 			} else {
-				if player.State.IsJumping() {
-					player.State.SetPlayerState(int(PlayerStateFalling))
-				}
 				if player.State.IsLanding() || player.State.IsSmugFace() || player.State.IsWeakAttack() ||
 					player.State.IsStrongAttack() || player.State.IsSpecialAttack1() || player.State.IsSpecialAttack2() ||
 					player.State.IsSpecialAttack3() || player.State.IsSpecialAttack4() {
 					player.State.SetPlayerState(int(PlayerStateIdle))
 					player.CurrAnimFrame = 0
+				} else if player.State.IsWeakAttackInAir() || player.State.IsStrongAttackInAir() || player.State.IsJumping() {
+					player.State.SetPlayerState(int(PlayerStateFalling))
 				}
 			}
 		}
@@ -318,13 +341,13 @@ func (player *PlayerRuntime) DrawPlayerAnimation(screen *ebiten.Image) {
 
 	bounds := player.GetBounds()
 	// Adjust bounds for camera
-	drawBoundsX := float32(bounds.X - player.Camera.Pos.X)
-	drawBoundsY := float32(bounds.Y - player.Camera.Pos.Y)
+	// drawBoundsX := float32(bounds.X - player.Camera.Pos.X)
+	// drawBoundsY := float32(bounds.Y - player.Camera.Pos.Y)
 
-	vector.StrokeRect(screen, drawBoundsX, drawBoundsY, float32(bounds.Width), float32(bounds.Height), 1, color.White, false)
-	// draw ground sensor
-	groundSensor := player.GetGroundSensor()
-	vector.FillRect(screen, float32(groundSensor.X-player.Camera.Pos.X), float32(groundSensor.Y-player.Camera.Pos.Y), float32(groundSensor.Width), float32(groundSensor.Height), color.RGBA{255, 0, 0, 50}, false)
+	// vector.StrokeRect(screen, drawBoundsX, drawBoundsY, float32(bounds.Width), float32(bounds.Height), 1, color.White, false)
+	// // draw ground sensor
+	// groundSensor := player.GetGroundSensor()
+	// vector.FillRect(screen, float32(groundSensor.X-player.Camera.Pos.X), float32(groundSensor.Y-player.Camera.Pos.Y), float32(groundSensor.Width), float32(groundSensor.Height), color.RGBA{255, 0, 0, 50}, false)
 
 	currState := player.State.GetPlayerState()
 	width := player.Animations[currState].FrameWidth
