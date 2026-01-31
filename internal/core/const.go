@@ -17,8 +17,11 @@ type Physics struct {
 }
 
 type Combat struct {
-	HP, MaxHP int
-	InvulnMs  float64 // remaining ms of i-frames
+	// core stats (0-100 scale)
+	Health    float64 // Curr health
+	MaxHealth float64 // Max health
+	Power     float64 // Power
+	MaxPower  float64 // Max Power
 }
 
 // ---------------- direction ----------------
@@ -62,18 +65,23 @@ type Camera struct {
 
 // ---------------- player runtime ----------------
 type PlayerRuntime struct {
+	// player state and animations
 	State         PlayerState
 	PreviousState PlayerState
 	Animations    map[int]*Animation
-	CurrAnimFrame int     // current frame of the current animation
-	FlipX         bool    // true if the player is facing left
-	Scale         float64 // scale of the player image
-	Pos           Position
-	Physics       Physics
-	Combat        Combat
-	CheckpointID  string
-	Camera        Camera
-	Grounded      bool // true if the player is touching the ground
+	CurrAnimFrame int // current frame of the current animation
+
+	// position and physics
+	FlipX   bool    // true if the player is facing left
+	Scale   float64 // scale of the player image
+	Pos     Position
+	Physics Physics
+
+	// combat and checkpoint
+	Combat       Combat
+	CheckpointID string
+	Camera       Camera
+	Grounded     bool // true if the player is touching the ground
 }
 
 // ---------------- game state ----------------

@@ -50,9 +50,10 @@ func InitPlayer() PlayerRuntime {
 			AirJumpsLeft: AirJumpsLeft,
 		},
 		Combat: Combat{
-			HP:       100,
-			MaxHP:    100,
-			InvulnMs: 0,
+			Health:    100,
+			MaxHealth: 100,
+			Power:     100,
+			MaxPower:  100,
 		},
 		CheckpointID: "default",
 	}
