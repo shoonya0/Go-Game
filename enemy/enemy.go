@@ -2,82 +2,11 @@ package enemy
 
 import (
 	"player/internal/core"
-	"sync"
 )
-
-type EnemyStateType int
-type PartyStatus int
 
 type EnemyState struct {
 	Current  EnemyStateType
 	Previous EnemyStateType
-}
-
-const (
-	PartySolo   PartyStatus = iota // Alone
-	PartyMember                    // Part of a group but not leader
-	PartyLeader                    // Leading a group
-)
-
-// ========================================================================
-// Q-Learning Reinforcement Learning Brain for Enemy AI
-// ========================================================================
-// State Vector for Q-Learning Brain Inputs (Inputs to the Neural Network)
-type StateVector struct {
-	SelfHealthBin    int // 0-4 (critical, low, medium, high, full)
-	PlayerHealthBin  int // 0-4
-	IQBin            int // 0-2 (low, medium, high)
-	StrengthBin      int // 0-2
-	PartyStatus      int // 0-2 (solo, member, leader)
-	BerserkActive    int // 0-1
-	PlayerDistance   int // 0-3 (close, medium, far, very far)
-	PlayerDirection  int // 0-1 (left, right)
-	OnGround         int // 0-1
-	NearbyAllies     int // 0-2 (none, few, many)
-	PlatformAhead    int // 0-1 (can continue, gap/wall)
-	PlayerAboveBelow int // 0-2 (below, same level, above)
-}
-
-// ActionType represents possible actions the AI can take
-type ActionType int
-
-const (
-	ActionIdle ActionType = iota
-	ActionMoveLeft
-	ActionMoveRight
-	ActionJump
-	ActionJumpLeft
-	ActionJumpRight
-	ActionAttack
-	ActionFlee
-	ActionEnterBerserk
-	ActionExitBerserk
-	ActionFormParty
-	ActionBetrayAlly
-	ActionRest
-	ActionHuntPlayer
-)
-
-// QLearningBrain implements a Q-learning agent for enemy decision making
-type QLearningBrain struct {
-	QTable       [][]float64 // Q[state][action] = expected reward
-	LearningRate float64     // Alpha: how much new info overrides old (0.1-0.3 typical)
-	DiscountRate float64     // Gamma: importance of future rewards (0.9-0.99)
-	Epsilon      float64     // Exploration rate (starts high, decays)
-	EpsilonMin   float64     // Minimum exploration rate
-	EpsilonDecay float64     // How fast epsilon decays
-
-	// Experience tracking
-	LastState  StateVector
-	LastAction ActionType
-	HasHistory bool
-
-	// Statistics
-	TotalReward    float64
-	EpisodeRewards []float64
-	StepCount      int
-
-	mu sync.RWMutex
 }
 
 type EnemyRuntime struct {
@@ -108,12 +37,26 @@ type EnemyRuntime struct {
 	BerserkActive   bool    // true if the enemy is in berserk mode
 	BerserkDuration float64 // duration of berserk mode in seconds
 	BeserkCoolDown  float64 // cooldown time after berserk mode in seconds
-
-	// Party System
-	PartyID      int             // -1 if solo, otherwise the party ID
-	PartyMembers []*EnemyRuntime // pointer of party members
-	PartyLeader  *EnemyRuntime   // pointer to the party leader(if member)
-
-	// AI Brain
-	Brains *QLearningBrain
 }
+
+const (
+	EnemyAccX         = 100
+	EnemyAccY         = 10
+	EnemyDecX         = 10
+	EnemyDecY         = 10
+	EnemyMaxSpeed     = 200
+	EnemyMaxRunSpeed  = 500
+	EnemyMaxFallSpeed = 700
+	EnemyJumpForce    = 700
+	EnemyGravityScale = 10
+
+	DefaultWidth          = 40
+	DefaultHeight         = 60
+	DefaultDetectionRange = 400 // range to detect player
+	DefaultFleeRange      = 250 // range to flee from player
+	DefaultAttackRange    = 50  // range to attack player
+	DefaultAttackDamage   = 10  // damage dealt to player per attack
+	DefaultRegenRate      = 5   // HP per second
+
+	RestMinDuration = 3.0 // minimum seconds to rest
+)

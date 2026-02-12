@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"player/enemy"
 	"player/internal/core"
 	"player/internal/system"
 
@@ -26,6 +27,9 @@ type Game struct {
 	spriteSheet *ebiten.Image // player image
 	// ------ Entities ------
 	player *core.PlayerRuntime
+
+	enemyImg             *ebiten.Image               // enemy image
+	ParallelEnemyManager *enemy.ParallelEnemyManager // enemy manager
 
 	Background      *ebiten.Image
 	LevelData       *ebiten.Image
@@ -106,6 +110,10 @@ func main() {
 	levelData := LoadImage(core.Level_1)
 	tileData := LoadImage(core.Tileset)
 	img := LoadImage(playerSpriteSheetPath)
+	enemyImg := LoadImage(playerSpriteSheetPath)
+
+	var parallelEnemyManager = enemy.DefaultParallelConfig()
+	fmt.Println("Parallel Enemy Manager will create ", parallelEnemyManager.WorkerCount, "workers")
 
 	game := &Game{
 		state: core.ModeMenu,
@@ -113,7 +121,11 @@ func main() {
 			p := core.InitPlayer()
 			return &p
 		}(),
-		spriteSheet:     img,
+		spriteSheet: img,
+
+		enemyImg:             enemyImg,
+		ParallelEnemyManager: &parallelEnemyManager,
+
 		Background:      backGroundData,
 		LevelData:       levelData,
 		Tileset:         tileData,
@@ -128,7 +140,12 @@ func main() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Pirate Adventure")
 
+	// need to setup the brain for later
+
 	if err := ebiten.RunGame(game); err != nil {
+		if game.ParallelEnemyManager != nil {
+			game.ParallelEnemyManager.Shutdown()
+		}
 		log.Fatal(err)
 	}
 }
