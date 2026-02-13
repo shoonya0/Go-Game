@@ -28,8 +28,8 @@ var enemySpriteSheet *ebiten.Image
 
 // ---------------- animation ----------------
 type Animation struct {
-	CurrentState         EnemyStateType // Use the enum instead of embedded PlayerState
-	SpriteSheetYPosition int            // the y position of the sprite sheet in the image
+	CurrentState         int // Use the enum instead of embedded PlayerState
+	SpriteSheetYPosition int // the y position of the sprite sheet in the image
 	TotalFrames          int
 	AnimStartFrame       int
 	FrameWidth           int
@@ -39,7 +39,7 @@ type Animation struct {
 	Looping              bool    // true if the animation should loop
 }
 
-func InitPlayerAnimations() map[int]*Animation {
+func InitEnemyAnimations() map[int]*Animation {
 	animations := make(map[int]*Animation)
 	animations[int(StateIdle)] = &Animation{
 		CurrentState:         StateIdle,
@@ -52,6 +52,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		AnimationSpeed:       6,
 		Looping:              true,
 	}
+	// walking
 	animations[int(StatePatrolling)] = &Animation{
 		CurrentState:         StatePatrolling,
 		SpriteSheetYPosition: 2,
@@ -63,6 +64,7 @@ func InitPlayerAnimations() map[int]*Animation {
 		AnimationSpeed:       6,
 		Looping:              true,
 	}
+	// running
 	animations[int(StateHunting)] = &Animation{
 		CurrentState:         StateHunting,
 		SpriteSheetYPosition: 4,

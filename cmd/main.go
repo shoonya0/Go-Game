@@ -24,7 +24,6 @@ type Game struct {
 	state core.GameState
 	input core.InputState
 
-	spriteSheet *ebiten.Image // player image
 	// ------ Entities ------
 	player *core.PlayerRuntime
 
@@ -52,6 +51,7 @@ func (g *Game) loadLevel() {
 		for i := range g.Level {
 			g.DynamicQuadtree.Insert(&g.Level[i])
 		}
+		g.ParallelEnemyManager.AddEnemyToLevel(g.Level)
 		fmt.Println("Level loaded")
 		doOnce = true
 	}
@@ -118,10 +118,9 @@ func main() {
 	game := &Game{
 		state: core.ModeMenu,
 		player: func() *core.PlayerRuntime {
-			p := core.InitPlayer()
+			p := core.InitPlayer(img)
 			return &p
 		}(),
-		spriteSheet: img,
 
 		enemyImg:             enemyImg,
 		ParallelEnemyManager: &parallelEnemyManager,

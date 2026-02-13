@@ -22,8 +22,9 @@ const (
 	AirJumpsLeft = 1
 )
 
-func InitPlayer() PlayerRuntime {
+func InitPlayer(img *ebiten.Image) PlayerRuntime {
 	return PlayerRuntime{
+		img:           img,
 		State:         PlayerState{CurrentState: PlayerStateIdle},
 		PreviousState: PlayerState{CurrentState: PlayerStateIdle},
 		Animations:    InitPlayerAnimations(),

@@ -5,8 +5,8 @@ import (
 )
 
 type EnemyState struct {
-	Current  EnemyStateType
-	Previous EnemyStateType
+	Current  int
+	Previous int
 }
 
 type EnemyRuntime struct {
@@ -60,3 +60,48 @@ const (
 
 	RestMinDuration = 3.0 // minimum seconds to rest
 )
+
+var id int = 0
+
+func IDGenerator() int {
+	id++
+	return id
+}
+
+func (em *EnemyManager) InitEnemy() EnemyRuntime {
+	return EnemyRuntime{
+		ID:           IDGenerator(),
+		Name:         "Gideon Graves",
+		Health:       100,
+		MaxHealth:    100,
+		IQ:           100,
+		BaseIQ:       100,
+		Strength:     100,
+		BaseStrength: 100,
+		Pos: core.Position{
+			X: 100,
+			Y: 100,
+		},
+		Physics: core.Physics{
+			VelX:         0,
+			VelY:         0,
+			AccX:         EnemyAccX,
+			AccY:         EnemyAccY,
+			DecX:         EnemyDecX,
+			MaxSpeed:     EnemyMaxSpeed,
+			MaxRunSpeed:  EnemyMaxRunSpeed,
+			MaxFallSpeed: EnemyMaxFallSpeed,
+			JumpForce:    EnemyJumpForce,
+			GravityScale: EnemyGravityScale,
+		},
+		State: EnemyState{
+			Current:  StateIdle,
+			Previous: StateIdle,
+		},
+		PartyStatus:     PartySolo,
+		Grounded:        true,
+		BerserkActive:   false,
+		BerserkDuration: 0,
+		BeserkCoolDown:  0,
+	}
+}

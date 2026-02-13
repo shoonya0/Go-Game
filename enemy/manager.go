@@ -1,8 +1,14 @@
 package enemy
 
+import (
+	"github.com/hajimehoshi/ebiten/v2"
+)
+
 // EnemyManager coordinates all enemies, parties, and shared learning
 type EnemyManager struct {
-	Enemies      []*EnemyRuntime
+	img          *ebiten.Image
+	Animations   map[int]*Animation
+	Enemies      []EnemyRuntime
 	PartyManager *PartyManager
 	NextID       int
 

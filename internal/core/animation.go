@@ -2,10 +2,8 @@ package core
 
 import (
 	"image"
-	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 // ---------------- states ----------------
@@ -62,8 +60,6 @@ const (
 
 	playerSpriteSheetPath = "../assets/GideonGraves.png"
 )
-
-var playerSpriteSheet *ebiten.Image
 
 func InitPlayerAnimations() map[int]*Animation {
 	animations := make(map[int]*Animation)
@@ -285,12 +281,6 @@ func InitPlayerAnimations() map[int]*Animation {
 		Looping:              false,
 	}
 
-	var err error
-	playerSpriteSheet, _, err = ebitenutil.NewImageFromFile(playerSpriteSheetPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	return animations
 }
 
@@ -356,7 +346,7 @@ func (player *PlayerRuntime) DrawPlayerAnimation(screen *ebiten.Image) {
 	frameY := player.Animations[currState].SpriteSheetYPosition * frameHeight_minimum
 
 	rect := image.Rect(frameX, frameY, frameX+width, frameY+height)
-	subImage := playerSpriteSheet.SubImage(rect).(*ebiten.Image)
+	subImage := player.img.SubImage(rect).(*ebiten.Image)
 
 	op := &ebiten.DrawImageOptions{}
 

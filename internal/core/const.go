@@ -1,6 +1,8 @@
 // internal/core/player_runtime.go
 package core
 
+import "github.com/hajimehoshi/ebiten/v2"
+
 // ========================= player runtime =========================
 type Physics struct {
 	VelX, VelY   float64 // current velocity of the object
@@ -65,6 +67,7 @@ type Camera struct {
 
 // ---------------- player runtime ----------------
 type PlayerRuntime struct {
+	img *ebiten.Image
 	// player state and animations
 	State         PlayerState
 	PreviousState PlayerState

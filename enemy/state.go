@@ -1,10 +1,7 @@
 package enemy
 
-// EnemyStateType represents the current behavioral state of the enemy
-type EnemyStateType int
-
 const (
-	StateIdle EnemyStateType = iota
+	StateIdle int = iota
 	StatePatrolling
 	StateHunting      // Actively tracking player
 	StateFleeing      // Running away (health critical)
@@ -82,12 +79,12 @@ func (s *EnemyState) IsEnemyGrounded() bool {
 	return s.Current != StateJumping && s.Current != StateFalling
 }
 
-func (s *EnemyState) IsEnemyState(state EnemyStateType) bool {
+func (s *EnemyState) IsEnemyState(state int) bool {
 	return s.Current == state
 }
 
 // Setting Enemy State
-func (s *EnemyState) SetEnemyState(newState EnemyStateType) {
+func (s *EnemyState) SetEnemyState(newState int) {
 	s.Previous = s.Current
 	s.Current = newState
 }
@@ -152,6 +149,6 @@ func (s *EnemyState) CanEnemyEnterBerserk() bool {
 	return s.Current != StateDead && s.Current != StateResting && s.Current != StateFleeing && s.Current != StateFalling && s.Current != StateJumping && s.Current != StateAttacking && s.Current != StateDefending
 }
 
-func (s *EnemyState) GetEnemyState() EnemyStateType {
+func (s *EnemyState) GetEnemyState() int {
 	return s.Current
 }
