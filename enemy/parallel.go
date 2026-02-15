@@ -49,13 +49,16 @@ func (em *EnemyManager) FindEnemyPosition(enemy EnemyRuntime) core.Position {
 func (em *ParallelEnemyManager) AddEnemyToLevel(level []core.Platform) {
 	// find position of enemy on the map
 	fmt.Println("Adding enemies to level")
+	fmt.Println(em.EnemyManager)
 	if em == nil || em.EnemyManager == nil {
 		fmt.Println("Enemy Manager is nil")
 		return
 	}
-	for _, enemyManager := range em.EnemyManager {
-		for _, enemy := range enemyManager.Enemies {
-			fmt.Println("Enemy ID: ", enemy.ID, " Enemy Name: ", enemy.Name)
+
+	for _, platform := range level {
+		if platform.TileInfo.TileType == core.EnemyBasic {
+			// 	em.EnemyManager[0].Enemies = append(em.EnemyManager[0].Enemies, em.EnemyManager[0].InitEnemy())
+			fmt.Println("Enemy Basic Found at: ", platform.X, platform.Y)
 		}
 	}
 }

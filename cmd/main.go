@@ -49,6 +49,10 @@ func (g *Game) loadLevel() {
 		core.WorldInit()
 		g.Level = g.player.LoadLevel(g.LevelData)
 		for i := range g.Level {
+			if g.Level[i].TileInfo.TileType == core.EnemyBasic {
+				// we are now registering the enemy basic tile to the quadtree
+				continue
+			}
 			g.DynamicQuadtree.Insert(&g.Level[i])
 		}
 		g.ParallelEnemyManager.AddEnemyToLevel(g.Level)
