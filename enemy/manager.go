@@ -1,16 +1,10 @@
 package enemy
 
-import (
-	"github.com/hajimehoshi/ebiten/v2"
-)
-
 // EnemyManager coordinates all enemies, parties, and shared learning
 type EnemyManager struct {
-	img          *ebiten.Image
-	Animations   map[int]*Animation
-	Enemies      []EnemyRuntime
-	PartyManager *PartyManager
-	NextID       int
+	ID      string
+	Enemies []EnemyRuntime
+	nextID  int // internal counter for generating enemy IDs
 
 	// Spawn configuration
 	MaxEnemies      int
@@ -22,4 +16,21 @@ type EnemyManager struct {
 	TotalDeaths      int
 	TotalDamageDealt float64
 	TotalDamageTaken float64
+}
+
+func (em *EnemyManager) InitEnemyManager(id string) EnemyManager {
+	return EnemyManager{
+		ID: id,
+		// 	img:              core.LoadImage(enemySpriteSheetPath),
+		// 	Animations:       InitEnemyAnimations(),
+		Enemies:          []EnemyRuntime{},
+		nextID:           0,
+		MaxEnemies:       10,
+		spawnCoolDown:    0,
+		CurrentCoolDown:  0,
+		TotalKills:       0,
+		TotalDeaths:      0,
+		TotalDamageDealt: 0,
+		TotalDamageTaken: 0,
+	}
 }

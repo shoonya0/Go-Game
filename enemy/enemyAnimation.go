@@ -1,10 +1,7 @@
 package enemy
 
 import (
-	"log"
-
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 // image dimensions
@@ -39,9 +36,9 @@ type Animation struct {
 	Looping              bool    // true if the animation should loop
 }
 
-func InitEnemyAnimations() map[int]*Animation {
-	animations := make(map[int]*Animation)
-	animations[int(StateIdle)] = &Animation{
+func InitEnemyAnimations() map[int]Animation {
+	animations := make(map[int]Animation)
+	animations[int(StateIdle)] = Animation{
 		CurrentState:         StateIdle,
 		SpriteSheetYPosition: 0,
 		TotalFrames:          4,
@@ -53,7 +50,7 @@ func InitEnemyAnimations() map[int]*Animation {
 		Looping:              true,
 	}
 	// walking
-	animations[int(StatePatrolling)] = &Animation{
+	animations[int(StatePatrolling)] = Animation{
 		CurrentState:         StatePatrolling,
 		SpriteSheetYPosition: 2,
 		TotalFrames:          5,
@@ -65,7 +62,7 @@ func InitEnemyAnimations() map[int]*Animation {
 		Looping:              true,
 	}
 	// running
-	animations[int(StateHunting)] = &Animation{
+	animations[int(StateHunting)] = Animation{
 		CurrentState:         StateHunting,
 		SpriteSheetYPosition: 4,
 		TotalFrames:          8,
@@ -76,7 +73,7 @@ func InitEnemyAnimations() map[int]*Animation {
 		AnimationSpeed:       10,
 		Looping:              true,
 	}
-	animations[int(StateJumping)] = &Animation{
+	animations[int(StateJumping)] = Animation{
 		CurrentState:         StateJumping,
 		SpriteSheetYPosition: 10,
 		TotalFrames:          3,
@@ -87,7 +84,7 @@ func InitEnemyAnimations() map[int]*Animation {
 		AnimationSpeed:       10,
 		Looping:              false,
 	}
-	animations[int(StateFalling)] = &Animation{
+	animations[int(StateFalling)] = Animation{
 		CurrentState:         StateFalling,
 		SpriteSheetYPosition: 10,
 		TotalFrames:          1,
@@ -98,7 +95,7 @@ func InitEnemyAnimations() map[int]*Animation {
 		AnimationSpeed:       5,
 		Looping:              true,
 	}
-	animations[int(StateLanding)] = &Animation{
+	animations[int(StateLanding)] = Animation{
 		CurrentState:         StateLanding,
 		SpriteSheetYPosition: 10,
 		TotalFrames:          3,
@@ -122,7 +119,7 @@ func InitEnemyAnimations() map[int]*Animation {
 	// 	Looping:              false,
 	// }
 
-	animations[int(StateAttacking)] = &Animation{
+	animations[int(StateAttacking)] = Animation{
 		CurrentState:         StateAttacking,
 		SpriteSheetYPosition: 19,
 		TotalFrames:          8,
@@ -134,7 +131,7 @@ func InitEnemyAnimations() map[int]*Animation {
 		Looping:              false,
 	}
 
-	animations[int(StateDefending)] = &Animation{
+	animations[int(StateDefending)] = Animation{
 		CurrentState:         StateDefending,
 		SpriteSheetYPosition: 21,
 		TotalFrames:          8,
@@ -147,7 +144,7 @@ func InitEnemyAnimations() map[int]*Animation {
 	}
 
 	// animation yet to make
-	animations[int(StateDead)] = &Animation{
+	animations[int(StateDead)] = Animation{
 		CurrentState:         StateDead,
 		SpriteSheetYPosition: 7,
 		TotalFrames:          6,
@@ -156,12 +153,6 @@ func InitEnemyAnimations() map[int]*Animation {
 		FrameTimer:           0,
 		AnimationSpeed:       1,
 		Looping:              false,
-	}
-
-	var err error
-	enemySpriteSheet, _, err = ebitenutil.NewImageFromFile(enemySpriteSheetPath)
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	return animations

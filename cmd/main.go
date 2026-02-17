@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+
 	"player/enemy"
 	"player/internal/core"
 	"player/internal/system"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 const (
@@ -27,7 +27,6 @@ type Game struct {
 	// ------ Entities ------
 	player *core.PlayerRuntime
 
-	enemyImg             *ebiten.Image               // enemy image
 	ParallelEnemyManager *enemy.ParallelEnemyManager // enemy manager
 
 	Background      *ebiten.Image
@@ -100,21 +99,12 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 	// return 640, 480
 }
 
-func LoadImage(path string) *ebiten.Image {
-	img, _, err := ebitenutil.NewImageFromFile(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return img
-}
-
 // run Once
 func main() {
-	backGroundData := LoadImage(core.Background_1)
-	levelData := LoadImage(core.Level_1)
-	tileData := LoadImage(core.Tileset)
-	img := LoadImage(playerSpriteSheetPath)
-	enemyImg := LoadImage(playerSpriteSheetPath)
+	backGroundData := core.LoadImage(core.Background_1)
+	levelData := core.LoadImage(core.Level_1)
+	tileData := core.LoadImage(core.Tileset)
+	img := core.LoadImage(playerSpriteSheetPath)
 
 	var parallelEnemyManager = enemy.DefaultParallelConfig()
 	fmt.Println("Parallel Enemy Manager will create ", parallelEnemyManager.WorkerCount, "workers")
@@ -126,7 +116,6 @@ func main() {
 			return &p
 		}(),
 
-		enemyImg:             enemyImg,
 		ParallelEnemyManager: &parallelEnemyManager,
 
 		Background:      backGroundData,

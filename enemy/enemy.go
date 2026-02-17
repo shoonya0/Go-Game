@@ -1,6 +1,7 @@
 package enemy
 
 import (
+	"fmt"
 	"player/internal/core"
 )
 
@@ -11,7 +12,7 @@ type EnemyState struct {
 
 type EnemyRuntime struct {
 	// For Identification
-	ID   int
+	ID   string
 	Name string
 
 	// Core Stats (0-100 scale)
@@ -29,9 +30,10 @@ type EnemyRuntime struct {
 	Scale   float64 // sprite scale
 
 	// State Machine
-	State       EnemyState
-	PartyStatus PartyStatus
-	Grounded    bool // true if the enemy is touching the ground
+	CurrAnimFrame int
+	State         EnemyState
+	PartyStatus   PartyStatus
+	Grounded      bool // true if the enemy is touching the ground
 
 	// Berserk Mode
 	BerserkActive   bool    // true if the enemy is in berserk mode
@@ -61,16 +63,9 @@ const (
 	RestMinDuration = 3.0 // minimum seconds to rest
 )
 
-var id int = 0
-
-func IDGenerator() int {
-	id++
-	return id
-}
-
-func (em *EnemyManager) InitEnemy() EnemyRuntime {
+func (em *EnemyManager) InitEnemy(pos core.Position) EnemyRuntime {
 	return EnemyRuntime{
-		ID:           IDGenerator(),
+		ID:           em.generateEnemyID(),
 		Name:         "Gideon Graves",
 		Health:       100,
 		MaxHealth:    100,
@@ -79,8 +74,8 @@ func (em *EnemyManager) InitEnemy() EnemyRuntime {
 		Strength:     100,
 		BaseStrength: 100,
 		Pos: core.Position{
-			X: 100,
-			Y: 100,
+			X: pos.X,
+			Y: pos.Y,
 		},
 		Physics: core.Physics{
 			VelX:         0,
@@ -104,4 +99,12 @@ func (em *EnemyManager) InitEnemy() EnemyRuntime {
 		BerserkDuration: 0,
 		BeserkCoolDown:  0,
 	}
+}
+
+func (em *EnemyManager) generateEnemyID() string {
+	em.nextID++
+	if em.ID != "" {
+		return fmt.Sprintf("%s-E-%d", em.ID, em.nextID)
+	}
+	return fmt.Sprintf("E-%d", em.nextID)
 }
