@@ -19,11 +19,16 @@ type ParallelEnemyManager struct {
 	Animations    map[int]Animation
 
 	PartyManager PartyManager
-	// parrallel processing
-	wg          sync.WaitGroup // genrally used for waiting for all the workers to finish their work
-	mutex       sync.Mutex     // generally used for synchronization of the enemy manager
+
+	// parallel processing
+	wg          sync.WaitGroup
+	mutex       sync.Mutex
 	WorkerCount int
-	// ConcurrentBrain *ConcurrentQLearningBrain
+
+	// worker pool channels
+	workSignal []chan struct{} // per-worker channel to signal "start updating"
+	done       chan struct{}   // shared channel workers use to signal "done"
+	quit       chan struct{}   // close this to shut down all workers
 }
 
 // DefaultParallelConfig returns sensible defaults
@@ -40,23 +45,25 @@ func DefaultParallelConfig() ParallelEnemyManager {
 		managers[i] = base.InitEnemyManager(fmt.Sprintf("EM-%d", i))
 	}
 
-	// we do not want to copy our mutex and wait group so we make it a pointer
 	return ParallelEnemyManager{
 		EnemyManager:  managers,
 		enemyBasicImg: core.LoadImage(enemySpriteSheetPath),
 		Animations:    InitEnemyAnimations(),
 		PartyManager:  InitPartyManager(),
-		WorkerCount:   workerCount, // this is for direct machine not for docker
-
+		WorkerCount:   workerCount,
 	}
 }
 
-func (p *ParallelEnemyManager) Shutdown() {
-	p.EnemyManager = nil
+// Shutdown signals all persistent workers to exit and waits for them to finish.
+func (em *ParallelEnemyManager) Shutdown() {
+	if em.quit != nil {
+		close(em.quit)
+		em.wg.Wait()
+	}
+	em.EnemyManager = nil
 }
 
 func (em *ParallelEnemyManager) AddEnemyToLevel(level []core.Platform) {
-	// find position of enemy on the map
 	fmt.Println("Adding enemies to level")
 	if em == nil {
 		fmt.Println("Enemy Manager is nil")
@@ -70,15 +77,65 @@ func (em *ParallelEnemyManager) AddEnemyToLevel(level []core.Platform) {
 	for _, platform := range level {
 		if isEnemy(platform.TileInfo.TileType) {
 			// 2. if found the enemy put it into the enemy manager accordingly.
-			// This handles finding the correct manager and respecting the limit (step 3)
-			em.enemySpawnPos(platform.X, platform.Y)
+			em.spawnEnemy(platform.X, platform.Y)
 		}
 	}
 
-	// 4. call an ManageEnemiesWorkers and make gorotine for managing different EnemyManager using waitGroup and mutex syncing
-	for i := range em.EnemyManager {
+	// 3. Start persistent worker goroutines (once, at level load)
+	em.startWorkers()
+}
+
+// startWorkers spawns one long-lived goroutine per EnemyManager.
+// Each worker blocks on its own channel waiting for a signal to update.
+func (em *ParallelEnemyManager) startWorkers() {
+	workerCount := len(em.EnemyManager)
+	em.workSignal = make([]chan struct{}, workerCount)
+	em.done = make(chan struct{}, workerCount)
+	em.quit = make(chan struct{})
+
+	for i := 0; i < workerCount; i++ {
+		em.workSignal[i] = make(chan struct{})
 		em.wg.Add(1)
-		go em.ManageEnemiesWorkers(i)
+		go em.worker(i)
+	}
+	fmt.Printf("Started %d persistent enemy workers\n", workerCount)
+}
+
+// worker is a long-lived goroutine that waits for a signal each frame.
+func (em *ParallelEnemyManager) worker(id int) {
+	defer em.wg.Done()
+
+	for {
+		select {
+		case <-em.quit:
+			return
+		case <-em.workSignal[id]:
+			em.mutex.Lock()
+			if id < len(em.EnemyManager) {
+				em.EnemyManager[id].Update()
+			}
+			em.mutex.Unlock()
+
+			em.done <- struct{}{}
+		}
+	}
+}
+
+// Update is called every frame. It signals all workers to process their
+// enemies, then waits for all of them to finish before returning.
+func (em *ParallelEnemyManager) Update() {
+	if em.workSignal == nil {
+		return
+	}
+
+	// Signal all workers to start
+	for i := range em.workSignal {
+		em.workSignal[i] <- struct{}{}
+	}
+
+	// Wait for all workers to finish this frame
+	for range em.workSignal {
+		<-em.done
 	}
 }
 
@@ -91,38 +148,17 @@ func isEnemy(t core.TileType) bool {
 	}
 }
 
-func (em *ParallelEnemyManager) enemySpawnPos(x, y float64) {
-	// 3. each emyManager should oversee atmost 10 enemy as of now as given in mxEnInManager
-	// Try to add to existing managers first
+func (em *ParallelEnemyManager) spawnEnemy(x, y float64) {
 	for i := range em.EnemyManager {
 		if len(em.EnemyManager[i].Enemies) < mxEnInManager {
 			em.EnemyManager[i].Enemies = append(em.EnemyManager[i].Enemies, em.EnemyManager[i].InitEnemy(core.Position{X: x, Y: y}))
-			fmt.Println("Added enemy to manager: ", em.EnemyManager[i].ID, " with ID: ", em.EnemyManager[i].Enemies[len(em.EnemyManager[i].Enemies)-1].ID)
 			return
 		}
 	}
 
-	// If all managers are full or none exist, create a new one
 	var base EnemyManager
 	newMgrID := fmt.Sprintf("EM-%d", len(em.EnemyManager))
 	newMgr := base.InitEnemyManager(newMgrID)
 	newMgr.Enemies = append(newMgr.Enemies, newMgr.InitEnemy(core.Position{X: x, Y: y}))
 	em.EnemyManager = append(em.EnemyManager, newMgr)
-}
-
-func (em *ParallelEnemyManager) ManageEnemiesWorkers(workerID int) {
-	defer em.wg.Done()
-
-	// 4. ... mutex syncing
-	// Use mutex to protect access to shared resources if needed, or to synchronize start.
-	// Here we lock briefly to demonstrate syncing as requested.
-	em.mutex.Lock()
-	if workerID < len(em.EnemyManager) {
-		// Example: Logging or initialization requiring sync
-		// fmt.Printf("Worker %d managing %d enemies\n", workerID, len(em.EnemyManager[workerID].Enemies))
-	}
-	em.mutex.Unlock()
-
-	// Actual management logic would go here (e.g., update loop)
-	// For now, this task only requested the structure.
 }

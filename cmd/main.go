@@ -66,6 +66,9 @@ func (g *Game) Update() error {
 
 	g.loadLevel()
 
+	// Update enemies
+	g.ParallelEnemyManager.Update()
+
 	// poll input -> call another function to handle input
 	system.HandleInput(&g.input)
 

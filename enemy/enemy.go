@@ -108,3 +108,7 @@ func (em *EnemyManager) generateEnemyID() string {
 	}
 	return fmt.Sprintf("E-%d", em.nextID)
 }
+
+func (e *EnemyRuntime) Update() {
+	// TODO: Add enemy update logic here (AI, Physics, etc.)
+}

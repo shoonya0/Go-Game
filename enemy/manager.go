@@ -34,3 +34,9 @@ func (em *EnemyManager) InitEnemyManager(id string) EnemyManager {
 		TotalDamageTaken: 0,
 	}
 }
+
+func (em *EnemyManager) Update() {
+	for i := range em.Enemies {
+		em.Enemies[i].Update()
+	}
+}
