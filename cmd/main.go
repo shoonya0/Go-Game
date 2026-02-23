@@ -94,6 +94,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// draw player animation
 	g.player.DrawPlayerAnimation(screen)
 	// draw UI
+
+	// draw enemies
+	g.ParallelEnemyManager.DrawEnemies(screen, g.player.Camera)
 }
 
 // run automatically every frame
@@ -109,9 +112,6 @@ func main() {
 	tileData := core.LoadImage(core.Tileset)
 	img := core.LoadImage(playerSpriteSheetPath)
 
-	var parallelEnemyManager = enemy.DefaultParallelConfig()
-	fmt.Println("Parallel Enemy Manager will create ", parallelEnemyManager.WorkerCount, "workers")
-
 	game := &Game{
 		state: core.ModeMenu,
 		player: func() *core.PlayerRuntime {
@@ -119,7 +119,7 @@ func main() {
 			return &p
 		}(),
 
-		ParallelEnemyManager: &parallelEnemyManager,
+		ParallelEnemyManager: nil,
 
 		Background:      backGroundData,
 		LevelData:       levelData,
@@ -130,6 +130,11 @@ func main() {
 		Level:           []core.Platform{},
 		DynamicQuadtree: core.NewDynamicQuadtree(core.AABB{X: 0, Y: 0, Width: float64(core.Level_1_Width), Height: float64(core.Level_1_Height)}),
 	}
+
+	var parallelEnemyManager = enemy.DefaultParallelConfig(game.player, game.DynamicQuadtree)
+	fmt.Println("Parallel Enemy Manager will create ", parallelEnemyManager.WorkerCount, "workers")
+
+	game.ParallelEnemyManager = &parallelEnemyManager
 
 	// ebiten.SetWindowSize(640, 480) // 640, 480
 	ebiten.SetWindowSize(screenWidth, screenHeight)

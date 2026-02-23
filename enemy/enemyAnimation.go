@@ -1,6 +1,9 @@
 package enemy
 
 import (
+	"image"
+	"player/internal/core"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -156,4 +159,47 @@ func InitEnemyAnimations() map[int]Animation {
 	}
 
 	return animations
+}
+
+func (e *EnemyRuntime) DrawEnemyAnimation(screen *ebiten.Image, img *ebiten.Image, animations *map[int]Animation, camera core.Camera) {
+	bounds := e.GetBounds()
+
+	// Look up animation for current state, fallback to idle
+	currState := e.State.Current
+	anim, ok := (*animations)[currState]
+	if !ok {
+		anim = (*animations)[StateIdle]
+	}
+
+	width := anim.FrameWidth
+	height := anim.FrameHeight
+	frameX := e.CurrAnimFrame * width
+	frameY := anim.SpriteSheetYPosition * frameHeight_minimum
+
+	rect := image.Rect(frameX, frameY, frameX+width, frameY+height)
+	subImage := img.SubImage(rect).(*ebiten.Image)
+
+	op := &ebiten.DrawImageOptions{}
+
+	if e.FlipX {
+		// Flip horizontally
+		op.GeoM.Scale(-e.Scale, e.Scale)
+		// Translate back because flipping moves the image to the left of the axis
+		op.GeoM.Translate(float64(width)*e.Scale, 0)
+	} else {
+		op.GeoM.Scale(e.Scale, e.Scale)
+	}
+
+	// Center horizontally on collision box
+	drawX := bounds.X + (bounds.Width-float64(width)*e.Scale)/2
+	// Align bottom to collision box bottom
+	drawY := bounds.Y + (bounds.Height - float64(height)*e.Scale)
+
+	// Apply camera offset
+	drawX -= camera.Pos.X
+	drawY -= camera.Pos.Y
+
+	op.GeoM.Translate(drawX, drawY)
+
+	screen.DrawImage(subImage, op)
 }

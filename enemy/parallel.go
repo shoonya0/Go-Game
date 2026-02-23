@@ -36,7 +36,7 @@ type ParallelEnemyManager struct {
 }
 
 // DefaultParallelConfig returns sensible defaults
-func DefaultParallelConfig() ParallelEnemyManager {
+func DefaultParallelConfig(player *core.PlayerRuntime, qt *core.DynamicQuadtree) ParallelEnemyManager {
 	workerCount := runtime.NumCPU() - 1
 	if _, err := os.Stat("/.dockerenv"); err == nil {
 		fmt.Println("Running in Docker")
@@ -55,6 +55,8 @@ func DefaultParallelConfig() ParallelEnemyManager {
 		Animations:    InitEnemyAnimations(),
 		PartyManager:  InitPartyManager(),
 		WorkerCount:   workerCount,
+		framePlayer:   player,
+		frameQt:       qt,
 	}
 }
 
@@ -168,4 +170,12 @@ func (em *ParallelEnemyManager) spawnEnemy(x, y float64) {
 	newMgr := base.InitEnemyManager(newMgrID)
 	newMgr.Enemies = append(newMgr.Enemies, newMgr.InitEnemy(core.Position{X: x, Y: y}))
 	em.EnemyManager = append(em.EnemyManager, newMgr)
+}
+
+func (em *ParallelEnemyManager) DrawEnemies(screen *ebiten.Image, camera core.Camera) {
+	for _, enemyManager := range em.EnemyManager {
+		for i := range enemyManager.Enemies {
+			enemyManager.Enemies[i].DrawEnemyAnimation(screen, em.enemyBasicImg, &em.Animations, camera)
+		}
+	}
 }

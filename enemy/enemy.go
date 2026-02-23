@@ -78,6 +78,7 @@ func (em *EnemyManager) InitEnemy(pos core.Position) EnemyRuntime {
 		BaseIQ:       100,
 		Strength:     100,
 		BaseStrength: 100,
+		Scale:        1.0,
 		Pos: core.Position{
 			X: pos.X,
 			Y: pos.Y,
@@ -95,7 +96,7 @@ func (em *EnemyManager) InitEnemy(pos core.Position) EnemyRuntime {
 			GravityScale: EnemyGravityScale,
 		},
 		State: EnemyState{
-			Current:  StateIdle,
+			Current:  StateFalling,
 			Previous: StateIdle,
 		},
 		PartyStatus:     PartySolo,
@@ -179,6 +180,7 @@ func (e *EnemyRuntime) decideAction(player *core.PlayerRuntime) (inputX float64,
 // It mirrors the structure of core.UpdatePlayer but replaces InputState with
 // the 3-tier AI from decideAction.
 func (e *EnemyRuntime) Update(player *core.PlayerRuntime, qt *core.DynamicQuadtree) {
+	e.State.Previous = e.State.Current
 	// 1. Guard: dead enemies don't simulate
 	if e.State.IsEnemyDead() {
 		return
@@ -331,5 +333,11 @@ func (e *EnemyRuntime) Update(player *core.PlayerRuntime, qt *core.DynamicQuadtr
 	// 15. Update spatial index (auto-inserts on first call)
 	if qt != nil {
 		qt.Update(e)
+	}
+
+	if e.State.Previous != e.State.Current {
+		e.CurrAnimFrame = 0
+	} else {
+		e.CurrAnimFrame++
 	}
 }
