@@ -1,5 +1,7 @@
 package enemy
 
+import "player/internal/core"
+
 // EnemyManager coordinates all enemies, parties, and shared learning
 type EnemyManager struct {
 	ID      string
@@ -35,8 +37,8 @@ func (em *EnemyManager) InitEnemyManager(id string) EnemyManager {
 	}
 }
 
-func (em *EnemyManager) Update() {
+func (em *EnemyManager) Update(player *core.PlayerRuntime, qt *core.DynamicQuadtree) {
 	for i := range em.Enemies {
-		em.Enemies[i].Update()
+		em.Enemies[i].Update(player, qt)
 	}
 }

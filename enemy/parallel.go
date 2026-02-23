@@ -29,6 +29,10 @@ type ParallelEnemyManager struct {
 	workSignal []chan struct{} // per-worker channel to signal "start updating"
 	done       chan struct{}   // shared channel workers use to signal "done"
 	quit       chan struct{}   // close this to shut down all workers
+
+	// per-frame parameters set by main goroutine before signalling workers
+	framePlayer *core.PlayerRuntime
+	frameQt     *core.DynamicQuadtree
 }
 
 // DefaultParallelConfig returns sensible defaults
@@ -112,10 +116,9 @@ func (em *ParallelEnemyManager) worker(id int) {
 		case <-em.workSignal[id]:
 			em.mutex.Lock()
 			if id < len(em.EnemyManager) {
-				em.EnemyManager[id].Update()
+				em.EnemyManager[id].Update(em.framePlayer, em.frameQt)
 			}
 			em.mutex.Unlock()
-
 			em.done <- struct{}{}
 		}
 	}
@@ -123,10 +126,14 @@ func (em *ParallelEnemyManager) worker(id int) {
 
 // Update is called every frame. It signals all workers to process their
 // enemies, then waits for all of them to finish before returning.
-func (em *ParallelEnemyManager) Update() {
+func (em *ParallelEnemyManager) Update(player *core.PlayerRuntime, qt *core.DynamicQuadtree) {
 	if em.workSignal == nil {
 		return
 	}
+
+	// Store frame params before workers read them (main goroutine owns these writes)
+	em.framePlayer = player
+	em.frameQt = qt
 
 	// Signal all workers to start
 	for i := range em.workSignal {

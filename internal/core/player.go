@@ -60,7 +60,7 @@ func InitPlayer(img *ebiten.Image) PlayerRuntime {
 	}
 }
 
-func approach(current, target, maxDelta float64) float64 {
+func Approach(current, target, maxDelta float64) float64 {
 	if current < target {
 		current += maxDelta
 		if current > target {
@@ -78,7 +78,7 @@ func approach(current, target, maxDelta float64) float64 {
 	return current
 }
 
-func reduceLeft(current, target, maxDelta float64) float64 {
+func ReduceLeft(current, target, maxDelta float64) float64 {
 	if current < target {
 		current += maxDelta
 		if current > target {
@@ -89,7 +89,7 @@ func reduceLeft(current, target, maxDelta float64) float64 {
 	return current
 }
 
-func reduceRight(current, target, maxDelta float64) float64 {
+func ReduceRight(current, target, maxDelta float64) float64 {
 	if current > target {
 		current -= maxDelta
 		if current < target {
@@ -177,12 +177,12 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 		// Decelerate from run speed to normal max speed
 		step = decX
 		if player.Physics.VelX > 0 {
-			player.Physics.VelX = reduceRight(player.Physics.VelX, player.Physics.MaxSpeed, step)
+			player.Physics.VelX = ReduceRight(player.Physics.VelX, player.Physics.MaxSpeed, step)
 		} else if player.Physics.VelX < 0 {
-			player.Physics.VelX = reduceLeft(player.Physics.VelX, -player.Physics.MaxSpeed, step)
+			player.Physics.VelX = ReduceLeft(player.Physics.VelX, -player.Physics.MaxSpeed, step)
 		}
 	} else {
-		player.Physics.VelX = approach(player.Physics.VelX, targetVX, step)
+		player.Physics.VelX = Approach(player.Physics.VelX, targetVX, step)
 	}
 
 	// Y Physics (Gravity & Jumping)
@@ -195,7 +195,6 @@ func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuad
 	}
 
 	// Integration & Collision Resolution
-
 	// Apply X
 	player.Pos.X += player.Physics.VelX * dt
 	if qt != nil {
