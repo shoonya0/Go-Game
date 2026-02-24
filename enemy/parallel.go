@@ -119,6 +119,7 @@ func (em *ParallelEnemyManager) worker(id int) {
 			em.mutex.Lock()
 			if id < len(em.EnemyManager) {
 				em.EnemyManager[id].Update(em.framePlayer, em.frameQt)
+				em.EnemyManager[id].UpdateAnimations(em.Animations)
 			}
 			em.mutex.Unlock()
 			em.done <- struct{}{}

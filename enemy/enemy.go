@@ -34,6 +34,7 @@ type EnemyRuntime struct {
 
 	// State Machine
 	CurrAnimFrame  int
+	FrameTimer     float64 // per-enemy animation timer (seconds accumulated)
 	State          EnemyState
 	PartyStatus    PartyStatus
 	Grounded       bool    // true if the enemy is touching the ground
@@ -335,9 +336,4 @@ func (e *EnemyRuntime) Update(player *core.PlayerRuntime, qt *core.DynamicQuadtr
 		qt.Update(e)
 	}
 
-	if e.State.Previous != e.State.Current {
-		e.CurrAnimFrame = 0
-	} else {
-		e.CurrAnimFrame++
-	}
 }

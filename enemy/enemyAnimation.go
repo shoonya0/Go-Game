@@ -161,6 +161,61 @@ func InitEnemyAnimations() map[int]Animation {
 	return animations
 }
 
+// UpdateEnemyAnimation advances the animation frame for this enemy based on
+// time accumulation. Uses per-enemy FrameTimer (not the shared Animation.FrameTimer)
+// because the animation map is shared across all enemies.
+// Mirrors PlayerRuntime.UpdateAnimation (internal/core/animation.go:287-328).
+func (e *EnemyRuntime) UpdateEnemyAnimation(animations *map[int]Animation) {
+	tps := float64(ebiten.TPS())
+	if tps <= 0 {
+		tps = 60
+	}
+	dt := 1.0 / tps
+
+	currState := e.State.Current
+	anim, ok := (*animations)[currState]
+	if !ok {
+		anim = (*animations)[StateIdle]
+	}
+
+	// On state change: reset to animation's start frame
+	if e.State.Previous != e.State.Current {
+		e.CurrAnimFrame = anim.AnimStartFrame
+		e.FrameTimer = 0
+	}
+
+	timePerFrame := 1.0 / anim.AnimationSpeed
+	e.FrameTimer += dt
+
+	for e.FrameTimer >= timePerFrame {
+		e.FrameTimer -= timePerFrame
+		e.CurrAnimFrame++
+
+		if e.CurrAnimFrame >= anim.AnimStartFrame+anim.TotalFrames {
+			if anim.Looping {
+				e.CurrAnimFrame = anim.AnimStartFrame
+			} else {
+				// Non-looping end behavior by state
+				if e.State.IsEnemyState(StateLanding) ||
+					e.State.IsEnemyAttacking() ||
+					e.State.IsEnemyDefending() {
+					e.State.SetEnemyState(StateIdle)
+					e.CurrAnimFrame = 0
+					e.FrameTimer = 0
+					return
+				} else if e.State.IsEnemyJumping() {
+					e.State.SetEnemyState(StateFalling)
+					e.CurrAnimFrame = anim.AnimStartFrame
+					e.FrameTimer = 0
+					return
+				}
+				// Dead / other: hold on last frame
+				e.CurrAnimFrame = anim.AnimStartFrame + anim.TotalFrames - 1
+			}
+		}
+	}
+}
+
 func (e *EnemyRuntime) DrawEnemyAnimation(screen *ebiten.Image, img *ebiten.Image, animations *map[int]Animation, camera core.Camera) {
 	bounds := e.GetBounds()
 

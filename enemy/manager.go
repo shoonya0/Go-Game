@@ -42,3 +42,9 @@ func (em *EnemyManager) Update(player *core.PlayerRuntime, qt *core.DynamicQuadt
 		em.Enemies[i].Update(player, qt)
 	}
 }
+
+func (em *EnemyManager) UpdateAnimations(animations map[int]Animation) {
+	for i := range em.Enemies {
+		em.Enemies[i].UpdateEnemyAnimation(&animations)
+	}
+}
