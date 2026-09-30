@@ -1,7 +1,9 @@
 package core
 
 import (
+	"encoding/json"
 	"image"
+	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -34,9 +36,10 @@ const (
 	TopTileXStart               = 0
 	BotTileXStart               = TotTopTilesWidth
 
-	// level 1 constants
-	Level_1      = "../assets/Level_1.png"
-	Background_1 = "../assets/LBackground_3.png"
+	// level constants
+	LevelFile        = "../assets/level_1.json" // embedded JSON level bundle
+	DefaultLevelName = "level0"                 // key to load from the bundle
+	Background_1     = "../assets/LBackground_3.png"
 
 	// ---------------- level constants ----------------
 	LevelTileWidth      = 60      // before it was 40
@@ -52,11 +55,31 @@ type Tile struct {
 	TileType TileType // eg:= grass ,ice ,sand etc.
 }
 
+// CheckpointCode is the grid value that marks a (non-solid) respawn point.
+const CheckpointCode = 9
+
 // ---------------- platform ----------------
 type Platform struct {
 	X, Y, Width, Height float64 // these are the world coordinates
 	TileInfo            Tile    // this is the tile information
 	DrawOffsetY         float64 // this is the draw offset for the tile
+}
+
+// Checkpoint is a respawn location the player activates by touching it.
+type Checkpoint struct {
+	Pos Position
+}
+
+// Bounds returns the checkpoint's one-tile activation zone.
+func (c Checkpoint) Bounds() AABB {
+	return AABB{X: c.Pos.X, Y: c.Pos.Y, Width: LevelTileWidth, Height: LevelTileHeight}
+}
+
+// Level is the built, ready-to-use result of loading a level: its solid
+// platforms and its checkpoints.
+type Level struct {
+	Platforms   []Platform
+	Checkpoints []Checkpoint
 }
 
 var Tiles map[TileType][2]Tile
@@ -89,32 +112,24 @@ func (p *Platform) GetBounds() AABB {
 	}
 }
 
-func getTileType(r, g, b uint32) TileType {
-	// larva color code -> 255 ,0 ,0
-	// grass color code -> 0 ,255 ,0
-	// water color code -> 0 ,0 ,255
-	// stone color code -> 255 ,255 ,0
-	switch {
-	case r == 255 && g == 0 && b == 0:
-		return Larva
-	case r == 0 && g == 255 && b == 0:
-		return Grass
-	case r == 0 && g == 0 && b == 255:
-		return Water
-	case r == 255 && g == 255 && b == 0:
-		return Rock
-	default:
-		return Empty
+// tileTypeFromCode maps a JSON grid value to a TileType. 0 (and any value
+// outside the valid range) is Empty; codes 1..N select the Nth entry of
+// tileRowOrder, so 1=water, 2=grass, 3=sand, 4=rock, 5=metal, 6=ice, 7=wood,
+// 8=larva.
+func tileTypeFromCode(code int) TileType {
+	if code >= 1 && code <= len(tileRowOrder) {
+		return tileRowOrder[code-1]
 	}
+	return Empty
 }
 
-func getColor(x, y int, levelData *ebiten.Image) (uint32, uint32, uint32) {
-	color := levelData.At(x, y)
-	r, g, b, _ := color.RGBA()
-	r >>= 8
-	g >>= 8
-	b >>= 8
-	return r, g, b
+// cellAt reads a grid cell, returning 0 (empty) for any out-of-range coordinate
+// so callers can probe neighbours without bounds-checking.
+func cellAt(grid [][]int, x, y int) int {
+	if y < 0 || y >= len(grid) || x < 0 || x >= len(grid[y]) {
+		return 0
+	}
+	return grid[y][x]
 }
 
 // tileVariantIndex maps a tile level to its index within a Tiles entry
@@ -132,7 +147,7 @@ func hasVisualOffset(t TileType) bool {
 	return t == Water || t == Grass || t == Sand
 }
 
-func getTileInfo(x, y int, tileType TileType, levelData *ebiten.Image, prevPlat Platform) Platform {
+func getTileInfo(x, y int, tileType TileType, grid [][]int, prevPlat Platform) Platform {
 	// Create the platform with basic world coordinates.
 	plat := Platform{
 		X:      float64(x * LevelTileWidth),
@@ -146,7 +161,7 @@ func getTileInfo(x, y int, tileType TileType, levelData *ebiten.Image, prevPlat 
 	}
 
 	// A tile with a solid neighbour directly above is a bottom (interior) tile.
-	if y > 0 && getTileType(getColor(x, y-1, levelData)) != Empty {
+	if y > 0 && tileTypeFromCode(cellAt(grid, x, y-1)) != Empty {
 		plat.TileInfo.TileLvl = BottomTile
 	}
 
@@ -181,25 +196,58 @@ func getTileInfo(x, y int, tileType TileType, levelData *ebiten.Image, prevPlat 
 	return plat
 }
 
-// LoadLevel decodes the level layout from the color-coded level image, returning
-// one Platform per solid pixel. WorldInit must be called before this.
-func LoadLevel(levelData *ebiten.Image) []Platform {
-	level := []Platform{}
+// levelBundle is the on-disk JSON schema: a map of level name to its grid.
+// Example: {"level0": {"grid": [[0,1,...], ...]}}.
+type levelBundle map[string]struct {
+	Grid [][]int `json:"grid"`
+}
 
+// LoadLevel reads the embedded JSON level bundle at path and builds the named
+// level. Only the base file name of path is used, so it works on native and
+// WebAssembly builds alike. WorldInit must be called before this.
+func LoadLevel(path, name string) Level {
+	data := readAsset(path)
+
+	var bundle levelBundle
+	if err := json.Unmarshal(data, &bundle); err != nil {
+		log.Fatalf("parse level %q: %v", path, err)
+	}
+
+	level, ok := bundle[name]
+	if !ok {
+		log.Fatalf("level %q not found in %q", name, path)
+	}
+	return BuildLevel(level.Grid)
+}
+
+// BuildLevel converts a grid of tile codes into a Level: one solid Platform per
+// non-empty tile cell, plus a Checkpoint per CheckpointCode cell. It is a pure
+// function of its input, so it is easy to test and reuse independently of asset
+// loading.
+func BuildLevel(grid [][]int) Level {
+	level := Level{Platforms: []Platform{}}
 	prevPlat := Platform{TileInfo: Tile{TileType: Empty}}
 
-	for y := 0; y < levelData.Bounds().Dy(); y++ {
+	for y := range grid {
 		prevPlat.TileInfo.TileType = Empty
 
-		for x := 0; x < levelData.Bounds().Dx(); x++ {
-			tileType := getTileType(getColor(x, y, levelData))
+		for x := range grid[y] {
+			code := grid[y][x]
 
-			if tileType != Empty {
-				level = append(level, getTileInfo(x, y, tileType, levelData, prevPlat))
+			if code == CheckpointCode {
+				level.Checkpoints = append(level.Checkpoints, Checkpoint{
+					Pos: Position{X: float64(x * LevelTileWidth), Y: float64(y * LevelTileHeight)},
+				})
 			}
 
-			if len(level) > 0 {
-				prevPlat = level[len(level)-1]
+			// Checkpoint cells are non-solid (code 9 maps to Empty), so no platform.
+			tileType := tileTypeFromCode(code)
+			if tileType != Empty {
+				level.Platforms = append(level.Platforms, getTileInfo(x, y, tileType, grid, prevPlat))
+			}
+
+			if len(level.Platforms) > 0 {
+				prevPlat = level.Platforms[len(level.Platforms)-1]
 			}
 			prevPlat.TileInfo.TileType = tileType
 		}
@@ -244,9 +292,22 @@ func (player *PlayerRuntime) DrawParallaxBackground(screen *ebiten.Image, backgr
 	screen.DrawImage(background, op)
 }
 
+// DrawLevel draws the solid (non-water) tiles visible in the viewport. It is
+// drawn behind the player; water is drawn afterwards by DrawWater so the player
+// appears submerged.
 func (player *PlayerRuntime) DrawLevel(screen *ebiten.Image, quadtree *DynamicQuadtree, screenWidth, screenHeight float64, tileset *ebiten.Image) {
+	player.drawTiles(screen, quadtree, screenWidth, screenHeight, tileset, false)
+}
 
-	// Define the camera viewport
+// DrawWater draws only the water tiles visible in the viewport. Call it after
+// drawing the player so water renders in front, showing submersion.
+func (player *PlayerRuntime) DrawWater(screen *ebiten.Image, quadtree *DynamicQuadtree, screenWidth, screenHeight float64, tileset *ebiten.Image) {
+	player.drawTiles(screen, quadtree, screenWidth, screenHeight, tileset, true)
+}
+
+// drawTiles renders the visible tiles of one layer: water only when water is
+// true, everything else when it is false.
+func (player *PlayerRuntime) drawTiles(screen *ebiten.Image, quadtree *DynamicQuadtree, screenWidth, screenHeight float64, tileset *ebiten.Image, water bool) {
 	viewport := AABB{
 		X:      player.Camera.Pos.X,
 		Y:      player.Camera.Pos.Y,
@@ -254,24 +315,20 @@ func (player *PlayerRuntime) DrawLevel(screen *ebiten.Image, quadtree *DynamicQu
 		Height: screenHeight,
 	}
 
-	// Retrieve visible platforms from the Quadtree
-	visibleObjects := quadtree.Retrieve(viewport)
+	scaleX := float64(LevelTileWidth) / float64(PixelTileWidth)
+	scaleY := float64(LevelTileHeight) / float64(PixelTileHeight)
 
-	// Draw visible platforms
-	for _, obj := range visibleObjects {
-		if p, ok := obj.(*Platform); ok {
-			// draw the tile image
-			op := &ebiten.DrawImageOptions{}
-			// Scale the tile image (PixelTileWidth/Height) to fit the platform size (LevelTileWidth/Height)
-			scaleX := float64(LevelTileWidth) / float64(PixelTileWidth)
-			scaleY := float64(LevelTileHeight) / float64(PixelTileHeight)
-			op.GeoM.Scale(scaleX, scaleY)
-
-			// translate is used to position the tile image on the screen
-			op.GeoM.Translate(float64(p.X-player.Camera.Pos.X), float64(p.Y+p.DrawOffsetY-player.Camera.Pos.Y))
-
-			// Draw the sub-image from the tileset using coordinates from TileInfo
-			screen.DrawImage(tileset.SubImage(image.Rect(int(p.TileInfo.X), int(p.TileInfo.Y), int(p.TileInfo.X)+PixelTileWidth, int(p.TileInfo.Y)+PixelTileHeight)).(*ebiten.Image), op)
+	for _, obj := range quadtree.Retrieve(viewport) {
+		p, ok := obj.(*Platform)
+		if !ok || (p.TileInfo.TileType == Water) != water {
+			continue
 		}
+
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Scale(scaleX, scaleY)
+		op.GeoM.Translate(p.X-player.Camera.Pos.X, p.Y+p.DrawOffsetY-player.Camera.Pos.Y)
+
+		src := image.Rect(int(p.TileInfo.X), int(p.TileInfo.Y), int(p.TileInfo.X)+PixelTileWidth, int(p.TileInfo.Y)+PixelTileHeight)
+		screen.DrawImage(tileset.SubImage(src).(*ebiten.Image), op)
 	}
 }
