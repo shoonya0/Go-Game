@@ -1,0 +1,7 @@
+.git/
+.github/
+bin/
+*.exe
+web/game.wasm
+web/wasm_exec.js
+*.md

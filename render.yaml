@@ -1,0 +1,10 @@
+# Render Blueprint — deploys the game as a Dockerized web service.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: echo-game
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /
+    autoDeploy: true

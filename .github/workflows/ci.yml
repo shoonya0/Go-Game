@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: true
+
+      # Ebitengine needs OpenGL / X11 / ALSA headers for the native build.
+      - name: Install Ebitengine system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev xorg-dev libasound2-dev
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build (native)
+        run: go build ./...
+
+      - name: Build (WebAssembly)
+        run: GOOS=js GOARCH=wasm go build -ldflags="-s -w" -o /tmp/game.wasm ./cmd
