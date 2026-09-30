@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -62,41 +61,21 @@ type Platform struct {
 
 var Tiles map[TileType][2]Tile
 
-// initialize the world at the start of the program
+// tileRowOrder lists tile types in the order their rows appear in the tileset,
+// top to bottom. The slice index is the tileset row for that type.
+var tileRowOrder = []TileType{Water, Grass, Sand, Rock, Metal, Ice, Wood, Larva}
+
+// WorldInit builds the tileset lookup table. Each type maps to its top and
+// bottom variants; both share the type's row and differ only by X column.
+// It must be called once before LoadLevel.
 func WorldInit() {
-	// Initialize the map
-	Tiles = make(map[TileType][2]Tile)
-	Tiles[Water] = [2]Tile{
-		{X: TopTileXStart, Y: PixelTileHeight * 0, TileType: Water, TileLvl: TopTile},
-		{X: BotTileXStart, Y: PixelTileHeight * 0, TileType: Water, TileLvl: BottomTile},
-	}
-	Tiles[Grass] = [2]Tile{
-		{X: TopTileXStart, Y: PixelTileHeight * 1, TileType: Grass, TileLvl: TopTile},
-		{X: BotTileXStart, Y: PixelTileHeight * 1, TileType: Grass, TileLvl: BottomTile},
-	}
-	Tiles[Sand] = [2]Tile{
-		{X: TopTileXStart, Y: PixelTileHeight * 2, TileType: Sand, TileLvl: TopTile},
-		{X: BotTileXStart, Y: PixelTileHeight * 2, TileType: Sand, TileLvl: BottomTile},
-	}
-	Tiles[Rock] = [2]Tile{
-		{X: TopTileXStart, Y: PixelTileHeight * 3, TileType: Rock, TileLvl: TopTile},
-		{X: BotTileXStart, Y: PixelTileHeight * 3, TileType: Rock, TileLvl: BottomTile},
-	}
-	Tiles[Metal] = [2]Tile{
-		{X: TopTileXStart, Y: PixelTileHeight * 4, TileType: Metal, TileLvl: TopTile},
-		{X: BotTileXStart, Y: PixelTileHeight * 4, TileType: Metal, TileLvl: BottomTile},
-	}
-	Tiles[Ice] = [2]Tile{
-		{X: TopTileXStart, Y: PixelTileHeight * 5, TileType: Ice, TileLvl: TopTile},
-		{X: BotTileXStart, Y: PixelTileHeight * 5, TileType: Ice, TileLvl: BottomTile},
-	}
-	Tiles[Wood] = [2]Tile{
-		{X: TopTileXStart, Y: PixelTileHeight * 6, TileType: Wood, TileLvl: TopTile},
-		{X: BotTileXStart, Y: PixelTileHeight * 6, TileType: Wood, TileLvl: BottomTile},
-	}
-	Tiles[Larva] = [2]Tile{
-		{X: TopTileXStart, Y: PixelTileHeight * 7, TileType: Larva, TileLvl: TopTile},
-		{X: BotTileXStart, Y: PixelTileHeight * 7, TileType: Larva, TileLvl: BottomTile},
+	Tiles = make(map[TileType][2]Tile, len(tileRowOrder))
+	for row, tileType := range tileRowOrder {
+		y := PixelTileHeight * row
+		Tiles[tileType] = [2]Tile{
+			{X: TopTileXStart, Y: y, TileType: tileType, TileLvl: TopTile},
+			{X: BotTileXStart, Y: y, TileType: tileType, TileLvl: BottomTile},
+		}
 	}
 }
 
@@ -138,8 +117,23 @@ func getColor(x, y int, levelData *ebiten.Image) (uint32, uint32, uint32) {
 	return r, g, b
 }
 
+// tileVariantIndex maps a tile level to its index within a Tiles entry
+// ([0] = top, [1] = bottom).
+func tileVariantIndex(lvl TileLvl) int {
+	if lvl == BottomTile {
+		return 1
+	}
+	return 0
+}
+
+// hasVisualOffset reports whether a top tile of this type sits lower in its cell
+// (water, grass and sand have a transparent margin above the solid surface).
+func hasVisualOffset(t TileType) bool {
+	return t == Water || t == Grass || t == Sand
+}
+
 func getTileInfo(x, y int, tileType TileType, levelData *ebiten.Image, prevPlat Platform) Platform {
-	// Create the platform with basic world coordinates
+	// Create the platform with basic world coordinates.
 	plat := Platform{
 		X:      float64(x * LevelTileWidth),
 		Y:      float64(y * LevelTileHeight),
@@ -147,84 +141,28 @@ func getTileInfo(x, y int, tileType TileType, levelData *ebiten.Image, prevPlat 
 		Height: LevelTileHeight,
 		TileInfo: Tile{
 			TileType: tileType,
-			TileLvl:  TopTile, // Default to Top
+			TileLvl:  TopTile, // default to top; corrected below
 		},
-		DrawOffsetY: 0,
 	}
 
-	// check for bottom tile
-	if y > 0 {
-		if getTileType(getColor(x, y-1, levelData)) != Empty {
-			plat.TileInfo.TileLvl = BottomTile
-		}
+	// A tile with a solid neighbour directly above is a bottom (interior) tile.
+	if y > 0 && getTileType(getColor(x, y-1, levelData)) != Empty {
+		plat.TileInfo.TileLvl = BottomTile
 	}
 
-	if plat.TileInfo.TileLvl == TopTile {
-		switch plat.TileInfo.TileType {
-		case Water:
-			plat.TileInfo.X = Tiles[Water][0].X
-			plat.TileInfo.Y = Tiles[Water][0].Y
-		case Grass:
-			plat.TileInfo.X = Tiles[Grass][0].X
-			plat.TileInfo.Y = Tiles[Grass][0].Y
-		case Sand:
-			plat.TileInfo.X = Tiles[Sand][0].X
-			plat.TileInfo.Y = Tiles[Sand][0].Y
-		case Rock:
-			plat.TileInfo.X = Tiles[Rock][0].X
-			plat.TileInfo.Y = Tiles[Rock][0].Y
-		case Metal:
-			plat.TileInfo.X = Tiles[Metal][0].X
-			plat.TileInfo.Y = Tiles[Metal][0].Y
-		case Ice:
-			plat.TileInfo.X = Tiles[Ice][0].X
-			plat.TileInfo.Y = Tiles[Ice][0].Y
-		case Wood:
-			plat.TileInfo.X = Tiles[Wood][0].X
-			plat.TileInfo.Y = Tiles[Wood][0].Y
-		case Larva:
-			plat.TileInfo.X = Tiles[Larva][0].X
-			plat.TileInfo.Y = Tiles[Larva][0].Y
-		default:
-			plat.TileInfo.X = 0
-			plat.TileInfo.Y = 0
-		}
+	// Look up the sprite-sheet source coordinates for this type/level. Unknown
+	// types are absent from Tiles and keep the zero origin.
+	if variants, ok := Tiles[tileType]; ok {
+		src := variants[tileVariantIndex(plat.TileInfo.TileLvl)]
+		plat.TileInfo.X = src.X
+		plat.TileInfo.Y = src.Y
+	}
 
-		if plat.TileInfo.TileType == Water || plat.TileInfo.TileType == Grass || plat.TileInfo.TileType == Sand {
-			plat.Y += TopTileVisualOffset
-			plat.DrawOffsetY = -TopTileVisualOffset
-			plat.Height -= TopTileVisualOffset
-		}
-	} else {
-		switch plat.TileInfo.TileType {
-		case Water:
-			plat.TileInfo.X = Tiles[Water][1].X
-			plat.TileInfo.Y = Tiles[Water][1].Y
-		case Grass:
-			plat.TileInfo.X = Tiles[Grass][1].X
-			plat.TileInfo.Y = Tiles[Grass][1].Y
-		case Sand:
-			plat.TileInfo.X = Tiles[Sand][1].X
-			plat.TileInfo.Y = Tiles[Sand][1].Y
-		case Rock:
-			plat.TileInfo.X = Tiles[Rock][1].X
-			plat.TileInfo.Y = Tiles[Rock][1].Y
-		case Metal:
-			plat.TileInfo.X = Tiles[Metal][1].X
-			plat.TileInfo.Y = Tiles[Metal][1].Y
-		case Ice:
-			plat.TileInfo.X = Tiles[Ice][1].X
-			plat.TileInfo.Y = Tiles[Ice][1].Y
-		case Wood:
-			plat.TileInfo.X = Tiles[Wood][1].X
-			plat.TileInfo.Y = Tiles[Wood][1].Y
-		case Larva:
-			plat.TileInfo.X = Tiles[Larva][1].X
-			plat.TileInfo.Y = Tiles[Larva][1].Y
-		default:
-			plat.TileInfo.X = 0
-			plat.TileInfo.Y = 0
-		}
+	// Top tiles with a transparent margin are nudged down so the solid part lines up.
+	if plat.TileInfo.TileLvl == TopTile && hasVisualOffset(tileType) {
+		plat.Y += TopTileVisualOffset
+		plat.DrawOffsetY = -TopTileVisualOffset
+		plat.Height -= TopTileVisualOffset
 	}
 
 	if prevPlat.TileInfo.TileType == plat.TileInfo.TileType && prevPlat.TileInfo.TileLvl == plat.TileInfo.TileLvl {
@@ -243,13 +181,12 @@ func getTileInfo(x, y int, tileType TileType, levelData *ebiten.Image, prevPlat 
 	return plat
 }
 
-// LoadLevel loads the level from the image
-func (p *PlayerRuntime) LoadLevel(levelData *ebiten.Image) []Platform {
+// LoadLevel decodes the level layout from the color-coded level image, returning
+// one Platform per solid pixel. WorldInit must be called before this.
+func LoadLevel(levelData *ebiten.Image) []Platform {
 	level := []Platform{}
 
-	var prevPlat Platform = Platform{TileInfo: Tile{TileType: Empty}}
-
-	fmt.Println(levelData.Bounds())
+	prevPlat := Platform{TileInfo: Tile{TileType: Empty}}
 
 	for y := 0; y < levelData.Bounds().Dy(); y++ {
 		prevPlat.TileInfo.TileType = Empty

@@ -116,6 +116,19 @@ func (ps *PlayerState) IsUsingPotion() bool {
 	return ps.CurrentState == PlayerStateUsePotion
 }
 
+// IsGroundedOneShot reports whether the current state is a non-looping grounded
+// action that should return to idle once its animation finishes.
+func (ps *PlayerState) IsGroundedOneShot() bool {
+	return ps.IsLanding() || ps.IsSmugFace() || ps.IsWeakAttack() || ps.IsStrongAttack() ||
+		ps.IsSpecialAttack1() || ps.IsSpecialAttack2() || ps.IsSpecialAttack3() || ps.IsSpecialAttack4()
+}
+
+// IsAirOneShot reports whether the current state is a non-looping airborne
+// action that should transition to falling once its animation finishes.
+func (ps *PlayerState) IsAirOneShot() bool {
+	return ps.IsWeakAttackInAir() || ps.IsStrongAttackInAir() || ps.IsJumping()
+}
+
 func (ps *PlayerState) GetPlayerState() int {
 	return int(ps.CurrentState)
 }

@@ -107,45 +107,26 @@ func (q *Quadtree) Insert(obj Collider) {
 	}
 }
 
-// Retrieve returns all objects that could collide with the given rect
+// Retrieve appends every object that could overlap rect to returnObjects and
+// returns the extended slice. Objects at this node are always candidates; the
+// search then descends into the child rect fits in, or, when rect straddles a
+// split (index == -1), into every child whose bounds intersect it.
 func (q *Quadtree) Retrieve(returnObjects []Collider, rect AABB) []Collider {
-	index := q.getIndex(rect)
-
-	// Retrieve objects from all nodes if the object overlaps a boundary (index == -1)
-	// But standard implementation: if index != -1, we only go down that branch.
-	// If index == -1, it means the rect overlaps boundaries, so we must check ALL potentially overlapping quadrants.
-	// However, the standard optimization is: always return objects in current node + recursive call if index fits.
-	// If index == -1, we might need to check multiple children.
-	// A simpler implementation for "Retrieve" usually just returns everything in the current node plus whatever is in the target quadrant.
-	// If the rect overlaps quadrants (index == -1), we technically have to search all quadrants it touches.
-	// For simplicity in standard Quadtree tutorials: if index == -1, checking 'this' node's objects is mandatory,
-	// and we might need to check children too if we want precise query.
-
-	// Refined Retrieve logic:
-	// 1. Add objects from this node (they might overlap the rect or be parent containers)
 	returnObjects = append(returnObjects, q.Objects...)
 
-	// 2. If we have children...
-	if q.Nodes[0] != nil {
-		// If it fits in one quadrant, go there
-		// Index = -1 signifies that the rect overlaps multiple quadrants
-		if index != -1 {
-			// If it fits in one quadrant, go there
-			returnObjects = q.Nodes[index].Retrieve(returnObjects, rect)
-		} else {
-			// If it doesn't fit in one, it might overlap multiple.
-			// We need to check which quadrants it intersects.
-			// For simplicity/performance balance, some implementations just return objects from this level
-			// if it doesn't fit a child. But that misses objects deeper in children that might overlap.
-			// Correct approach: Check all 4 children if they intersect the rect.
-			for i := 0; i < 4; i++ {
-				if q.Nodes[i].Bounds.Intersects(rect) {
-					returnObjects = q.Nodes[i].Retrieve(returnObjects, rect)
-				}
-			}
-		}
+	if q.Nodes[0] == nil {
+		return returnObjects
 	}
 
+	if index := q.getIndex(rect); index != -1 {
+		return q.Nodes[index].Retrieve(returnObjects, rect)
+	}
+
+	for i := 0; i < 4; i++ {
+		if q.Nodes[i].Bounds.Intersects(rect) {
+			returnObjects = q.Nodes[i].Retrieve(returnObjects, rect)
+		}
+	}
 	return returnObjects
 }
 
@@ -263,7 +244,14 @@ func (dq *DynamicQuadtree) Remove(obj Collider) bool {
 	return deleted
 }
 
-// Retrieve returns potential colliders for rect
+// Retrieve returns the potential colliders for rect, allocating a fresh slice.
 func (dq *DynamicQuadtree) Retrieve(rect AABB) []Collider {
 	return dq.Root.Retrieve(nil, rect)
+}
+
+// RetrieveInto appends the potential colliders for rect to buf and returns the
+// extended slice. Pass a reused (zero-length) buffer in a hot loop to avoid a
+// per-query allocation.
+func (dq *DynamicQuadtree) RetrieveInto(buf []Collider, rect AABB) []Collider {
+	return dq.Root.Retrieve(buf, rect)
 }

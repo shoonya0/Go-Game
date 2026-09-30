@@ -22,8 +22,21 @@ const (
 	AirJumpsLeft = 1
 )
 
-func InitPlayer(img *ebiten.Image) PlayerRuntime {
-	return PlayerRuntime{
+// physicsUnitsPerTick scales the frame-independent physics constants (expressed
+// per 1/100s) into the current tick. dtUnits in the original code.
+func physicsUnitsPerTick() float64 { return 100.0 * deltaTime() }
+
+// player collision box and ground sensor dimensions.
+const (
+	bodyWidth     = 30.0
+	bodyHeight    = 80.0
+	sensorHeight  = 50.0
+	airRunControl = 1.5 // running air-control is 1/airRunControl of ground running
+)
+
+// InitPlayer builds a player at its default spawn with all subsystems wired up.
+func InitPlayer(img *ebiten.Image) *PlayerRuntime {
+	return &PlayerRuntime{
 		img:           img,
 		State:         PlayerState{CurrentState: PlayerStateIdle},
 		PreviousState: PlayerState{CurrentState: PlayerStateIdle},
@@ -31,15 +44,10 @@ func InitPlayer(img *ebiten.Image) PlayerRuntime {
 		FlipX:         false,
 		Scale:         1.0,
 		Camera:        Camera{Zoom: 1.0},
-		Pos: Position{
-			X: 100,
-			Y: 100,
-		},
+		Pos:           Position{X: 100, Y: 100},
 		Physics: Physics{
-			VelX:         0,
-			VelY:         0,
 			AccX:         AccX,
-			AccY:         AccY, // acceleration of the object when jumping
+			AccY:         AccY,
 			DecX:         DecX,
 			MaxSpeed:     MaxSpeed,
 			MaxRunSpeed:  MaxRunSpeed,
@@ -50,295 +58,274 @@ func InitPlayer(img *ebiten.Image) PlayerRuntime {
 			CoyoteMs:     CoyoteMs,
 			AirJumpsLeft: AirJumpsLeft,
 		},
-		Combat: Combat{
-			Health:    100,
-			MaxHealth: 100,
-			Power:     100,
-			MaxPower:  100,
-		},
+		Combat:       Combat{Health: 100, MaxHealth: 100, Power: 100, MaxPower: 100},
 		CheckpointID: "default",
 	}
 }
 
+// Approach moves current toward target by at most maxDelta, without overshoot.
 func Approach(current, target, maxDelta float64) float64 {
 	if current < target {
-		current += maxDelta
-		if current > target {
-			return target
-		}
-		return current
+		return math.Min(current+maxDelta, target)
 	}
 	if current > target {
-		current -= maxDelta
-		if current < target {
-			return target
-		}
-		return current
+		return math.Max(current-maxDelta, target)
 	}
 	return current
 }
 
+// ReduceLeft raises current toward target (target below zero) without overshoot.
 func ReduceLeft(current, target, maxDelta float64) float64 {
 	if current < target {
-		current += maxDelta
-		if current > target {
-			return target
-		}
-		return current
+		return math.Min(current+maxDelta, target)
 	}
 	return current
 }
 
+// ReduceRight lowers current toward target without overshoot.
 func ReduceRight(current, target, maxDelta float64) float64 {
 	if current > target {
-		current -= maxDelta
-		if current < target {
-			return target
-		}
-		return current
+		return math.Max(current-maxDelta, target)
 	}
 	return current
 }
 
-// GetBounds returns the bounding box of the player
+// GetBounds returns the player's collision box.
 func (player *PlayerRuntime) GetBounds() AABB {
-	return AABB{
-		X:      player.Pos.X,
-		Y:      player.Pos.Y,
-		Width:  30,
-		Height: 80,
-	}
+	return AABB{X: player.Pos.X, Y: player.Pos.Y, Width: bodyWidth, Height: bodyHeight}
 }
 
+// GetGroundSensor returns the thin box below the player used to detect ground.
 func (player *PlayerRuntime) GetGroundSensor() AABB {
-	sensorHeight := 50.0
-	return AABB{
-		X:      player.Pos.X,
-		Y:      player.Pos.Y + 80,
-		Width:  30,
-		Height: sensorHeight,
-	}
+	return AABB{X: player.Pos.X, Y: player.Pos.Y + bodyHeight, Width: bodyWidth, Height: sensorHeight}
 }
 
-func UpdatePlayer(player *PlayerRuntime, inputState *InputState, qt *DynamicQuadtree) {
-	// Update previous state at the start of the frame
+// canMove reports whether the current state accepts movement input. Movement is
+// allowed in the air and on the ground, but blocked during grounded actions.
+func (player *PlayerRuntime) canMove() bool {
+	s := &player.State
+	return s.IsIdle() || s.IsMoving() || s.IsRunning() || s.IsJumping() ||
+		s.IsFalling() || s.IsWeakAttackInAir() || s.IsStrongAttackInAir()
+}
+
+// UpdatePlayer advances the player one tick: input, physics, collision and state.
+func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree) {
 	player.PreviousState = PlayerState{CurrentState: PlayerStateType(player.State.GetPlayerState())}
 
-	// Time Management
-	tps := float64(ebiten.TPS())
-	if tps <= 0 {
-		tps = 60
+	inputX := player.applyHorizontalMovement(in)
+	player.applyGravityAndJump(in)
+
+	player.resolveHorizontal(qt)
+	onGround, detectGround := player.resolveVertical(qt)
+
+	player.updateState(in, inputX, onGround, detectGround)
+
+	if qt != nil {
+		qt.Update(player)
 	}
-	dt := 1.0 / tps
-	dtUnits := 100.0 / tps // Scaling factor for physics constants
+}
 
-	// Check Permissions
-	// Define which states allow movement input.
-	// We allow movement in air, idle, run, etc., but block it during "Action" states.
-	canMove := player.State.IsIdle() || player.State.IsMoving() ||
-		player.State.IsRunning() || player.State.IsJumping() ||
-		player.State.IsFalling() || player.State.IsWeakAttackInAir() || player.State.IsStrongAttackInAir()
-
-	// Input Processing
+// applyHorizontalMovement updates VelX from input and returns the input axis.
+func (player *PlayerRuntime) applyHorizontalMovement(in *InputState) float64 {
 	inputX := 0.0
-	if canMove {
-		inputX = float64(inputState.Direction.LeftRight)
+	if player.canMove() {
+		inputX = float64(in.Direction.LeftRight)
 	}
 
 	targetVX := inputX * player.Physics.MaxSpeed
-	if inputState.RunJustPressed {
-		// Run logic: slightly slower air control if not grounded
-		if !player.State.IsGrounded() {
-			targetVX = inputX * (player.Physics.MaxRunSpeed / 1.5)
-		} else {
+	if in.RunJustPressed {
+		if player.State.IsGrounded() {
 			targetVX = inputX * player.Physics.MaxRunSpeed
+		} else {
+			targetVX = inputX * (player.Physics.MaxRunSpeed / airRunControl)
 		}
 	}
 
-	// X Physics (Acceleration & Friction)
-	accX := player.Physics.AccX * dtUnits
-	decX := player.Physics.DecX * dtUnits
+	units := physicsUnitsPerTick()
+	accX := player.Physics.AccX * units
+	decX := player.Physics.DecX * units
 
-	step := accX
-	// Apply friction if no input and on the ground
-	if inputX == 0 && player.State.IsGrounded() {
-		step = decX
-	}
-
-	// Handle Flipping
+	// Flip the sprite to match the movement direction.
 	if inputX < 0 {
 		player.FlipX = true
 	} else if inputX > 0 {
 		player.FlipX = false
 	}
 
-	// Apply Velocity Changes
-	if math.Abs(player.Physics.VelX) > player.Physics.MaxSpeed && !inputState.RunJustPressed {
-		// Decelerate from run speed to normal max speed
-		step = decX
+	// Above walk speed while not holding run: bleed velocity back down to MaxSpeed.
+	if math.Abs(player.Physics.VelX) > player.Physics.MaxSpeed && !in.RunJustPressed {
 		if player.Physics.VelX > 0 {
-			player.Physics.VelX = ReduceRight(player.Physics.VelX, player.Physics.MaxSpeed, step)
+			player.Physics.VelX = ReduceRight(player.Physics.VelX, player.Physics.MaxSpeed, decX)
 		} else if player.Physics.VelX < 0 {
-			player.Physics.VelX = ReduceLeft(player.Physics.VelX, -player.Physics.MaxSpeed, step)
+			player.Physics.VelX = ReduceLeft(player.Physics.VelX, -player.Physics.MaxSpeed, decX)
 		}
-	} else {
-		player.Physics.VelX = Approach(player.Physics.VelX, targetVX, step)
+		return inputX
 	}
 
-	// Y Physics (Gravity & Jumping)
-	player.Physics.VelY += player.Physics.GravityScale * dtUnits
-
-	// Jump Input
-	if inputState.JumpJustPressed && player.State.IsGrounded() && canMove {
-		player.State.SetPlayerState(int(PlayerStateJumping))
-		player.Physics.VelY = -player.Physics.JumpForce // Instant impulse
+	// Accelerate toward target; apply friction (decX) when idle on the ground.
+	step := accX
+	if inputX == 0 && player.State.IsGrounded() {
+		step = decX
 	}
-
-	// Integration & Collision Resolution
-	// Apply X
-	player.Pos.X += player.Physics.VelX * dt
-	if qt != nil {
-		objs := qt.Retrieve(player.GetBounds())
-		for _, obj := range objs {
-			if _, ok := obj.(*Platform); ok {
-				bounds := obj.GetBounds()
-				if player.GetBounds().Intersects(bounds) {
-					if player.Physics.VelX > 0 { // Moving Right
-						player.Pos.X = bounds.X - player.GetBounds().Width
-					} else if player.Physics.VelX < 0 { // Moving Left
-						player.Pos.X = bounds.X + bounds.Width
-					}
-					player.Physics.VelX = 0
-				}
-			}
-		}
-	}
-
-	// Apply Y
-	if player.Physics.VelY < player.Physics.MaxFallSpeed {
-		player.Pos.Y += player.Physics.VelY * dt
-	} else {
-		player.Physics.VelY = player.Physics.MaxFallSpeed
-		player.Pos.Y += player.Physics.VelY * dt
-	}
-
-	onGround := false
-	detectGround := false
-
-	if qt != nil {
-		objs := qt.Retrieve(player.GetBounds())
-		sensorObjs := player.GetGroundSensor()
-		for _, obj := range objs {
-			if _, ok := obj.(*Platform); ok {
-				bounds := obj.GetBounds()
-
-				// Ground detection (sensor only)
-				if sensorObjs.Intersects(bounds) {
-					detectGround = true
-				}
-
-				// Physics collision (body only)
-				if player.GetBounds().Intersects(bounds) {
-					if player.Physics.VelY > 0 { // Falling/Landing
-						player.Pos.Y = bounds.Y - player.GetBounds().Height
-						onGround = true
-						player.Physics.VelY = 0
-					} else if player.Physics.VelY < 0 { // Bonking head
-						player.Pos.Y = bounds.Y + bounds.Height
-						// fmt.Println("Bonking head and velY is", player.Physics.VelY)
-						player.Physics.VelY = 0
-					}
-				}
-			}
-		}
-	}
-
-	// State Management
-	// Transition states based on the physical results of this frame
-	if detectGround {
-		if onGround {
-			if player.State.IsGrounded() {
-				// Smug Face Input
-				if inputState.SmugFace {
-					// fmt.Println("Smug Face Input")
-					player.State.SetPlayerState(int(PlayerStateSmugFace))
-				} else if inputState.Skills.SpecialAttack1 {
-					// fmt.Println("Special Attack 1 Input")
-					player.State.SetPlayerState(int(PlayerStateSpecialAttack1))
-				} else if inputState.Skills.SpecialAttack2 {
-					// fmt.Println("Special Attack 2 Input")
-					player.State.SetPlayerState(int(PlayerStateSpecialAttack2))
-				} else if inputState.Skills.SpecialAttack3 {
-					// fmt.Println("Special Attack 3 Input")
-					player.State.SetPlayerState(int(PlayerStateSpecialAttack3))
-				} else if inputState.Skills.SpecialAttack4 {
-					// fmt.Println("Special Attack 4 Input")
-					player.State.SetPlayerState(int(PlayerStateSpecialAttack4))
-				} else if inputState.Skills.WeakAttack {
-					// fmt.Println("Weak Attack Input")
-					player.State.SetPlayerState(int(PlayerStateWeakAttack))
-				} else if inputState.Skills.StrongAttack {
-					// fmt.Println("Strong Attack Input")
-					player.State.SetPlayerState(int(PlayerStateStrongAttack))
-				} else if player.Physics.VelX == 0 {
-					player.State.SetPlayerState(int(PlayerStateIdle))
-				} else {
-					if math.Abs(player.Physics.VelX) > player.Physics.MaxSpeed {
-						player.State.SetPlayerState(int(PlayerStateRunning))
-					} else {
-						player.State.SetPlayerState(int(PlayerStateMoving))
-					}
-				}
-			} else if player.State.IsFalling() && player.Physics.VelY >= 0 {
-				player.State.SetPlayerState(int(PlayerStateIdle))
-			}
-		} else if (player.State.IsFalling() && player.Physics.VelY >= 0) || player.State.IsWeakAttackInAir() || player.State.IsStrongAttackInAir() {
-			player.State.SetPlayerState(int(PlayerStateLanding))
-		}
-	} else {
-		// In Air
-		if player.State.IsFalling() {
-			if inputState.Skills.WeakAttack {
-				player.State.SetPlayerState(int(PlayerStateWeakAttackInAir))
-			} else if inputState.Skills.StrongAttack {
-				player.State.SetPlayerState(int(PlayerStateStrongAttackInAir))
-			}
-		} else if player.Physics.VelY > 0 && !player.State.IsFalling() && !player.State.IsLanding() && !player.State.IsWeakAttackInAir() && !player.State.IsStrongAttackInAir() {
-			player.State.SetPlayerState(int(PlayerStateFalling))
-		}
-	}
-	// Update spatial partition
-	qt.Update(player)
+	player.Physics.VelX = Approach(player.Physics.VelX, targetVX, step)
+	return inputX
 }
 
+// applyGravityAndJump integrates gravity and applies a jump impulse if requested.
+func (player *PlayerRuntime) applyGravityAndJump(in *InputState) {
+	player.Physics.VelY += player.Physics.GravityScale * physicsUnitsPerTick()
+
+	if in.JumpJustPressed && player.State.IsGrounded() && player.canMove() {
+		player.State.SetPlayerState(int(PlayerStateJumping))
+		player.Physics.VelY = -player.Physics.JumpForce
+	}
+}
+
+// resolveHorizontal integrates X and pushes the player out of solid tiles.
+func (player *PlayerRuntime) resolveHorizontal(qt *DynamicQuadtree) {
+	player.Pos.X += player.Physics.VelX * deltaTime()
+	if qt == nil {
+		return
+	}
+
+	for _, obj := range qt.Retrieve(player.GetBounds()) {
+		if _, ok := obj.(*Platform); !ok {
+			continue
+		}
+		bounds := obj.GetBounds()
+		if !player.GetBounds().Intersects(bounds) {
+			continue
+		}
+		if player.Physics.VelX > 0 { // moving right
+			player.Pos.X = bounds.X - bodyWidth
+		} else if player.Physics.VelX < 0 { // moving left
+			player.Pos.X = bounds.X + bounds.Width
+		}
+		player.Physics.VelX = 0
+	}
+}
+
+// resolveVertical integrates Y, resolves floor/ceiling collisions and reports
+// whether the player landed (onGround) and whether ground is nearby (detectGround).
+func (player *PlayerRuntime) resolveVertical(qt *DynamicQuadtree) (onGround, detectGround bool) {
+	if player.Physics.VelY >= player.Physics.MaxFallSpeed {
+		player.Physics.VelY = player.Physics.MaxFallSpeed
+	}
+	player.Pos.Y += player.Physics.VelY * deltaTime()
+
+	if qt == nil {
+		return false, false
+	}
+
+	sensor := player.GetGroundSensor()
+	for _, obj := range qt.Retrieve(player.GetBounds()) {
+		if _, ok := obj.(*Platform); !ok {
+			continue
+		}
+		bounds := obj.GetBounds()
+
+		if sensor.Intersects(bounds) {
+			detectGround = true
+		}
+
+		if !player.GetBounds().Intersects(bounds) {
+			continue
+		}
+		if player.Physics.VelY > 0 { // landing
+			player.Pos.Y = bounds.Y - bodyHeight
+			onGround = true
+			player.Physics.VelY = 0
+		} else if player.Physics.VelY < 0 { // head bonk
+			player.Pos.Y = bounds.Y + bounds.Height
+			player.Physics.VelY = 0
+		}
+	}
+	return onGround, detectGround
+}
+
+// updateState transitions the player state based on this tick's physics results.
+func (player *PlayerRuntime) updateState(in *InputState, inputX float64, onGround, detectGround bool) {
+	s := &player.State
+
+	if !detectGround {
+		player.updateAirState(in)
+		return
+	}
+
+	if !onGround {
+		// Above ground but not landed: finish a fall or air attack into a land.
+		if (s.IsFalling() && player.Physics.VelY >= 0) || s.IsWeakAttackInAir() || s.IsStrongAttackInAir() {
+			s.SetPlayerState(int(PlayerStateLanding))
+		}
+		return
+	}
+
+	if !s.IsGrounded() {
+		if s.IsFalling() && player.Physics.VelY >= 0 {
+			s.SetPlayerState(int(PlayerStateIdle))
+		}
+		return
+	}
+
+	// Grounded: actions take priority, then locomotion from velocity.
+	switch {
+	case in.SmugFace:
+		s.SetPlayerState(int(PlayerStateSmugFace))
+	case in.Skills.SpecialAttack1:
+		s.SetPlayerState(int(PlayerStateSpecialAttack1))
+	case in.Skills.SpecialAttack2:
+		s.SetPlayerState(int(PlayerStateSpecialAttack2))
+	case in.Skills.SpecialAttack3:
+		s.SetPlayerState(int(PlayerStateSpecialAttack3))
+	case in.Skills.SpecialAttack4:
+		s.SetPlayerState(int(PlayerStateSpecialAttack4))
+	case in.Skills.WeakAttack:
+		s.SetPlayerState(int(PlayerStateWeakAttack))
+	case in.Skills.StrongAttack:
+		s.SetPlayerState(int(PlayerStateStrongAttack))
+	case player.Physics.VelX == 0:
+		s.SetPlayerState(int(PlayerStateIdle))
+	case math.Abs(player.Physics.VelX) > player.Physics.MaxSpeed:
+		s.SetPlayerState(int(PlayerStateRunning))
+	default:
+		s.SetPlayerState(int(PlayerStateMoving))
+	}
+}
+
+// updateAirState handles state transitions while the player is airborne.
+func (player *PlayerRuntime) updateAirState(in *InputState) {
+	s := &player.State
+	switch {
+	case s.IsFalling():
+		if in.Skills.WeakAttack {
+			s.SetPlayerState(int(PlayerStateWeakAttackInAir))
+		} else if in.Skills.StrongAttack {
+			s.SetPlayerState(int(PlayerStateStrongAttackInAir))
+		}
+	case player.Physics.VelY > 0 && !s.IsLanding() && !s.IsWeakAttackInAir() && !s.IsStrongAttackInAir():
+		s.SetPlayerState(int(PlayerStateFalling))
+	}
+}
+
+// UpdateCamera follows the player and clamps the view to the level bounds.
 func (player *PlayerRuntime) UpdateCamera(screenWidth, screenHeight, levelWidth, levelHeight float64) {
-	minX := player.Pos.X - 2*screenWidth/3
-	maxX := player.Pos.X - screenWidth/3
-	if player.Camera.Pos.X < minX {
-		player.Camera.Pos.X = minX
-	} else if player.Camera.Pos.X > maxX {
-		player.Camera.Pos.X = maxX
-	}
+	player.Camera.Pos.X = clamp(player.Camera.Pos.X,
+		player.Pos.X-2*screenWidth/3, player.Pos.X-screenWidth/3)
+	player.Camera.Pos.Y = clamp(player.Camera.Pos.Y,
+		player.Pos.Y-2*screenHeight/3, player.Pos.Y-screenHeight/3)
 
-	minY := player.Pos.Y - 2*screenHeight/3
-	maxY := player.Pos.Y - screenHeight/3
-	if player.Camera.Pos.Y < minY {
-		player.Camera.Pos.Y = minY
-	} else if player.Camera.Pos.Y > maxY {
-		player.Camera.Pos.Y = maxY
-	}
+	// Keep the camera inside the level.
+	player.Camera.Pos.X = clamp(player.Camera.Pos.X, 0, levelWidth-screenWidth)
+	player.Camera.Pos.Y = clamp(player.Camera.Pos.Y, 0, levelHeight-screenHeight)
+}
 
-	// Clamp camera to level bounds
-	if player.Camera.Pos.X < 0 {
-		player.Camera.Pos.X = 0
+// clamp constrains v to the inclusive [lo, hi] range.
+func clamp(v, lo, hi float64) float64 {
+	if v < lo {
+		return lo
 	}
-	if player.Camera.Pos.Y < 0 {
-		player.Camera.Pos.Y = 0
+	if v > hi {
+		return hi
 	}
-	if player.Camera.Pos.X > levelWidth-screenWidth {
-		player.Camera.Pos.X = levelWidth - screenWidth
-	}
-	if player.Camera.Pos.Y > levelHeight-screenHeight {
-		player.Camera.Pos.Y = levelHeight - screenHeight
-	}
+	return v
 }

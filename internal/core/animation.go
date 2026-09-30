@@ -6,6 +6,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+// frameOriginHeight is the sprite-sheet row height used to locate a frame's
+// vertical origin (SpriteSheetYPosition is expressed in these units).
+const frameOriginHeight = frameHeight_minimum
+
 // ---------------- states ----------------
 const (
 	Idle int = iota
@@ -57,8 +61,6 @@ const (
 	frameHeight_medium  = 120 // this frame is  not used
 	// frameHeight_large   = 160 // this frame is used
 	// frameHeight_maximum = 200 // this frame is currently not used
-
-	playerSpriteSheetPath = "../assets/GideonGraves.png"
 )
 
 func InitPlayerAnimations() map[int]*Animation {
@@ -284,96 +286,70 @@ func InitPlayerAnimations() map[int]*Animation {
 	return animations
 }
 
+// UpdateAnimation advances the active animation by one tick and applies the
+// state transition that fires when a non-looping animation reaches its end.
 func (player *PlayerRuntime) UpdateAnimation() {
-	// // update player animation
-	tps := float64(ebiten.TPS())
-	if tps <= 0 {
-		tps = 60
-	}
-
-	// here DT signifies the time in seconds between each frame of the animation means how long the current frame is displayed for
 	currState := player.State.GetPlayerState()
 	anim := player.Animations[currState]
 
-	if player.PreviousState.GetPlayerState() != player.State.GetPlayerState() {
+	// Restart the animation whenever the state changed this frame.
+	if player.PreviousState.GetPlayerState() != currState {
 		player.CurrAnimFrame = anim.AnimStartFrame
 	}
 
-	timePerFrame := 1.0 / anim.AnimationSpeed // time (in seconds)to display each frame
-	dt := 1.0 / tps                           // time (in seconds) between each frame
-	anim.FrameTimer += dt                     // add the time (in seconds) between each frame to the frame timer
+	timePerFrame := 1.0 / anim.AnimationSpeed
+	anim.FrameTimer += deltaTime()
 
-	// the for loop helps to keep the animation running at the correct speed
+	// Advance as many frames as the accumulated time allows.
 	for anim.FrameTimer >= timePerFrame {
 		anim.FrameTimer -= timePerFrame
-
 		player.CurrAnimFrame++
 
-		// fmt.Println("player.CurrAnimFrame", player.CurrAnimFrame, anim.AnimStartFrame+anim.TotalFrames, currState)
-		if player.CurrAnimFrame >= anim.AnimStartFrame+anim.TotalFrames {
-			if anim.Looping {
-				player.CurrAnimFrame = anim.AnimStartFrame
-			} else {
-				if player.State.IsLanding() || player.State.IsSmugFace() || player.State.IsWeakAttack() ||
-					player.State.IsStrongAttack() || player.State.IsSpecialAttack1() || player.State.IsSpecialAttack2() ||
-					player.State.IsSpecialAttack3() || player.State.IsSpecialAttack4() {
-					player.State.SetPlayerState(int(PlayerStateIdle))
-					player.CurrAnimFrame = 0
-				} else if player.State.IsWeakAttackInAir() || player.State.IsStrongAttackInAir() || player.State.IsJumping() {
-					player.State.SetPlayerState(int(PlayerStateFalling))
-				}
-			}
+		if player.CurrAnimFrame < anim.AnimStartFrame+anim.TotalFrames {
+			continue
+		}
+
+		if anim.Looping {
+			player.CurrAnimFrame = anim.AnimStartFrame
+			continue
+		}
+
+		// Non-looping animation finished: resolve the follow-up state.
+		switch {
+		case player.State.IsGroundedOneShot():
+			player.State.SetPlayerState(int(PlayerStateIdle))
+			player.CurrAnimFrame = 0
+		case player.State.IsAirOneShot():
+			player.State.SetPlayerState(int(PlayerStateFalling))
 		}
 	}
 }
 
+// DrawPlayerAnimation draws the current animation frame, flipped to face the
+// movement direction and offset so the sprite is centered on the collision box.
 func (player *PlayerRuntime) DrawPlayerAnimation(screen *ebiten.Image) {
-
 	bounds := player.GetBounds()
-	// Adjust bounds for camera
-	// drawBoundsX := float32(bounds.X - player.Camera.Pos.X)
-	// drawBoundsY := float32(bounds.Y - player.Camera.Pos.Y)
+	anim := player.Animations[player.State.GetPlayerState()]
+	width, height := anim.FrameWidth, anim.FrameHeight
 
-	// vector.StrokeRect(screen, drawBoundsX, drawBoundsY, float32(bounds.Width), float32(bounds.Height), 1, color.White, false)
-	// // draw ground sensor
-	// groundSensor := player.GetGroundSensor()
-	// vector.FillRect(screen, float32(groundSensor.X-player.Camera.Pos.X), float32(groundSensor.Y-player.Camera.Pos.Y), float32(groundSensor.Width), float32(groundSensor.Height), color.RGBA{255, 0, 0, 50}, false)
-
-	currState := player.State.GetPlayerState()
-	width := player.Animations[currState].FrameWidth
-	height := player.Animations[currState].FrameHeight
+	// Select the current frame from the sprite sheet.
 	frameX := player.CurrAnimFrame * width
-	frameY := player.Animations[currState].SpriteSheetYPosition * frameHeight_minimum
-
+	frameY := anim.SpriteSheetYPosition * frameOriginHeight
 	rect := image.Rect(frameX, frameY, frameX+width, frameY+height)
 	subImage := player.img.SubImage(rect).(*ebiten.Image)
 
 	op := &ebiten.DrawImageOptions{}
-
-	// Scale factor to resize the player image
-	// Change this value to make the player smaller (e.g., 0.5) or larger (e.g., 2.0)
-
 	if player.FlipX {
-		// Flip horizontally
+		// Mirror horizontally, then shift back into place.
 		op.GeoM.Scale(-player.Scale, player.Scale)
-		// Translate back because flipping moves the image to the left of the axis
 		op.GeoM.Translate(float64(width)*player.Scale, 0)
 	} else {
 		op.GeoM.Scale(player.Scale, player.Scale)
 	}
 
-	// Calculate draw position to center the sprite on the collision box
-	// Center horizontally: bounds.X + (bounds.Width - spriteWidth) / 2
-	drawX := bounds.X + (bounds.Width-float64(width)*player.Scale)/2
-
-	// Align bottom vertically: bounds.Y + (bounds.Height - spriteHeight)
-	drawY := bounds.Y + (bounds.Height - float64(height)*player.Scale)
-
-	// Apply Camera Offset
-	drawX -= player.Camera.Pos.X
-	drawY -= player.Camera.Pos.Y
-
-	// Move to the calculated position
+	// Center the sprite horizontally on the box, align its bottom, then apply camera.
+	drawX := bounds.X + (bounds.Width-float64(width)*player.Scale)/2 - player.Camera.Pos.X
+	drawY := bounds.Y + (bounds.Height - float64(height)*player.Scale) - player.Camera.Pos.Y
 	op.GeoM.Translate(drawX, drawY)
 
 	screen.DrawImage(subImage, op)
