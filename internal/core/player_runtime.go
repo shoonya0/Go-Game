@@ -46,4 +46,12 @@ type PlayerRuntime struct {
 	// Progression.
 	Combat       Combat
 	CheckpointID string
+	RespawnPos   Position // where respawn() places the player (active checkpoint)
+
+	// Combat bookkeeping (not for external use).
+	fallPeakY        float64 // highest point (min Y) reached during the current fall
+	groundedPrev     bool    // whether the player was grounded last tick (landing edge)
+	wasInLarva       bool    // whether the player was touching larva last tick (damage edge)
+	waterDamageAccum float64 // sub-point water damage carried between ticks
+	inWater          bool    // whether the player was submerged last tick (movement/jump)
 }

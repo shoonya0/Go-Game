@@ -26,12 +26,15 @@ const (
 // per 1/100s) into the current tick. dtUnits in the original code.
 func physicsUnitsPerTick() float64 { return 100.0 * deltaTime() }
 
-// player collision box and ground sensor dimensions.
+// player collision box and sensor dimensions.
 const (
-	bodyWidth     = 30.0
-	bodyHeight    = 80.0
-	sensorHeight  = 50.0
-	airRunControl = 1.5 // running air-control is 1/airRunControl of ground running
+	bodyWidth       = 30.0
+	bodyHeight      = 80.0
+	sensorHeight    = 50.0
+	footProbeHeight = 6.0 // thin probe at the feet for hazard "standing on" checks
+	airRunControl   = 1.5 // running air-control is 1/airRunControl of ground running
+	waterSinkTiles  = 0.5 // tiles the player sinks below a water surface before standing
+	waterJumpFactor = 0.8 // fraction of jump force retained while submerged in water
 )
 
 // InitPlayer builds a player at its default spawn with all subsystems wired up.
@@ -45,6 +48,7 @@ func InitPlayer(img *ebiten.Image) *PlayerRuntime {
 		Scale:         1.0,
 		Camera:        Camera{Zoom: 1.0},
 		Pos:           Position{X: 100, Y: 100},
+		RespawnPos:    Position{X: 100, Y: 100},
 		Physics: Physics{
 			AccX:         AccX,
 			AccY:         AccY,
@@ -58,7 +62,7 @@ func InitPlayer(img *ebiten.Image) *PlayerRuntime {
 			CoyoteMs:     CoyoteMs,
 			AirJumpsLeft: AirJumpsLeft,
 		},
-		Combat:       Combat{Health: 100, MaxHealth: 100, Power: 100, MaxPower: 100},
+		Combat:       newCombat(),
 		CheckpointID: "default",
 	}
 }
@@ -100,6 +104,12 @@ func (player *PlayerRuntime) GetGroundSensor() AABB {
 	return AABB{X: player.Pos.X, Y: player.Pos.Y + bodyHeight, Width: bodyWidth, Height: sensorHeight}
 }
 
+// GetFootSensor returns a thin box straddling the player's feet, used to detect a
+// hazard tile the player is standing on without reaching a full tile below.
+func (player *PlayerRuntime) GetFootSensor() AABB {
+	return AABB{X: player.Pos.X, Y: player.Pos.Y + bodyHeight - footProbeHeight/2, Width: bodyWidth, Height: footProbeHeight}
+}
+
 // canMove reports whether the current state accepts movement input. Movement is
 // allowed in the air and on the ground, but blocked during grounded actions.
 func (player *PlayerRuntime) canMove() bool {
@@ -108,32 +118,37 @@ func (player *PlayerRuntime) canMove() bool {
 		s.IsFalling() || s.IsWeakAttackInAir() || s.IsStrongAttackInAir()
 }
 
-// UpdatePlayer advances the player one tick: input, physics, collision and state.
-func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree) {
+// UpdatePlayer advances the player one tick: input, physics, collision, state and
+// combat (power regen, hazard/fall damage, checkpoint respawn).
+func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, checkpoints []Checkpoint) {
 	player.PreviousState = PlayerState{CurrentState: PlayerStateType(player.State.GetPlayerState())}
 
-	inputX := player.applyHorizontalMovement(in)
+	player.applyHorizontalMovement(in)
 	player.applyGravityAndJump(in)
 
 	player.resolveHorizontal(qt)
 	onGround, detectGround := player.resolveVertical(qt)
 
-	player.updateState(in, inputX, onGround, detectGround)
+	player.updateState(in, onGround, detectGround)
+
+	player.regeneratePower()
+	player.updateCombat(qt, checkpoints, onGround)
 
 	if qt != nil {
 		qt.Update(player)
 	}
 }
 
-// applyHorizontalMovement updates VelX from input and returns the input axis.
-func (player *PlayerRuntime) applyHorizontalMovement(in *InputState) float64 {
+// applyHorizontalMovement updates VelX from input.
+func (player *PlayerRuntime) applyHorizontalMovement(in *InputState) {
 	inputX := 0.0
 	if player.canMove() {
 		inputX = float64(in.Direction.LeftRight)
 	}
 
 	targetVX := inputX * player.Physics.MaxSpeed
-	if in.RunJustPressed {
+	// Running is disabled while submerged; water keeps you to walking speed.
+	if in.RunJustPressed && !player.inWater {
 		if player.State.IsGrounded() {
 			targetVX = inputX * player.Physics.MaxRunSpeed
 		} else {
@@ -159,7 +174,7 @@ func (player *PlayerRuntime) applyHorizontalMovement(in *InputState) float64 {
 		} else if player.Physics.VelX < 0 {
 			player.Physics.VelX = ReduceLeft(player.Physics.VelX, -player.Physics.MaxSpeed, decX)
 		}
-		return inputX
+		return
 	}
 
 	// Accelerate toward target; apply friction (decX) when idle on the ground.
@@ -168,7 +183,6 @@ func (player *PlayerRuntime) applyHorizontalMovement(in *InputState) float64 {
 		step = decX
 	}
 	player.Physics.VelX = Approach(player.Physics.VelX, targetVX, step)
-	return inputX
 }
 
 // applyGravityAndJump integrates gravity and applies a jump impulse if requested.
@@ -177,7 +191,11 @@ func (player *PlayerRuntime) applyGravityAndJump(in *InputState) {
 
 	if in.JumpJustPressed && player.State.IsGrounded() && player.canMove() {
 		player.State.SetPlayerState(int(PlayerStateJumping))
-		player.Physics.VelY = -player.Physics.JumpForce
+		jumpForce := player.Physics.JumpForce
+		if player.inWater {
+			jumpForce *= waterJumpFactor // water dampens the jump
+		}
+		player.Physics.VelY = -jumpForce
 	}
 }
 
@@ -189,10 +207,11 @@ func (player *PlayerRuntime) resolveHorizontal(qt *DynamicQuadtree) {
 	}
 
 	for _, obj := range qt.Retrieve(player.GetBounds()) {
-		if _, ok := obj.(*Platform); !ok {
-			continue
+		plat, ok := obj.(*Platform)
+		if !ok || plat.TileInfo.TileType == Water {
+			continue // water is not solid; the player moves through it
 		}
-		bounds := obj.GetBounds()
+		bounds := plat.GetBounds()
 		if !player.GetBounds().Intersects(bounds) {
 			continue
 		}
@@ -218,17 +237,34 @@ func (player *PlayerRuntime) resolveVertical(qt *DynamicQuadtree) (onGround, det
 	}
 
 	sensor := player.GetGroundSensor()
-	for _, obj := range qt.Retrieve(player.GetBounds()) {
-		if _, ok := obj.(*Platform); !ok {
+	body := player.GetBounds()
+	inWater := false
+	waterSurfaceY := 0.0
+
+	for _, obj := range qt.Retrieve(body) {
+		plat, ok := obj.(*Platform)
+		if !ok {
 			continue
 		}
-		bounds := obj.GetBounds()
+		bounds := plat.GetBounds()
+
+		// Water is not a solid floor/wall; instead record the topmost water
+		// surface the player is submerged in so it can rest one tile below it.
+		if plat.TileInfo.TileType == Water {
+			if body.Intersects(bounds) {
+				if !inWater || bounds.Y < waterSurfaceY {
+					waterSurfaceY = bounds.Y
+				}
+				inWater = true
+			}
+			continue
+		}
 
 		if sensor.Intersects(bounds) {
 			detectGround = true
 		}
 
-		if !player.GetBounds().Intersects(bounds) {
+		if !body.Intersects(bounds) {
 			continue
 		}
 		if player.Physics.VelY > 0 { // landing
@@ -240,11 +276,25 @@ func (player *PlayerRuntime) resolveVertical(qt *DynamicQuadtree) (onGround, det
 			player.Physics.VelY = 0
 		}
 	}
+
+	// Buoyancy: the player sinks waterSinkTiles below the surface and stands
+	// there (on the second water tile), rather than resting on the surface.
+	if inWater {
+		floorY := waterSurfaceY + waterSinkTiles*LevelTileHeight
+		if player.Pos.Y+bodyHeight > floorY {
+			player.Pos.Y = floorY - bodyHeight
+			player.Physics.VelY = 0
+			onGround = true
+			detectGround = true
+		}
+	}
+
+	player.inWater = inWater
 	return onGround, detectGround
 }
 
 // updateState transitions the player state based on this tick's physics results.
-func (player *PlayerRuntime) updateState(in *InputState, inputX float64, onGround, detectGround bool) {
+func (player *PlayerRuntime) updateState(in *InputState, onGround, detectGround bool) {
 	s := &player.State
 
 	if !detectGround {
@@ -275,9 +325,9 @@ func (player *PlayerRuntime) updateState(in *InputState, inputX float64, onGroun
 		s.SetPlayerState(int(PlayerStateSpecialAttack1))
 	case in.Skills.SpecialAttack2:
 		s.SetPlayerState(int(PlayerStateSpecialAttack2))
-	case in.Skills.SpecialAttack3:
+	case in.Skills.SpecialAttack3 && player.trySpendPower(SpecialPowerCost): // U
 		s.SetPlayerState(int(PlayerStateSpecialAttack3))
-	case in.Skills.SpecialAttack4:
+	case in.Skills.SpecialAttack4 && player.trySpendPower(SpecialPowerCost): // O
 		s.SetPlayerState(int(PlayerStateSpecialAttack4))
 	case in.Skills.WeakAttack:
 		s.SetPlayerState(int(PlayerStateWeakAttack))
