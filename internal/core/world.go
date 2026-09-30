@@ -23,7 +23,6 @@ const (
 	Metal            TileType   = "metal"
 	Water            TileType   = "water"
 	Wood             TileType   = "wood"
-	EnemyBasic       TileType   = "enemyBasic"
 	Empty            TileType   = "empty"
 	TopTileLen       TileLength = 11
 	BottomTileLen    TileLength = 4
@@ -99,12 +98,6 @@ func WorldInit() {
 		{X: TopTileXStart, Y: PixelTileHeight * 7, TileType: Larva, TileLvl: TopTile},
 		{X: BotTileXStart, Y: PixelTileHeight * 7, TileType: Larva, TileLvl: BottomTile},
 	}
-	Tiles[EnemyBasic] = [2]Tile{
-		// this is the enemy basic tile which is used to spawn enemies
-		// we only need the position of this platform to spawn enemies
-		{X: 0, Y: 0, TileType: EnemyBasic, TileLvl: TopTile},
-		{X: 0, Y: 0, TileType: EnemyBasic, TileLvl: BottomTile},
-	}
 }
 
 // GetBounds returns the bounding box of the platform
@@ -131,8 +124,6 @@ func getTileType(r, g, b uint32) TileType {
 		return Water
 	case r == 255 && g == 255 && b == 0:
 		return Rock
-	case r == 0 && g == 0 && b == 0:
-		return EnemyBasic
 	default:
 		return Empty
 	}
@@ -194,9 +185,6 @@ func getTileInfo(x, y int, tileType TileType, levelData *ebiten.Image, prevPlat 
 		case Larva:
 			plat.TileInfo.X = Tiles[Larva][0].X
 			plat.TileInfo.Y = Tiles[Larva][0].Y
-		case EnemyBasic:
-			plat.TileInfo.X = Tiles[EnemyBasic][0].X
-			plat.TileInfo.Y = Tiles[EnemyBasic][0].Y
 		default:
 			plat.TileInfo.X = 0
 			plat.TileInfo.Y = 0
@@ -233,9 +221,6 @@ func getTileInfo(x, y int, tileType TileType, levelData *ebiten.Image, prevPlat 
 		case Larva:
 			plat.TileInfo.X = Tiles[Larva][1].X
 			plat.TileInfo.Y = Tiles[Larva][1].Y
-		case EnemyBasic:
-			plat.TileInfo.X = Tiles[EnemyBasic][1].X
-			plat.TileInfo.Y = Tiles[EnemyBasic][1].Y
 		default:
 			plat.TileInfo.X = 0
 			plat.TileInfo.Y = 0

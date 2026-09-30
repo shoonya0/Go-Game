@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"player/enemy"
 	"player/internal/core"
 	"player/internal/system"
 
@@ -27,8 +26,6 @@ type Game struct {
 	// ------ Entities ------
 	player *core.PlayerRuntime
 
-	ParallelEnemyManager *enemy.ParallelEnemyManager // enemy manager
-
 	Background      *ebiten.Image
 	LevelData       *ebiten.Image
 	Tileset         *ebiten.Image
@@ -48,13 +45,8 @@ func (g *Game) loadLevel() {
 		core.WorldInit()
 		g.Level = g.player.LoadLevel(g.LevelData)
 		for i := range g.Level {
-			if g.Level[i].TileInfo.TileType == core.EnemyBasic {
-				// we are now registering the enemy basic tile to the quadtree
-				continue
-			}
 			g.DynamicQuadtree.Insert(&g.Level[i])
 		}
-		g.ParallelEnemyManager.AddEnemyToLevel(g.Level)
 		fmt.Println("Level loaded")
 		doOnce = true
 	}
@@ -65,9 +57,6 @@ func (g *Game) loadLevel() {
 func (g *Game) Update() error {
 
 	g.loadLevel()
-
-	// Update enemies
-	g.ParallelEnemyManager.Update(g.player, g.DynamicQuadtree)
 
 	// poll input -> call another function to handle input
 	system.HandleInput(&g.input)
@@ -94,9 +83,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// draw player animation
 	g.player.DrawPlayerAnimation(screen)
 	// draw UI
-
-	// draw enemies
-	g.ParallelEnemyManager.DrawEnemies(screen, g.player.Camera)
 }
 
 // run automatically every frame
@@ -119,8 +105,6 @@ func main() {
 			return &p
 		}(),
 
-		ParallelEnemyManager: nil,
-
 		Background:      backGroundData,
 		LevelData:       levelData,
 		Tileset:         tileData,
@@ -131,11 +115,6 @@ func main() {
 		DynamicQuadtree: core.NewDynamicQuadtree(core.AABB{X: 0, Y: 0, Width: float64(core.Level_1_Width), Height: float64(core.Level_1_Height)}),
 	}
 
-	var parallelEnemyManager = enemy.DefaultParallelConfig(game.player, game.DynamicQuadtree)
-	fmt.Println("Parallel Enemy Manager will create ", parallelEnemyManager.WorkerCount, "workers")
-
-	game.ParallelEnemyManager = &parallelEnemyManager
-
 	// ebiten.SetWindowSize(640, 480) // 640, 480
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Pirate Adventure")
@@ -143,9 +122,6 @@ func main() {
 	// need to setup the brain for later
 
 	if err := ebiten.RunGame(game); err != nil {
-		if game.ParallelEnemyManager != nil {
-			game.ParallelEnemyManager.Shutdown()
-		}
 		log.Fatal(err)
 	}
 }
