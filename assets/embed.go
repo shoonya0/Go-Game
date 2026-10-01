@@ -5,5 +5,5 @@ package assets
 
 import "embed"
 
-//go:embed *.png
+//go:embed *.png *.json enemy/*.png
 var FS embed.FS
