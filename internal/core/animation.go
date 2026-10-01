@@ -325,32 +325,41 @@ func (player *PlayerRuntime) UpdateAnimation() {
 	}
 }
 
-// DrawPlayerAnimation draws the current animation frame, flipped to face the
-// movement direction and offset so the sprite is centered on the collision box.
-func (player *PlayerRuntime) DrawPlayerAnimation(screen *ebiten.Image) {
-	bounds := player.GetBounds()
-	anim := player.Animations[player.State.GetPlayerState()]
+// drawSpriteFrame renders one frame of a sprite sheet: it crops the frame at
+// (frame, anim.SpriteSheetYPosition), mirrors it when flipX is set, centers it
+// horizontally on box and aligns its feet to the box's bottom, then applies the
+// camera offset. It is the shared draw path for the player and every enemy —
+// each actor supplies its own sheet, animation, scale and row-origin height, so
+// sprites with different frame sizes and layouts all render through one function.
+func drawSpriteFrame(screen, img *ebiten.Image, anim *Animation, frame int, box AABB, flipX bool, scale float64, camPos Position, originHeight int) {
 	width, height := anim.FrameWidth, anim.FrameHeight
 
-	// Select the current frame from the sprite sheet.
-	frameX := player.CurrAnimFrame * width
-	frameY := anim.SpriteSheetYPosition * frameOriginHeight
+	frameX := frame * width
+	frameY := anim.SpriteSheetYPosition * originHeight
 	rect := image.Rect(frameX, frameY, frameX+width, frameY+height)
-	subImage := player.img.SubImage(rect).(*ebiten.Image)
+	subImage := img.SubImage(rect).(*ebiten.Image)
 
 	op := &ebiten.DrawImageOptions{}
-	if player.FlipX {
+	if flipX {
 		// Mirror horizontally, then shift back into place.
-		op.GeoM.Scale(-player.Scale, player.Scale)
-		op.GeoM.Translate(float64(width)*player.Scale, 0)
+		op.GeoM.Scale(-scale, scale)
+		op.GeoM.Translate(float64(width)*scale, 0)
 	} else {
-		op.GeoM.Scale(player.Scale, player.Scale)
+		op.GeoM.Scale(scale, scale)
 	}
 
 	// Center the sprite horizontally on the box, align its bottom, then apply camera.
-	drawX := bounds.X + (bounds.Width-float64(width)*player.Scale)/2 - player.Camera.Pos.X
-	drawY := bounds.Y + (bounds.Height - float64(height)*player.Scale) - player.Camera.Pos.Y
+	drawX := box.X + (box.Width-float64(width)*scale)/2 - camPos.X
+	drawY := box.Y + (box.Height - float64(height)*scale) - camPos.Y
 	op.GeoM.Translate(drawX, drawY)
 
 	screen.DrawImage(subImage, op)
+}
+
+// DrawPlayerAnimation draws the current animation frame, flipped to face the
+// movement direction and offset so the sprite is centered on the collision box.
+func (player *PlayerRuntime) DrawPlayerAnimation(screen *ebiten.Image) {
+	anim := player.Animations[player.State.GetPlayerState()]
+	drawSpriteFrame(screen, player.img, anim, player.CurrAnimFrame, player.GetBounds(),
+		player.FlipX, player.Scale, player.Camera.Pos, frameOriginHeight)
 }
