@@ -1,0 +1,5 @@
+#!/bin/sh
+# Fast pre-commit gate (gofmt on staged .go files + go vet). Enabled with:
+#   git config core.hooksPath .githooks
+# Git for Windows runs this through its bundled sh, so it works on Windows and macOS.
+exec node "$(git rev-parse --show-toplevel)/.githooks/pre-commit.mjs"
