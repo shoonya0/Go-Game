@@ -1,0 +1,6 @@
+# Go source must stay LF: gofmt (and scripts/verify.mjs) flags CRLF files, and
+# core.autocrlf=true on Windows would otherwise check them out as CRLF.
+*.go          text eol=lf
+
+# Git hook scripts run under sh; CRLF breaks them on macOS/Linux.
+.githooks/*   text eol=lf
