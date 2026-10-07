@@ -1,0 +1,60 @@
+# .github/workflows/verify.yml: runs `node scripts/verify.mjs --full` (gofmt, vet,
+# new lint issues, unit tests, native + WASM build, advisory full lint) on every
+# push to main and every pull request, on each target OS.
+#
+# Keep `on:` keys at the top level. A key placed under `jobs:` makes GitHub reject
+# the workflow, and every run then has 0 jobs.
+# After the first push, confirm with: gh run list --workflow verify.yml  (expect jobs > 0)
+
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false # keep every OS leg running: shared vs platform-specific failures matter
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      VERIFY_BASE: origin/main
+    steps:
+      # Windows runners default to CRLF checkouts, which makes `gofmt -l` flag every file.
+      - run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # golangci-lint --new-from-merge-base needs history
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Ebitengine needs OpenGL / X11 / ALSA headers for the native build on Linux.
+      - name: Install Ebitengine system dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev xorg-dev libasound2-dev
+
+      - name: Install golangci-lint
+        run: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0
+
+      - run: node scripts/verify.mjs --full
