@@ -1,0 +1,41 @@
+# golangci-lint v2 config. Run via `node scripts/verify.mjs` (new issues only)
+# or `golangci-lint run ./...` (everything). Layer rules mirror the table in
+# docs/architecture-overview.md — keep them in sync.
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - depguard
+  settings:
+    depguard:
+      rules:
+        core:
+          files: ["**/internal/core/**"]
+          deny:
+            - pkg: "player/cmd"
+              desc: "internal/core must not import cmd. Move the shared type into internal/core and have cmd import it (see docs/architecture-overview.md#layers)."
+            - pkg: "player/internal/system"
+              desc: "internal/core must not import internal/system (system depends on core, not the reverse). Pass the data in as a core.InputState-style struct."
+        system:
+          files: ["**/internal/system/**"]
+          deny:
+            - pkg: "player/cmd"
+              desc: "internal/system must not import cmd. Put the shared type in internal/core."
+            - pkg: "player/assets"
+              desc: "Load assets through core.LoadImage / core helpers, not the embed FS directly."
+        cmd:
+          files: ["**/cmd/**"]
+          deny:
+            - pkg: "player/assets"
+              desc: "cmd must load assets through core.LoadImage, not the embed FS directly."
+        server:
+          files: ["**/server/**"]
+          list-mode: strict
+          allow:
+            - $gostd
+          deny:
+            - pkg: "player"
+              desc: "server is a standalone static file server: use only the standard library, never game packages (Dockerfile builds it with CGO_ENABLED=0)."
+            - pkg: "github.com/hajimehoshi/ebiten"
+              desc: "server must stay stdlib-only and CGO-free (Dockerfile builds it with CGO_ENABLED=0)."
