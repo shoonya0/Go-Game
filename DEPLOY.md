@@ -13,7 +13,7 @@ filesystem dependency at runtime.
 | `make build`     | Native binary → `bin/game`                         |
 | `make build-wasm`| WebAssembly bundle → `web/game.wasm` + `wasm_exec.js` |
 | `make serve`     | Build wasm, then serve `./web` on `:8080`          |
-| `make docker`    | Production container image `echo-game`             |
+| `make docker`    | Production container image `go-game`               |
 
 ### Windows (PowerShell)
 

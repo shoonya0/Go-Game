@@ -25,7 +25,7 @@ serve: build-wasm
 
 ## build the production container image
 docker:
-	docker build -t echo-game .
+	docker build -t go-game .
 
 ## remove build artifacts
 clean:
