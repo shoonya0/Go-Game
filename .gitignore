@@ -9,7 +9,16 @@
 
 # code-review-graph
 .code-review-graph/
-.claude/
 .mcp.json
-CLAUDE.md
 game.exe
+
+# AI harness: local state (the shared harness under .claude/ is tracked)
+agent-browser.json
+.agent/
+CLAUDE.local.md
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+!.claude/skills/
+!.claude/agents/
+!.claude/rules/
