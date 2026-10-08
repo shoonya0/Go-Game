@@ -1,0 +1,52 @@
+# .github/workflows/verify.yml: runs the project's full check on every push to the
+# default branch and on every pull request, on each target OS.
+#
+# Adapt before committing:
+#   - DEFAULT_BRANCH below → the repo's real default branch (git symbolic-ref refs/remotes/origin/HEAD).
+#     A filter for "main" in a "master" repo silently never runs on push.
+#   - matrix.os → the platforms you ship to (ubuntu-latest is cheapest for web-only projects).
+#   - setup + run steps → your stack (see stepsForCreatingApp/agent/reference/stack-matrix.md).
+#
+# Keep `on:` keys (push / pull_request / schedule / workflow_dispatch) at the top level.
+# A key placed under `jobs:` makes GitHub reject the workflow, and every run then has 0 jobs.
+# After the first push, confirm with: gh run list --workflow verify.yml  (expect jobs > 0)
+
+name: verify
+
+on:
+  push:
+    branches: [DEFAULT_BRANCH]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false # keep every OS leg running: shared vs platform-specific failures matter
+      matrix:
+        os: [ubuntu-latest] # e.g. [windows-latest, macos-latest] for desktop apps
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Node / TypeScript projects -------------------------------------
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify:full
+
+      # --- Python (uv) projects: replace the Node steps with ---------------
+      # - uses: astral-sh/setup-uv@v6
+      # - run: uv sync --all-extras --dev
+      # - run: node scripts/verify.mjs --full     # or: uv run pytest
