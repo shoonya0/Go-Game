@@ -1,15 +1,12 @@
 # Backend Engineering Skills
 
 A set of [Claude Skills](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview)
-distilled from two Go codebases:
-
-- **Go Game Engine** — a from-scratch 2D engine (quadtree, worker pool, physics, WASM deploy).
-- **ECHO** — a real-time chat backend (Gin, gorilla/websocket, Redis pub/sub, MongoDB, JWT).
+distilled from this Go game engine — a from-scratch 2D engine (quadtree, worker pool,
+physics, WASM deploy).
 
 Each skill captures a reusable backend practice with the real code that demonstrates it,
 research-backed guidance, a checklist, and common pitfalls. They are written to show
-concrete backend competency: concurrency, data structures, architecture, deployment,
-and real-time systems.
+concrete backend competency: concurrency, data structures, architecture and deployment.
 
 | Skill | What it covers |
 | ----- | -------------- |
@@ -17,7 +14,6 @@ and real-time systems.
 | [`go-spatial-partitioning`](./go-spatial-partitioning/SKILL.md) | Quadtree spatial index, O(log N) range queries, dynamic object→leaf updates |
 | [`go-clean-architecture`](./go-clean-architecture/SKILL.md) | `cmd`/`internal` layout, consumer-defined interfaces, constructor injection |
 | [`go-ebiten-wasm-deploy`](./go-ebiten-wasm-deploy/SKILL.md) | `go:embed` assets, WASM build, Go static server, multi-stage Docker, Render + CI |
-| [`go-realtime-websocket-service`](./go-realtime-websocket-service/SKILL.md) | WebSocket hub, Redis pub/sub fan-out, JWT auth, layered request flow |
 
 ## Using these skills
 
