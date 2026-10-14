@@ -1,6 +1,6 @@
 # Architecture overview
 
-> Snapshot 2026-10-07 at `91400c1` (+ untracked enemy WIP). Map for humans and agents.
+> Snapshot 2026-10-07 at `91400c1`; enemy rows rechecked 2026-10-14 at `832df6a`. Map for humans and agents.
 > Rows marked **target** describe intended rules the code does not fully enforce yet.
 
 Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native desktop
@@ -28,7 +28,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 | Input | `internal/system/Input.go` | Polls Ebitengine keyboard → `core.InputState` | no (writes caller's struct) |
 | Player | `internal/core/player.go`, `player_runtime.go`, `playerState.go` | Movement, gravity/jump, AABB collision resolution, state enum | `PlayerRuntime` |
 | Combat | `internal/core/combat.go`, `skills.go` | Damage, power regen, hazards (water/larva), fall damage, checkpoints, respawn | inside `PlayerRuntime` |
-| Enemies | `internal/core/enemy*.go` (**untracked WIP**) | Blueprint registry, AI (patrol/chase/attack), animation, damage | `EnemyRuntime` |
+| Enemies | `internal/core/enemy*.go` | Blueprint registry, AI (patrol/chase/attack), animation, damage | `EnemyRuntime` |
 | Animation | `internal/core/animation.go`, `enemy_anim.go` | Sprite-sheet frame tables, frame advance, drawing with camera | per-runtime |
 | World / level | `internal/core/world.go` | Loads embedded `level_1.json`, builds platforms/tiles/checkpoints, draws level & water | `Level` |
 | Spatial index | `internal/core/quadtree.go`, `aabb.go` | `DynamicQuadtree` for collision broad-phase; `Collider` interface | quadtree |
@@ -89,4 +89,4 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 
 ## Decisions
 
-No ADRs yet. Add them under `docs/adr/` (template: `stepsForCreatingApp/templates/docs/adr.md`).
+No ADRs yet. Add them under `_docs/adr/` (template: the app-setup playbook's `templates/docs/adr.md`).

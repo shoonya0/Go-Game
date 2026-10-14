@@ -11,7 +11,7 @@ Inputs:
 - `git diff` plus `git status --porcelain` (untracked `.go` files are part of the change)
   — or `git diff <base>...HEAD` if told a base
 - the spec or plan path you were given (if none, ask for it, or review against the commit message)
-- `docs/architecture-overview.md` for module ownership and layer rules
+- `_docs/architecture-overview.md` for module ownership and layer rules
 
 Check, in this order:
 1. **Requirements:** every acceptance criterion is implemented. List any that are missing.

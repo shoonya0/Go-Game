@@ -1,9 +1,21 @@
-// Fast pre-commit checks: gofmt on staged .go files, then go vet. Full checks
-// (tests, builds, lint) run in the Claude Stop hook and in CI (scripts/verify.mjs).
+// Fast pre-commit checks: docs-check (errors only), then gofmt on staged .go files and
+// go vet. Full checks (tests, builds, lint) run in the Claude Stop hook and in CI
+// (scripts/verify.mjs). Git runs hooks from the top of the working tree.
 
 import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 
 const run = (cmd, args) => spawnSync(cmd, args, { encoding: 'utf8', windowsHide: true });
+
+// Docs tree: broken links, orphan feature indexes, missing state.md block the commit.
+// Budget and stale-state warnings are printed only; CI fails on them for pull requests.
+if (existsSync('scripts/docs-check.mjs')) {
+  const docs = spawnSync(process.execPath, ['scripts/docs-check.mjs'], { stdio: 'inherit', windowsHide: true });
+  if (docs.status !== 0) {
+    process.stderr.write('pre-commit: docs-check found errors (fix them, or run /feature-docs check)\n');
+    process.exit(docs.status || 1);
+  }
+}
 
 const staged = run('git', ['diff', '--cached', '--name-only', '--diff-filter=ACMR'])
   .stdout.split(/\r?\n/)

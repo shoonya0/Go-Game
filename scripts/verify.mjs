@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // scripts/verify.mjs — one cross-platform "verify" entry point for this Go project.
-// Runs the fast checks in order and stops at the first failure; `--full` adds the
+// Runs the fast checks (gofmt, vet, new lint issues, unit tests, docs-check) in order
+// and stops at the first failure; `--full` adds the
 // native + WebAssembly builds and a full (advisory) lint report.
 //
 //   node scripts/verify.mjs          # fast: what the Stop hook runs (~30s)
@@ -33,9 +34,12 @@ const lintMissing = 'golangci-lint not found: go install github.com/golangci/gol
 const FAST = [
   { name: 'format', cmd: ['gofmt', '-l', '.'], failOnOutput: 'unformatted files (run gofmt -w <file>):' },
   { name: 'vet', cmd: ['go', 'vet', './...'] },
-  // Only issues introduced since main block; the baseline issues are listed in docs/current-state.md.
+  // Only issues introduced since main block; the baseline issues are listed in _docs/current-state.md.
   { name: 'lint (new issues)', cmd: lint ? [lint, 'run', `--new-from-merge-base=${base}`, './...'] : null, missing: lintMissing },
   { name: 'unit tests', cmd: ['go', 'test', './...'] },
+  // Docs tree: fails on broken links, orphan feature indexes and missing state.md;
+  // budget and stale-state warnings are printed but only fail in CI (--strict on PRs).
+  { name: 'docs check', cmd: [process.execPath, 'scripts/docs-check.mjs'] },
 ];
 
 const SLOW = [
