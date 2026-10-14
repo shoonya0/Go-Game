@@ -8,16 +8,17 @@ web (WebAssembly, deployed to Render via Docker).
 
 | Need | Read |
 |---|---|
-| Where the project stands, known issues, test baseline | `_docs/current-state.md` |
+| Where the project stands, active work, known issues, test baseline | `_docs/current-state.md` |
+| Docs index; which features exist and where their docs live | `_docs/README.md` → Feature registry |
 | Modules, layers, allowed imports, main flows | `_docs/architecture-overview.md` |
 | Build targets, WASM build, Render deploy | `DEPLOY.md` |
 | AI harness setup record | `_docs/ai-harness-setup.md` |
-| Docs index | `_docs/README.md` |
 
 ## Commands
 
 - Run native: `go run ./cmd`
-- **Fast check, run before saying done: `node scripts/verify.mjs`** (gofmt + vet + new lint issues + unit tests)
+- **Fast check, run before saying done: `node scripts/verify.mjs`** (gofmt + vet + new lint issues + unit tests + docs-check)
+- Docs changed: `node scripts/docs-check.mjs` (links, registry, budgets, stale feature state)
 - Full check: `node scripts/verify.mjs --full` (adds native build, WASM build, full lint report)
 - Single test: `go test ./internal/core -run TestName -v`
 - Web locally: build wasm (see `DEPLOY.md`, PowerShell section on Windows), then `go run ./server` → :8080
@@ -28,14 +29,34 @@ web (WebAssembly, deployed to Render via Docker).
 - Find code with the code graph (see below) before Grep or reading files.
 - Non-trivial change: plan → implement in small steps → `/verify-change` → `code-reviewer`
   agent → `/close-increment`.
+- A feature that spans sessions gets a docs folder: `/feature-docs start <feature>` (usually
+  `_docs/features/<feature>/`, since most code shares `internal/core`). Read its `state.md`
+  and `tasks.md` first, then only what its `README.md` lists for the task. Link facts, don't
+  copy them; document only what the code can't tell (intent, reasons, progress, traps).
 - Bugs: write a failing test that reproduces the bug first.
 - Write tests in the same session as the feature. Never delete, skip or weaken a test
   without explaining why and getting approval.
-- Commit only the files you changed for this increment. Never push `main` (it auto-deploys).
 - Report evidence (commands + output), not claims.
+
+## Git
+
+- Never commit on or push `main` (it auto-deploys to Render). Branch from an up-to-date base:
+  `feature/<name>` (matches the feature-docs name), `fix/<issue#>-<name>`, `refactor/`, `docs/`, `chore/`.
+- Author = the signed-in GitHub user (`gh api user`): name = login, email =
+  `<id>+<login>@users.noreply.github.com`. No AI watermark (Co-Authored-By, "Generated with
+  Claude Code", 🤖) in commits, PRs or issues. `.claude/hooks/git-guard.mjs` enforces all three.
+- Conventional Commits (`type(scope): summary`, body says why, `Fixes #N`). Stage only the
+  files of this increment, by path; review `git diff --staged`.
+- After each commit: `git log -1 --format='%an <%ae>%n%B'`, `git show --stat HEAD`, `git status`.
+- Feature done and verified → `/code-review` if non-trivial → PR → merge when CI is green → delete branch.
+- Bug outside the current task → propose a GitHub issue (title, repro, expected/actual); don't fix it here.
 
 ## Rules (each one exists because something went wrong)
 
+- IMPORTANT: Always save the current state of the app after every piece of work: run
+  `/feature-docs update` (tick `tasks.md`, overwrite "Now" in the feature's `state.md`,
+  update "Active work" in `_docs/current-state.md`; with no feature folder, just Active
+  work). A Stop hook checks this.
 - Every new `.go` file must be committed with the code that uses it: `main` once
   referenced enemy types whose files were never committed, so it didn't build.
 - Respect the layers table in `_docs/architecture-overview.md`;

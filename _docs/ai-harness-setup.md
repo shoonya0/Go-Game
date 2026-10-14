@@ -8,7 +8,7 @@ DONE or SKIPPED.
 |---|---|
 | Started | 2026-10-07 |
 | Target | `D:\projects\Go-Game` |
-| Playbook | `D:\projects\Go-Game\stepsForCreatingApp` |
+| Playbook | `D:\projects\Go-Game\stepsForCreatingApp` (2026-10-07); edited copy `D:\projects\Go-Game\app-setup` applied 2026-10-14 (untracked) |
 | OS / shell | `win32` / Bash (Git Bash) via Claude Code |
 | Mode | EXISTING+AI (merge) |
 | Stack | Go 1.24 (module `player`), Ebitengine v2.9; local toolchain go1.26.7 |
@@ -51,7 +51,7 @@ re-enable condition) · `BLOCKED` (with reason)
 | E2 | Secrets check | DONE | `git ls-files \| grep …` → none; no `.env` in history |
 | E3 | Graph build | DONE | `code-review-graph build` → 21 files, 153 nodes, 584 edges (untracked WIP not indexed) |
 | E4 | Architecture tour | DONE | 3 communities (core-player 122, cmd-game 7, server-env 4), 22 flows, 16 large nodes |
-| E5 | architecture-overview + current-state | DONE | `docs/architecture-overview.md`, `docs/current-state.md`, `docs/README.md` |
+| E5 | architecture-overview + current-state | DONE | `architecture-overview.md`, `current-state.md`, `README.md` (in `docs/`; moved to `_docs/` in U1) |
 | E6 | Checks found | DONE | from Makefile + ci.yml: vet, build, wasm build; tests: `go test ./...`; user approved running all |
 | E7 | Baseline at `91400c1` | DONE | all green **with** WIP; committed HEAD alone fails (see below) |
 | E8 | Verify command | DONE | `scripts/verify.mjs` (Node, no shell): gofmt → vet → lint new-from-merge-base → test; `--full` + native/wasm build + advisory lint |
@@ -62,7 +62,7 @@ re-enable condition) · `BLOCKED` (with reason)
 | H4 | .claude/settings.json | DONE | merged (user approved): env, permissions, SessionStart current-state, PreToolUse protect/guard, PostToolUse format, Stop verify; existing graph hooks kept (user chose keep duplicates); JSON parses |
 | H5 | Skills + reviewer agent | DONE | `.claude/skills/verify-change`, `.claude/skills/close-increment`, `.claude/agents/code-reviewer.md` (Go/WASM-specific checks) |
 | H6 | CLAUDE.md | DONE | project section prepended (user approved), graph section verbatim; 105 lines |
-| H7 | Docs skeleton | DONE | `docs/README.md` index; all links resolve |
+| H7 | Docs skeleton | DONE | `docs/README.md` index (now `_docs/README.md`, see U2); all links resolve |
 | H8 | Formatter + linter | DONE | gofmt (hook + verify) + golangci-lint v2 `.golangci.yml` (standard linters); baseline 3 staticcheck issues (non-blocking via new-from-merge-base) |
 | H9 | Architecture rules | DONE | depguard rules core/system/cmd/server; scratch violations in `cmd/` and `server/` produced fix-naming messages and turned verify red; scratch files deleted |
 | H10 | Pre-commit | DONE | `.githooks/pre-commit` (sh → Node: gofmt on staged .go + go vet); `git config core.hooksPath .githooks`; passes on repo, blocks unformatted staged file in scratch repo |
@@ -78,6 +78,28 @@ re-enable condition) · `BLOCKED` (with reason)
 | V5 | Log finalized | TODO | |
 | V6 | Completion report | DONE (in chat, pre-restart) | |
 | V7 | Commit / first task | DONE | grouped commits on `chore/ai-harness`; not pushed |
+
+## Playbook update: feature docs (2026-10-14)
+
+The user edited the playbook (`app-setup/`): all playbook docs under `_docs/`, plus
+playbook 11 "feature docs" (registry, per-feature `state.md`/`tasks.md`, docs-check,
+session/stop hooks) and git rules. Delta applied on `chore/feature-docs-harness` (from
+`main` @ `832df6a`, verify green, CI green).
+
+| ID | Step | Status | Evidence (command → result) / decision |
+|---|---|---|---|
+| U1 | `docs/` → `_docs/` | DONE | `git mv` (history kept); references updated; `git grep` for `docs/` and `stepsForCreatingApp` → none left |
+| U2 | Index + Feature registry, Active work | DONE | `_docs/README.md` (empty registry); `current-state.md` refreshed at `832df6a` (main builds, CI green, enemy files tracked) |
+| U3 | `scripts/docs-check.mjs` | DONE | template verbatim; FAST step in `verify.mjs` (5/5 ✔); pre-commit runs it (errors only), ran live on each commit; CI `docs-check (PR)`: `--strict --base`, job-index 0; local simulation → 0 errors |
+| U4 | Hooks session-context, stop-state, git-guard | DONE | templates verbatim; 26/26 fixture tests in a scratch repo (block once, `stop_hook_active`, off switch, branch → feature, Active work fallback, main/identity/watermark blocks) |
+| U5 | `.claude/settings.json` | DONE | `attribution` off; SessionStart inline print → session-context; git-guard on `Bash\|PowerShell`; stop-state on Stop (60 s); docs-check allowed; JSON parses; all 7 hook files exist |
+| U6 | `/feature-docs` skill + templates | DONE | adapted to Go: features in the flat `internal/core` list files in `scope:`; a glob scope is missed by `--base` (tested: `enemy*.go` → MISSED, `enemy.go` → DETECTED) |
+| U7 | CLAUDE.md | DONE | save-state rule (IMPORTANT), feature-docs workflow, Git section; 126 lines |
+| U8 | Skills + reviewer | DONE | `_docs/` paths; close-increment: feature docs, Active work, docs-check, no AI trailers |
+| U9 | Feature folders | SKIPPED | by design: `/feature-docs start` creates one when work on a feature begins; no feature has a spec yet |
+| U10 | Restructure root docs | SKIPPED | `DEPLOY.md` is a deploy guide, not a README/AI file: kept at root, linked from the index |
+| U11 | `AGENTS.md` for other agents | SKIPPED | Claude Code only (playbook 11 §6) |
+| U12 | Live checks after restart | TODO | SessionStart prints "Active work"; `/hooks` lists git-guard + stop-state; first PR runs `docs-check (PR)` |
 
 ## Test baseline (EXISTING)
 
@@ -104,12 +126,14 @@ At `91400c1` + untracked enemy WIP, Windows, go1.26.7:
 - gopls-lsp + claude-md-management plugins; pre-commit; web smoke; PR template; `/install-github-app` later.
 - `.gitattributes` added. Enemy WIP committed first, on this branch, as its own commit.
 - Commits: author shoonya0, no co-author/AI trailers, grouped by task, ≤6 files each. `stepsForCreatingApp/` left untracked.
+- 2026-10-14: apply the edited playbook (`app-setup/`) to this repo. `app-setup/` itself stays untracked (the earlier copy was removed in `832df6a`).
 
 ## Deferred items (and what re-enables them)
 
 - **Web screenshot check:** re-try once agent-browser can attach to a page with a busy WASM loop (e.g. run `open` detached, or a dev-only `?pause` flag in `index.html`).
 - **gopls-lsp:** active once `%USERPROFILE%\go\bin` is on PATH and Claude Code restarted.
-- **CI run of verify.yml:** after the user pushes this branch; check `gh run list --workflow verify.yml` shows jobs > 0. Linux `go test` with Ebitengine not yet proven headless.
+- **CI run of verify.yml:** resolved. Runs on `main` have jobs on both legs, e.g. run 37873134065 (2026-10-09): `verify (ubuntu-latest)` + `verify (windows-latest)` success; Linux `go test` runs headless under `xvfb-run`.
+- **git-guard runs twice:** the project hook and `~/.claude/hooks/git-guard.mjs` are the same script, so a blocked commit shows the message twice. Harmless; the project copy keeps the rules for anyone without the user-level hook.
 - **Line endings:** resolved — `.gitattributes` forces LF for `*.go` and `.githooks/*` (user approved).
 
 ## Completion report

@@ -15,7 +15,7 @@ Prove the current change works. Report **evidence, not claims**.
 
 | Rung | Command | Run when |
 |---|---|---|
-| 1 Fast | `node scripts/verify.mjs` (gofmt + vet + new lint issues + `go test ./...`) | Always |
+| 1 Fast | `node scripts/verify.mjs` (gofmt + vet + new lint issues + `go test ./...` + docs-check) | Always |
 | 2 Full | `node scripts/verify.mjs --full` (adds native build, WASM build, full lint report) | `cmd/`, `server/`, assets, `go.mod`, anything platform-sensitive |
 | 3 Web smoke | build wasm + `go run ./server`, then agent-browser (below) | Rendering, input, asset or `web/` changes |
 | 4 Native run | `go run ./cmd` — **user** plays it | Gameplay feel, physics, animation, controls |
