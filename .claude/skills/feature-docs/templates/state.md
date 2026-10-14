@@ -4,7 +4,7 @@
 or increment; it never grows. Progress lives in tasks.md as checkboxes; "Now" says only what
 a checklist can't: where inside the current task work stopped, open questions, and traps.
 "Recent sessions" keeps the last 5 entries (git keeps the rest). Budget: 120 lines. Evidence
-and test tables belong in _docs/status/phase-<N>.md, not here. -->
+and test tables belong in _docs/status/increments.md, not here. -->
 
 ## Now (updated YYYY-MM-DD at `<sha>`)
 

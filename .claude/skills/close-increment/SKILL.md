@@ -26,6 +26,9 @@ addressed. `$ARGUMENTS` may name the increment, e.g. `enemy knockback`.
 
    If the file doesn't exist yet, create it and turn its plain-text row in
    `_docs/README.md` into a link (docs-check flags an unlinked doc as an orphan).
+   If it's past ~180 lines (budget 200), first rename it to `increments-<YYYY-MM>.md`
+   (month of its newest entry), add a row linking the archive to `_docs/README.md`, then
+   start a fresh `increments.md`. Don't use `/feature-docs split` on this log.
 2. **Feature docs** (if the work belongs to a feature with its own docs folder): tick the
    finished items in its `tasks.md`, update each leaf doc whose facts changed, then the
    feature's `state.md` (overwrite "Now"; prepend one 3-line session entry linking this

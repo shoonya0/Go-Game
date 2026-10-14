@@ -42,7 +42,8 @@ Use when a feature will take more than one session or gets a spec. Skip it for a
 3. Create `README.md`, `state.md` and `tasks.md` from the templates bundled with this
    skill (`.claude/skills/feature-docs/templates/`). Fill in the purpose, `scope:`
    (repo-relative code paths), 1 to 5 entry points, and the "Up" link. Remove rows for
-   docs that don't exist yet. Don't create `design.md` unless the design isn't visible
+   docs that don't exist yet, and placeholder lines you can't fill (an unfilled link is a
+   docs-check ERROR). Don't create `design.md` unless the design isn't visible
    in the code.
 4. If a spec or plan exists elsewhere (e.g. `_docs/specs/<date>-<feature>.md`), **move**
    the spec to `spec.md` and turn the plan's steps into `tasks.md` checkboxes. Fix every

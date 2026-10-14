@@ -43,5 +43,5 @@ visible in the code (a protocol, a state machine, a data migration plan). -->
 
 ## Depends on / used by
 
-- Uses: <other feature> ([index](<link>)) for <what>
+- Uses: <other feature> (link its index README.md) for <what>
 - Used by: <other feature> for <what>
