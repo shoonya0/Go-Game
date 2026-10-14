@@ -1,6 +1,7 @@
 # .github/workflows/verify.yml: runs `node scripts/verify.mjs --full` (gofmt, vet,
-# new lint issues, unit tests, native + WASM build, advisory full lint) on every
-# push to main and every pull request, on each target OS.
+# new lint issues, unit tests, docs-check, native + WASM build, advisory full lint) on
+# every push to main and every pull request, on each target OS. Pull requests also run
+# docs-check --strict against the base branch.
 #
 # Keep `on:` keys at the top level. A key placed under `jobs:` makes GitHub reject
 # the workflow, and every run then has 0 jobs.
@@ -48,6 +49,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      # Docs tree: PRs only, once per run. Fails when the PR changes a feature's code
+      # without updating its state.md / tasks.md, or adds an over-budget doc. Needs the
+      # full history (fetch-depth: 0 above). Waive the stale check with [docs-skip] in a
+      # commit message (renames, formatting, dependency bumps).
+      - name: docs-check (PR)
+        if: github.event_name == 'pull_request' && strategy.job-index == 0
+        run: node scripts/docs-check.mjs --strict --base origin/${{ github.base_ref }}
 
       # Ebitengine needs OpenGL / X11 / ALSA headers for the native build on Linux,
       # and an X display even to initialise in tests (xvfb provides a virtual one).
