@@ -89,4 +89,4 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 
 ## Decisions
 
-No ADRs yet. Add them under `docs/adr/` (template: `stepsForCreatingApp/templates/docs/adr.md`).
+No ADRs yet. Add them under `_docs/adr/` (template: the app-setup playbook's `templates/docs/adr.md`).

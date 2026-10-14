@@ -8,11 +8,11 @@ web (WebAssembly, deployed to Render via Docker).
 
 | Need | Read |
 |---|---|
-| Where the project stands, known issues, test baseline | `docs/current-state.md` |
-| Modules, layers, allowed imports, main flows | `docs/architecture-overview.md` |
+| Where the project stands, known issues, test baseline | `_docs/current-state.md` |
+| Modules, layers, allowed imports, main flows | `_docs/architecture-overview.md` |
 | Build targets, WASM build, Render deploy | `DEPLOY.md` |
-| AI harness setup record | `docs/ai-harness-setup.md` |
-| Docs index | `docs/README.md` |
+| AI harness setup record | `_docs/ai-harness-setup.md` |
+| Docs index | `_docs/README.md` |
 
 ## Commands
 
@@ -38,7 +38,7 @@ web (WebAssembly, deployed to Render via Docker).
 
 - Every new `.go` file must be committed with the code that uses it: `main` once
   referenced enemy types whose files were never committed, so it didn't build.
-- Respect the layers table in `docs/architecture-overview.md`;
+- Respect the layers table in `_docs/architecture-overview.md`;
   `.golangci.yml` depguard enforces them. `server/` stays stdlib-only and CGO-free.
 - Assets are loaded by **base file name** from the embed FS (`internal/core/image.go`):
   new asset files need unique names, even in subfolders.
