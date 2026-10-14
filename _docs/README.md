@@ -1,19 +1,50 @@
-# Docs index
+# Go-Game (Pirate Adventure): docs index
 
-## AI / engineering docs
+Linked from CLAUDE.md. This page is a table of contents: one line per doc or feature, no
+detail. Read top-down and stop as soon as you have what the task needs.
 
-| Doc | What it holds |
+<!-- Budget: 80 lines. When the registry outgrows it, group features into areas
+(kind: area) and give each area its own index. scripts/docs-check.mjs reports every
+feature index that isn't reachable from this page. -->
+
+## Start here
+
+| Need | Read |
 |---|---|
-| [`current-state.md`](./current-state.md) | Snapshot: what works, known issues, test baseline, open decisions, next task |
-| [`architecture-overview.md`](./architecture-overview.md) | Modules, layers and allowed imports, main flows, platform notes |
-| [`ai-harness-setup.md`](./ai-harness-setup.md) | How the AI harness (hooks, skills, verify, CI) was set up, and what's deferred |
-| `status/increments.md` | Per-increment log, written by `/close-increment` (created on first use) |
-| `adr/` | Architecture decision records (none yet) |
+| Where the project stands, active work, test baseline | [current-state.md](./current-state.md) |
+| Modules, layers, allowed imports, main flows | [architecture-overview.md](./architecture-overview.md) |
+| How the AI harness (hooks, skills, verify, CI) was set up, and what's deferred | [ai-harness-setup.md](./ai-harness-setup.md) |
+| Increment log, written by `/close-increment` (created on first use) | `status/increments.md` |
+| Why a cross-cutting decision was made (none yet) | `adr/` |
+
+## Feature registry
+
+One row per feature that has its own docs folder. Status: ⏳ planned · 🟡 in progress ·
+✅ done · ⚠️ blocked · 💤 dormant.
+
+| Feature | Docs index | Code | Status | One line |
+|---|---|---|---|---|
+| *(none yet: `/feature-docs start <feature> <folder>` adds a row)* | | | | |
+
+<!-- Example row. Most features here live in the flat internal/core package, so their docs
+go in _docs/features/<feature>/ and the index lists the feature's files in "scope:".
+| enemies | [index](./features/enemies/README.md) | `internal/core/enemy*.go` | 🟡 | Enemy blueprints, AI and damage |
+-->
 
 ## Other docs
 
 | Doc | What it holds |
 |---|---|
-| [`../DEPLOY.md`](../DEPLOY.md) | Build targets, WebAssembly build, Render deployment |
-| [`../_docx/rulesAndSkills/README.md`](../_docx/rulesAndSkills/README.md) | Go backend skills distilled from this engine (reference; not loaded as Claude skills) |
-| [`../CLAUDE.md`](../CLAUDE.md) | Agent entry file: map, commands, workflow, rules |
+| [DEPLOY.md](../DEPLOY.md) | Build targets, WebAssembly build, Render deployment |
+| [_docx/rulesAndSkills/README.md](../_docx/rulesAndSkills/README.md) | Go backend skills distilled from this engine (reference; not loaded as Claude skills) |
+| [CLAUDE.md](../CLAUDE.md) | Agent entry file: map, commands, workflow, rules |
+
+## Rules for these docs
+
+- One fact, one home. Other docs link to it instead of repeating it.
+- Document only what the code can't tell: intent (spec), reasons (decisions), progress
+  (tasks, state) and traps. Structure and call flow come from the code graph.
+- Feature docs live next to the feature's code (`<folder>/_docs/`), or in
+  `_docs/features/<feature>/` when the feature has no single folder.
+- Over budget (index 80, state 120, other docs 200 lines)? Split it into a folder with
+  its own `README.md` index. Run `node scripts/docs-check.mjs` after any docs change.
