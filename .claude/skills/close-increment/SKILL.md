@@ -1,6 +1,6 @@
 ---
 name: close-increment
-description: Close out a finished increment by updating docs/status/increments.md and docs/current-state.md, recording lessons, writing the completion report, and making an atomic commit. Invoke manually after /verify-change and review pass.
+description: Close out a finished increment by updating _docs/status/increments.md and _docs/current-state.md, recording lessons, writing the completion report, and making an atomic commit. Invoke manually after /verify-change and review pass.
 disable-model-invocation: true
 ---
 
@@ -17,16 +17,16 @@ addressed. `$ARGUMENTS` may name the increment, e.g. `enemy knockback`.
 
 ## 2. Update the docs (same commit as the code)
 
-1. `docs/status/increments.md` (create it if missing): add a section, newest first:
+1. `_docs/status/increments.md` (create it if missing): add a section, newest first:
    - **Problem**: one or two sentences.
    - **Change**: files and modules, and behavior before vs after.
    - **Tests**: what was added, with test names.
    - **Evidence**: the verification table from `/verify-change`.
    - **Commit**: write `<pending>`; fill in the hash in the next increment's commit.
-2. `docs/current-state.md`: update only if the project's state changed (what a user can
+2. `_docs/current-state.md`: update only if the project's state changed (what a user can
    do, known issues, open decisions, baseline, next task). Update the snapshot SHA and date.
 3. If a doc you read during this work turned out to be **wrong** (including
-   `docs/architecture-overview.md` or `DEPLOY.md`), fix it now and name it in the report.
+   `_docs/architecture-overview.md` or `DEPLOY.md`), fix it now and name it in the report.
 
 ## 3. Lessons
 

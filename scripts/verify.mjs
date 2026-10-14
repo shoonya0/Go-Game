@@ -33,7 +33,7 @@ const lintMissing = 'golangci-lint not found: go install github.com/golangci/gol
 const FAST = [
   { name: 'format', cmd: ['gofmt', '-l', '.'], failOnOutput: 'unformatted files (run gofmt -w <file>):' },
   { name: 'vet', cmd: ['go', 'vet', './...'] },
-  // Only issues introduced since main block; the baseline issues are listed in docs/current-state.md.
+  // Only issues introduced since main block; the baseline issues are listed in _docs/current-state.md.
   { name: 'lint (new issues)', cmd: lint ? [lint, 'run', `--new-from-merge-base=${base}`, './...'] : null, missing: lintMissing },
   { name: 'unit tests', cmd: ['go', 'test', './...'] },
 ];

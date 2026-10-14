@@ -26,7 +26,7 @@ Prove the current change works. Report **evidence, not claims**.
   from rung 1.
 - Never delete, skip or weaken a test to get green. If a test is wrong, stop and
   explain why.
-- Compare failures against the **baseline** in `docs/current-state.md` by test name.
+- Compare failures against the **baseline** in `_docs/current-state.md` by test name.
   Known lint baseline (not blocking): 2× SA1019 `vector.DrawFilledRect` in
   `internal/core/hud.go`, SA9003 empty branch in `internal/core/quadtree.go`.
 
@@ -45,7 +45,7 @@ agent-browser open http://localhost:8080
 agent-browser wait 3000                # wasm boot
 agent-browser console
 agent-browser errors
-agent-browser screenshot docs/evidence/<feature>-<step>.png
+agent-browser screenshot _docs/evidence/<feature>-<step>.png
 agent-browser close
 ```
 
@@ -67,7 +67,7 @@ page go idle. Run agent-browser steps in the background, and if `open` hangs, fa
 |---|---|---|---|
 | Fast | `node scripts/verify.mjs` | ✅ pass (4 s) | 9/9 tests |
 | Full | `node scripts/verify.mjs --full` | ✅ pass | native + wasm build ok |
-| Web | agent-browser | ✅ | console clean; docs/evidence/x-1.png |
+| Web | agent-browser | ✅ | console clean; _docs/evidence/x-1.png |
 
 - New failures vs baseline @<sha>: none
 - Not verified: <list, or "nothing">

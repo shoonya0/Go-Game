@@ -1,6 +1,6 @@
 # golangci-lint v2 config. Run via `node scripts/verify.mjs` (new issues only)
 # or `golangci-lint run ./...` (everything). Layer rules mirror the table in
-# docs/architecture-overview.md — keep them in sync.
+# _docs/architecture-overview.md — keep them in sync.
 version: "2"
 
 linters:
@@ -14,7 +14,7 @@ linters:
           files: ["**/internal/core/**"]
           deny:
             - pkg: "player/cmd"
-              desc: "internal/core must not import cmd. Move the shared type into internal/core and have cmd import it (see docs/architecture-overview.md#layers)."
+              desc: "internal/core must not import cmd. Move the shared type into internal/core and have cmd import it (see _docs/architecture-overview.md#layers)."
             - pkg: "player/internal/system"
               desc: "internal/core must not import internal/system (system depends on core, not the reverse). Pass the data in as a core.InputState-style struct."
         system:
