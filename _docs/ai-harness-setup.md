@@ -99,6 +99,7 @@ session/stop hooks) and git rules. Delta applied on `chore/feature-docs-harness`
 | U9 | Feature folders | SKIPPED | by design: `/feature-docs start` creates one when work on a feature begins; no feature has a spec yet |
 | U10 | Restructure root docs | SKIPPED | `DEPLOY.md` is a deploy guide, not a README/AI file: kept at root, linked from the index |
 | U11 | `AGENTS.md` for other agents | SKIPPED | Claude Code only (playbook 11 §6) |
+| U13 | Merge `_docx/` into `_docs/` | DONE | user chose `_docs` (playbook convention) over renaming the tooling to `_docx`; `git mv _docx/rulesAndSkills _docs/rulesAndSkills`, linked from the index |
 | U12 | Live checks after restart | TODO | SessionStart prints "Active work"; `/hooks` lists git-guard + stop-state; first PR runs `docs-check (PR)` |
 
 ## Test baseline (EXISTING)
