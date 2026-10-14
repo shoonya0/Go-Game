@@ -14,6 +14,7 @@ feature index that isn't reachable from this page. -->
 | Where the project stands, active work, test baseline | [current-state.md](./current-state.md) |
 | Modules, layers, allowed imports, main flows | [architecture-overview.md](./architecture-overview.md) |
 | How the AI harness (hooks, skills, verify, CI) was set up, and what's deferred | [ai-harness-setup.md](./ai-harness-setup.md) |
+| Go backend skills distilled from this engine (reference; not loaded as Claude skills) | [rulesAndSkills/](./rulesAndSkills/README.md) |
 | Increment log, written by `/close-increment` (created on first use) | `status/increments.md` |
 | Why a cross-cutting decision was made (none yet) | `adr/` |
 
@@ -36,7 +37,6 @@ go in _docs/features/<feature>/ and the index lists the feature's files in "scop
 | Doc | What it holds |
 |---|---|
 | [DEPLOY.md](../DEPLOY.md) | Build targets, WebAssembly build, Render deployment |
-| [_docx/rulesAndSkills/README.md](../_docx/rulesAndSkills/README.md) | Go backend skills distilled from this engine (reference; not loaded as Claude skills) |
 | [CLAUDE.md](../CLAUDE.md) | Agent entry file: map, commands, workflow, rules |
 
 ## Rules for these docs
