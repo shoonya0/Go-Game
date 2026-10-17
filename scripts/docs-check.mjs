@@ -5,6 +5,7 @@
 //   ERROR  broken link        a relative markdown link points at a file that doesn't exist
 //   ERROR  orphan index       a <feature>/_docs/README.md isn't reachable from _docs/README.md
 //   ERROR  missing state      a feature index has no state.md next to it
+//   ERROR  bad scope          git rejects a feature's scope: entries (so its stale check can't run)
 //   WARN   orphan doc         a doc under _docs/ isn't linked from any index
 //   WARN   too big            a file is over its line budget: split it (/feature-docs split <file>)
 //   WARN   too deep           a doc is more than MAX_DEPTH links below the root index
@@ -22,6 +23,10 @@
 // orphan indexes and missing state are always reported. A commit message in the range
 // containing [docs-skip] waives the stale check (for renames, formatting, dependency bumps).
 // CI needs the full history for this: actions/checkout with fetch-depth: 0.
+//
+// A feature's "scope:" entries are git pathspecs, relative to the project root: a folder
+// (src/billing), a file (internal/core/enemy.go) or a glob (internal/core/enemy*.go). Git
+// matches them, so local runs and --base runs agree on what counts as the feature's code.
 //
 // Node built-ins only; works the same on Windows and macOS. Git is optional: without it
 // the stale-state check is skipped.
@@ -79,10 +84,20 @@ function parseFrontmatter(text) {
   const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text);
   const fm = {};
   if (!m) return fm;
-  for (const line of m[1].split(/\r?\n/)) {
-    const kv = /^([A-Za-z_][\w-]*):\s*(.*)$/.exec(line);
+  const rows = m[1].split(/\r?\n/);
+  for (let i = 0; i < rows.length; i++) {
+    const kv = /^([A-Za-z_][\w-]*):\s*(.*)$/.exec(rows[i]);
     if (!kv) continue;
     let v = kv[2].trim();
+    if (v === '') {
+      // Block list:  scope:\n  - a\n  - b
+      const items = [];
+      while (i + 1 < rows.length && /^\s*-\s+/.test(rows[i + 1])) {
+        items.push(rows[++i].replace(/^\s*-\s+/, '').trim().replace(/^['"]|['"]$/g, ''));
+      }
+      fm[kv[1]] = items.length ? items.filter(Boolean) : '';
+      continue;
+    }
     if (v.startsWith('[') && v.endsWith(']')) {
       v = v.slice(1, -1).split(',').map((s) => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
     } else {
@@ -112,8 +127,10 @@ function parseLinks(text) {
     const open = line.indexOf('<!--');
     if (open >= 0) { line = line.slice(0, open); inComment = true; }
     line = line.replace(/`[^`]*`/g, '');
-    for (const m of line.matchAll(/\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)/g)) {
-      const target = m[1];
+    // Targets in <…> may contain spaces, so an unfilled placeholder such as
+    // (<relative path to _docs/README.md>) is checked, and reported, like any link.
+    for (const m of line.matchAll(/\[[^\]]*\]\(\s*(?:<([^>]+)>|([^)\s]+))(?:\s+"[^"]*")?\s*\)/g)) {
+      const target = (m[1] ?? m[2]).trim();
       if (/^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith('#')) continue; // URL or anchor
       links.push({ target: decodeURIComponent(target.split('#')[0].split('?')[0]), line: i + 1 });
     }
@@ -195,25 +212,36 @@ for (const [file, entry] of info) {
 // ---------- feature indexes: state.md exists, and isn't stale ------------------------
 const git = (...a) => spawnSync('git', a, { cwd: ROOT, encoding: 'utf8', windowsHide: true });
 const hasGit = git('rev-parse', '--is-inside-work-tree').stdout?.trim() === 'true';
+const hasHead = hasGit && git('rev-parse', '--verify', '-q', 'HEAD').status === 0; // false before the first commit
 const lines = (r) => (r.stdout || '').split(/\r?\n/).filter(Boolean);
+
+// Git output for a feature's scope. A command git rejects (a malformed pathspec, a path
+// outside the repo) throws instead of reading as "nothing changed": a typo must never
+// switch the stale check off silently.
+class ScopeError extends Error {}
+const gitScope = (...a) => {
+  const r = git(...a);
+  if (r.status !== 0) throw new ScopeError((r.stderr || `git exited ${r.status}`).trim().split(/\r?\n/)[0]);
+  return r;
+};
 
 // --base: files this branch changed (committed since BASE, plus staged and unstaged edits)
 let changed = null;
 let skipStale = false;
+// Files changed in this branch, optionally limited to git pathspecs.
+const branchChanges = (...spec) => [
+  ...lines(gitScope('diff', '--name-only', '--relative', `${BASE}...HEAD`, '--', ...spec)),
+  ...lines(gitScope('diff', '--name-only', '--relative', '--', ...spec)),
+  ...lines(gitScope('diff', '--name-only', '--relative', '--cached', '--', ...spec)),
+];
 if (BASE && hasGit) {
-  const range = git('diff', '--name-only', '--relative', `${BASE}...HEAD`);
-  if (range.status !== 0) {
+  if (git('diff', '--quiet', `${BASE}...HEAD`).status > 1) {
     add('error', ROOT_INDEX, 0, `--base ${BASE}: git can't diff that ref (in CI, check out with fetch-depth: 0)`);
     finish();
   }
-  changed = new Set([
-    ...lines(range),
-    ...lines(git('diff', '--name-only', '--relative')),
-    ...lines(git('diff', '--name-only', '--relative', '--cached')),
-  ]);
+  changed = new Set(branchChanges());
   skipStale = /\[docs-skip\]/i.test(git('log', '--format=%B', `${BASE}..HEAD`).stdout || '');
 }
-const under = (p, dir) => p === dir || p.startsWith(dir + '/');
 
 for (const [file, entry] of info) {
   if (!isFeatureIndex(file)) continue;
@@ -227,38 +255,48 @@ for (const [file, entry] of info) {
   if (!hasGit) continue;
   const stateFiles = [state, ...(existsSync(tasks) ? [tasks] : [])].map(rel);
 
-  // scope: frontmatter list of repo-relative paths; default = the folder holding _docs/
+  // scope: frontmatter list of git pathspecs (folders, files, globs); default = the folder holding _docs/
   let scope = entry.fm.scope;
   if (typeof scope === 'string') scope = [scope];
-  if (!scope || scope.length === 0) {
+  scope = (scope || []).map((p) => p.split('\\').join('/').replace(/\/\*\*$/, '').replace(/\/+$/, '')).filter(Boolean);
+  if (scope.length === 0) {
     const owner = path.dirname(docsDir);
     if (owner === ROOT) continue; // root-level feature folder with no scope: nothing to compare
     scope = [rel(owner)];
   }
-  scope = scope.map((p) => p.split('\\').join('/').replace(/\/\*\*$/, '').replace(/\/+$/, ''));
   const docsRel = rel(docsDir);
   const where = scope.join(', ');
 
-  if (changed) {
-    if (skipStale) continue;
-    const codeTouched = [...changed].some((p) => scope.some((d) => under(p, d)) && !under(p, docsRel));
-    const stateTouched = stateFiles.some((f) => changed.has(f));
-    if (codeTouched && !stateTouched) {
-      add('warn', state, 0, `stale state: this branch changes code in [${where}] but neither state.md nor tasks.md; run /feature-docs update (or put [docs-skip] in a commit message if there's nothing to record)`);
-    }
-    continue;
-  }
-
   const pathspec = [...scope, `:(exclude)${docsRel}`];
-  const lastCode = Number(git('log', '-1', '--format=%ct', '--', ...pathspec).stdout.trim() || 0);
-  const lastState = Math.max(...stateFiles.map((f) => Number(git('log', '-1', '--format=%ct', '--', f).stdout.trim() || 0)));
-  if (lastCode > lastState) {
-    add('warn', state, 0, `stale state: code in [${where}] was committed after state.md / tasks.md last changed; update "Now"`);
-  }
-  const dirtyCode = git('status', '--porcelain', '--', ...pathspec).stdout.trim();
-  const dirtyState = git('status', '--porcelain', '--', ...stateFiles).stdout.trim();
-  if (dirtyCode && !dirtyState) {
-    add('warn', state, 0, `stale state: uncommitted changes in [${where}] but state.md / tasks.md are unchanged`);
+
+  try {
+    if (changed) {
+      if (skipStale) continue;
+      const codeTouched = branchChanges(...pathspec).length > 0;
+      const stateTouched = stateFiles.some((f) => changed.has(f));
+      if (codeTouched && !stateTouched) {
+        add('warn', state, 0, `stale state: this branch changes code in [${where}] but neither state.md nor tasks.md; run /feature-docs update (or put [docs-skip] in a commit message if there's nothing to record)`);
+      }
+      continue;
+    }
+
+    // Commits that touched the code after the last commit that touched state.md / tasks.md.
+    // Ancestry, not timestamps: same-second commits, rebases and clock skew can't hide them.
+    if (hasHead) {
+      const lastState = gitScope('log', '-1', '--format=%H', '--', ...stateFiles).stdout.trim();
+      const codeAfter = Number(gitScope('rev-list', '--count', lastState ? `${lastState}..HEAD` : 'HEAD', '--', ...pathspec).stdout.trim() || 0);
+      if (codeAfter > 0) {
+        add('warn', state, 0, `stale state: code in [${where}] was committed after state.md / tasks.md last changed; update "Now"`);
+      }
+    }
+    const dirtyCode = gitScope('status', '--porcelain', '--', ...pathspec).stdout.trim();
+    const dirtyState = gitScope('status', '--porcelain', '--', ...stateFiles).stdout.trim();
+    if (dirtyCode && !dirtyState) {
+      add('warn', state, 0, `stale state: uncommitted changes in [${where}] but state.md / tasks.md are unchanged`);
+    }
+  } catch (e) {
+    if (!(e instanceof ScopeError)) throw e;
+    add('error', file, 0, `bad scope: git rejected [${where}] (${e.message}); scope entries are git pathspecs relative to the project root (the folder holding _docs/README.md)`);
   }
 }
 
