@@ -6,8 +6,9 @@
 //
 // Which feature is active:
 //   1. The git branch: "feature/billing", "fix/billing" or "billing" selects the row named
-//      "billing" in the Feature registry of _docs/README.md (or whose docs folder is
-//      named billing). Parallel sessions on different branches each get their own feature.
+//      "billing" in the "## Feature registry" section of _docs/README.md (or whose docs
+//      folder is named billing). Parallel sessions on different branches each get their
+//      own feature.
 //   2. Otherwise the feature linked from "## Active work" in _docs/current-state.md.
 // Then it prints that feature's "## Now" section and the next unchecked items of tasks.md.
 // Falls back to the first 40 lines of current-state.md when neither exists.
@@ -44,8 +45,13 @@ function branchFeature() {
   const branch = (r.stdout || '').trim();
   if (!branch || ['HEAD', 'main', 'master', 'develop', 'trunk'].includes(branch)) return null;
   const want = slug(branch.split('/').pop());
+  // Only registry rows name features. Rows elsewhere in the index ("Start here") link docs
+  // in _docs/ itself, whose owner folder is the project root, so a branch named after the
+  // project would match them.
+  const text = read(registry);
+  const rows = section(text, 'Feature registry') ?? stripComments(text);
   let best = null;
-  for (const line of stripComments(read(registry)).split(/\r?\n/)) {
+  for (const line of rows.split(/\r?\n/)) {
     const m = /^\|\s*([^|]+?)\s*\|\s*\[[^\]]*\]\(([^)\s]+)\)/.exec(line);
     if (!m) continue;
     const index = path.resolve(docsDir, m[2]);
