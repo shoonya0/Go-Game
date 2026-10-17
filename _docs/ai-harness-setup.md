@@ -102,8 +102,8 @@ merge rule "ask before `gh pr merge`" (merging to `main` deploys to Render).
 | U8 | 2026-10-14.8 pre-commit docs-check first, `100755` shim | already present | `git hook run pre-commit` → exit 0; `git ls-files -s .githooks/pre-commit` → `100755` |
 | U9 | 2026-10-14.9 setup log version + updates table | DONE | this section and the `Playbook version` row |
 | U10 | 2026-10-14.10 index links the setup log | already present | `_docs/README.md` row → `ai-harness-setup.md` |
-| U11 | V1 restart | TODO | new session so the changed session-context hook loads |
-| U12 | V2/V3 registration + probes | TODO | SessionStart prints Active work on a non-feature branch; `/hooks` lists git-guard + stop-state |
+| U11 | V1 restart | DONE | resumed session printed the updated "Active work" (new session-context hook loaded) |
+| U12 | V2/V3 registration + probes | DONE | SessionStart on `chore/playbook-2026-10-14` fell back to Active work; user checked `/hooks` (git-guard + stop-state listed) |
 | U13 | V6 report + first PR runs `docs-check (PR)` | TODO | |
 
 ### 2026-10-06 → 2026-10-09 (2026-10-14, branch `chore/feature-docs-harness`)
