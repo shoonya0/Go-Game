@@ -22,7 +22,9 @@ addressed. `$ARGUMENTS` may name the increment, e.g. `enemy knockback`.
    - **Change**: files and modules, and behavior before vs after.
    - **Tests**: what was added, with test names.
    - **Evidence**: the verification table from `/verify-change`.
-   - **Commit**: write `<pending>`; fill in the hash in the next increment's commit.
+   - **Commit**: write `<pending>`. Fill in the hash in the next increment's commit; for
+     the feature's last increment, in a follow-up `docs:` commit before pushing (an amend
+     can't record its own hash, since amending changes it).
 
    If the file doesn't exist yet, create it and turn its plain-text row in
    `_docs/README.md` into a link (docs-check flags an unlinked doc as an orphan).
@@ -79,5 +81,11 @@ the wrong layer, a WASM-only failure)?
 - Commit on the feature branch, never on `main`. Message: `<type>(<scope>): <what>`, a
   blank line, then *why*, then `Fixes #N` if an issue exists. No AI attribution
   trailers; the author is the GitHub user (CLAUDE.md "Git").
-- Verify: `git log -1 --format='%an <%ae>%n%B'`, `git show --stat HEAD`, `git status --short`.
-- Don't push or open a PR unless the user asked to. Never push `main` (Render auto-deploys).
+- Verify: `git log -1 --format='%an <%ae>%n%n%B'`, `git show --stat HEAD`,
+  `git status --short`. Report the hash.
+- Push only as CLAUDE.md "Git" says: increments are committed locally; when this one
+  **finishes the feature** (every `tasks.md` box ticked), run `/code-review` on the branch
+  if the feature is non-trivial and fix its findings, add the follow-up commit for the
+  hash, then push, open a PR with the completion report in its body, and **ask the user
+  before `gh pr merge`** (merging deploys to Render). Otherwise, push or open a PR only if
+  the user asked. Never push `main` (Render auto-deploys).

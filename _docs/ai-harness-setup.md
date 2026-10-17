@@ -1,14 +1,15 @@
 # AI harness setup log
 
 This is the setup agent's record and resume point. If the setup is interrupted, start
-the agent again with the same prompt and it continues from the first step that isn't
-DONE or SKIPPED.
+the agent again with the same prompt and it continues from the first `TODO` row. Every
+other status is final.
 
 | Field | Value |
 |---|---|
 | Started | 2026-10-07 |
 | Target | `D:\projects\Go-Game` |
-| Playbook | `D:\projects\Go-Game\stepsForCreatingApp` (2026-10-07); edited copy `D:\projects\Go-Game\app-setup` applied 2026-10-14 (untracked) |
+| Playbook | `D:\projects\Go-Game\stepsForCreatingApp` (2026-10-07); edited copy `D:\projects\Go-Game\app-setup` applied 2026-10-14 and 2026-10-17 (untracked) |
+| Playbook version | 2026-10-14 |
 | OS / shell | `win32` / Bash (Git Bash) via Claude Code |
 | Mode | EXISTING+AI (merge) |
 | Stack | Go 1.24 (module `player`), Ebitengine v2.9; local toolchain go1.26.7 |
@@ -71,15 +72,41 @@ re-enable condition) · `BLOCKED` (with reason)
 | H13 | code-review-graph MCP | DONE (pre-existing) | `.mcp.json` + CLAUDE.md graph section already present; no `install` re-run |
 | H14 | Agent UI access | PARTIAL | wasm built, `go run ./server` served `200 application/wasm`; server log shows browser fetched `game.wasm`; `agent-browser open` hung >2 min (WASM render loop) → no screenshot. Fallback documented in verify-change |
 | H15 | Optional extras | DONE / USER | PR template written; claude-md-management installed; `/install-github-app` → user runs it |
-| V1 | Restart | TODO | user restarts Claude Code (`claude --continue`) |
-| V2 | Registration checks | TODO | `/hooks`, `/mcp`, `/context` |
-| V3 | Live probes | TODO | protect `.env.harness-probe`, guard, format, graph MCP, `/verify-change` |
-| V4 | Context budget | TODO | |
-| V5 | Log finalized | TODO | |
+| V1 | Restart | DONE | new sessions since 2026-10-14 load the hooks (SessionStart output seen 2026-10-17) |
+| V2 | Registration checks | DEFERRED | folded into the 2026-10-14 upgrade row U12 |
+| V3 | Live probes | DEFERRED | folded into the 2026-10-14 upgrade row U12 (protect `.env.harness-probe`, guard, format, graph MCP, `/verify-change`) |
+| V4 | Context budget | DEFERRED | folded into the 2026-10-14 upgrade row U12 (`/context`) |
+| V5 | Log finalized | DEFERRED | folded into the 2026-10-14 upgrade row U13 |
 | V6 | Completion report | DONE (in chat, pre-restart) | |
 | V7 | Commit / first task | DONE | grouped commits on `chore/ai-harness`; not pushed |
 
-## Playbook update: feature docs (2026-10-14)
+## Playbook updates (UPGRADE)
+
+One table per upgrade run (`app-setup/agent/07-upgrade.md`). `Playbook version` above is
+the version after the newest run.
+
+### 2026-10-09 → 2026-10-14 (2026-10-17, branch `chore/playbook-2026-10-14`)
+
+From `main` @ `501706a`; `node scripts/verify.mjs` green before (5/5). User: "Apply all";
+merge rule "ask before `gh pr merge`" (merging to `main` deploys to Render).
+
+| ID | CHANGELOG step | Status | Evidence (command → result) / decision |
+|---|---|---|---|
+| U1 | 2026-10-14.1 + .11 docs-check pathspecs, ancestry, `bad scope`, block lists | DONE | project copy was verbatim → new template copied; `grep branchChanges`, `grep 'bad scope'` → found |
+| U2 | 2026-10-14.2 session-context registry-only match | DONE | template copied (no project adaptations) |
+| U3 | 2026-10-14.3 feature templates | DONE | README/state/tasks copied; `feature-CLAUDE.template.md` already matched except its Go example rule (kept) |
+| U4 | 2026-10-14.4 feature-docs skill "owns files" | DONE | ported around the Go wording: globs now allowed in `scope:`, `bad scope` fix row |
+| U5 | 2026-10-14.5 status-log path + rollover | already present | `close-increment` names `_docs/status/increments.md` (no roadmap) and the `-<YYYY-MM>` rollover; index row exists |
+| U6 | 2026-10-14.6 close-increment commit step | DONE | §5: `%n%n`, report hash, push/PR only when the increment finishes the feature, ask before merge; §2: follow-up `docs:` commit for the last hash |
+| U7 | 2026-10-14.7 CLAUDE.md Git + merge rule | DONE | "Increments are committed locally", **Merging: ask before `gh pr merge`**, `%an <%ae>%n%n%B` verify |
+| U8 | 2026-10-14.8 pre-commit docs-check first, `100755` shim | already present | `git hook run pre-commit` → exit 0; `git ls-files -s .githooks/pre-commit` → `100755` |
+| U9 | 2026-10-14.9 setup log version + updates table | DONE | this section and the `Playbook version` row |
+| U10 | 2026-10-14.10 index links the setup log | already present | `_docs/README.md` row → `ai-harness-setup.md` |
+| U11 | V1 restart | DONE | resumed session printed the updated "Active work" (new session-context hook loaded) |
+| U12 | V2/V3 registration + probes | DONE | SessionStart on `chore/playbook-2026-10-14` fell back to Active work; user checked `/hooks` (git-guard + stop-state listed) |
+| U13 | V6 report + first PR runs `docs-check (PR)` | DONE | PR #3: `build`, `verify (ubuntu-latest)`, `verify (windows-latest)` pass; `docs-check (PR)` (run 39028381963) → 0 errors, 0 warnings; report in chat and PR body |
+
+### 2026-10-06 → 2026-10-09 (2026-10-14, branch `chore/feature-docs-harness`)
 
 The user edited the playbook (`app-setup/`): all playbook docs under `_docs/`, plus
 playbook 11 "feature docs" (registry, per-feature `state.md`/`tasks.md`, docs-check,
@@ -100,7 +127,7 @@ session/stop hooks) and git rules. Delta applied on `chore/feature-docs-harness`
 | U10 | Restructure root docs | SKIPPED | `DEPLOY.md` is a deploy guide, not a README/AI file: kept at root, linked from the index |
 | U11 | `AGENTS.md` for other agents | SKIPPED | Claude Code only (playbook 11 §6) |
 | U13 | Merge `_docx/` into `_docs/` | DONE | user chose `_docs` (playbook convention) over renaming the tooling to `_docx`; `git mv _docx/rulesAndSkills _docs/rulesAndSkills`, linked from the index |
-| U12 | Live checks after restart | TODO | SessionStart prints "Active work"; `/hooks` lists git-guard + stop-state; first PR runs `docs-check (PR)` |
+| U12 | Live checks after restart | DONE | 2026-10-17 session start printed "Active work"; PR #2 ran `docs-check (PR)` (`--strict --base origin/main`, run 38554849275) → pass |
 
 ## Test baseline (EXISTING)
 

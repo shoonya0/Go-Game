@@ -11,9 +11,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** none yet (set by `/feature-docs start`) · harness update on `chore/feature-docs-harness`
+- **Feature:** none yet (set by `/feature-docs start`) · playbook 2026-10-14 upgrade on `chore/playbook-2026-10-14` (log: [ai-harness-setup.md](./ai-harness-setup.md))
 - **Next step:** pick the next gameplay task; if it spans sessions, start it with `/feature-docs start <feature>`
-- **Updated:** 2026-10-14 at `832df6a`
+- **Updated:** 2026-10-17 at `501706a`
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2

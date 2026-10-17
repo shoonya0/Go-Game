@@ -32,16 +32,18 @@ Use when a feature will take more than one session or gets a spec. Skip it for a
    use `<code-folder>/_docs/`. Otherwise use `_docs/features/<feature>/`. If it's unclear,
    ask the user with both options. Name the feature in lowercase-with-dashes: the session
    hook matches it against branch names (`feature/<feature>`).
-   **In this repo** most gameplay code is one flat package (`internal/core`), so a feature
-   like enemies or combat usually owns *files*, not a folder: use
-   `_docs/features/<feature>/` and list those files one by one in `scope:`
-   (`scope: [internal/core/enemy.go, internal/core/enemy_ai.go]`). No globs: the CI check
-   (`--base`) matches only exact paths and folder prefixes, so `enemy*.go` never matches.
+   When the feature owns **files** in a shared folder rather than a folder of its own: **in
+   this repo** most gameplay code is one flat package (`internal/core`), so a feature like
+   enemies or combat usually owns files: use `_docs/features/<feature>/` and list the
+   files, or a glob, in `scope:`
+   (`scope: [internal/core/enemy.go, internal/core/enemy_ai.go]` or `[internal/core/enemy*.go]`).
+   Scope entries are git pathspecs: docs-check matches them the same way locally and in CI,
+   and reports entries git rejects as `bad scope`.
    Packages with their own folder (`server/`, `internal/system/`) can be co-located.
 2. If the folder already exists, stop and switch to `resume`. Never overwrite.
 3. Create `README.md`, `state.md` and `tasks.md` from the templates bundled with this
    skill (`.claude/skills/feature-docs/templates/`). Fill in the purpose, `scope:`
-   (repo-relative code paths), 1 to 5 entry points, and the "Up" link. Remove rows for
+   (folders, files or globs, relative to the project root), 1 to 5 entry points, and the "Up" link. Remove rows for
    docs that don't exist yet, and placeholder lines you can't fill (an unfilled link is a
    docs-check ERROR). Don't create `design.md` unless the design isn't visible
    in the code.
@@ -52,7 +54,7 @@ Use when a feature will take more than one session or gets a spec. Skip it for a
    `feature-CLAUDE.template.md`. If a `CLAUDE.md` already exists there, show a diff that
    adds the pointer lines and ask. Cross-cutting features: create
    `.claude/rules/features/<feature>.md` with `paths:` listing the feature's files (globs
-   are fine here, e.g. `internal/core/enemy*.go`), and the same lines.
+   are fine, e.g. `internal/core/enemy*.go`), and the same lines.
 6. Add one row to the Feature registry in `_docs/README.md`.
 7. Set `## Active work` in `_docs/current-state.md` to this feature's `state.md`.
 8. Suggest a branch named `feature/<feature>`, so parallel sessions resume the right feature.
@@ -113,6 +115,7 @@ Run the docs check, then fix by kind:
 | orphan index | Add a registry row in `_docs/README.md` |
 | orphan doc | Link it from its folder's `README.md`, or delete it if it's obsolete (ask first) |
 | missing state | Create `state.md` from the template |
+| bad scope | Fix the `scope:` entries in the feature's index: folders, files or globs relative to the project root |
 | too big | `split`, or trim `state.md` sessions to 5 |
 | too deep | Flatten one level, or split the feature |
 | stale state | Read the recent changes in the feature's scope (`git diff`, `git log -5 -- <scope>`) and run `update` |
