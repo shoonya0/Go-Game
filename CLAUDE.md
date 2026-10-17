@@ -47,8 +47,10 @@ web (WebAssembly, deployed to Render via Docker).
   Claude Code", 🤖) in commits, PRs or issues. `.claude/hooks/git-guard.mjs` enforces all three.
 - Conventional Commits (`type(scope): summary`, body says why, `Fixes #N`). Stage only the
   files of this increment, by path; review `git diff --staged`.
-- After each commit: `git log -1 --format='%an <%ae>%n%B'`, `git show --stat HEAD`, `git status`.
-- Feature done and verified → `/code-review` if non-trivial → PR → merge when CI is green → delete branch.
+- After each commit, verify: `git log -1 --format='%an <%ae>%n%n%B'`, `git show --stat HEAD`, `git status --short`.
+- Increments are committed locally. Feature done and verified → `/code-review` if non-trivial →
+  push → PR (completion report in the body) → CI green → **ask the user before `gh pr merge`**
+  (merging to `main` deploys to Render) → delete branch.
 - Bug outside the current task → propose a GitHub issue (title, repro, expected/actual); don't fix it here.
 
 ## Rules (each one exists because something went wrong)
