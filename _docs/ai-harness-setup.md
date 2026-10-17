@@ -104,7 +104,7 @@ merge rule "ask before `gh pr merge`" (merging to `main` deploys to Render).
 | U10 | 2026-10-14.10 index links the setup log | already present | `_docs/README.md` row → `ai-harness-setup.md` |
 | U11 | V1 restart | DONE | resumed session printed the updated "Active work" (new session-context hook loaded) |
 | U12 | V2/V3 registration + probes | DONE | SessionStart on `chore/playbook-2026-10-14` fell back to Active work; user checked `/hooks` (git-guard + stop-state listed) |
-| U13 | V6 report + first PR runs `docs-check (PR)` | TODO | |
+| U13 | V6 report + first PR runs `docs-check (PR)` | DONE | PR #3: `build`, `verify (ubuntu-latest)`, `verify (windows-latest)` pass; `docs-check (PR)` (run 39028381963) → 0 errors, 0 warnings; report in chat and PR body |
 
 ### 2026-10-06 → 2026-10-09 (2026-10-14, branch `chore/feature-docs-harness`)
 
