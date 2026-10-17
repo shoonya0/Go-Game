@@ -4,7 +4,7 @@
 the session hook prints the next 3. Written from the plan (06 step 5): one box per plan step,
 each small enough for one session and ending with its check. Tick a box only when its check
 passed. Add new work at the end of its group; don't renumber. Finished groups can collapse
-to one line ("- [x] Increment 1: invoice model, see status/increments.md"). -->
+to one line ("- [x] Increment 1: invoice model, see the status log"). -->
 
 ## Increment <M>: <title> (spec: `spec.md`, once it exists)
 

@@ -1,6 +1,6 @@
 ---
 kind: feature
-scope: [<repo-relative folder or file>, <file>]
+scope: [<folder, file or glob>, …]
 status: active
 ---
 # <Feature>: docs index
@@ -10,8 +10,11 @@ Up: [project docs index](<relative path to _docs/README.md>) · Code: `<code fol
 
 <!-- Copy to <feature folder>/_docs/README.md (co-located) or _docs/features/<feature>/README.md
 (cross-cutting). Keep this file a table of contents: one line per child doc, under 80 lines.
-"scope" lists the repo-relative folders or files this feature owns (no globs); docs-check
-uses it to flag a stale state. Delete rows for docs that don't exist yet.
+"scope" lists the code this feature owns as git pathspecs, relative to the project root
+(the folder holding _docs/README.md): a folder (src/features/billing), files
+(internal/core/enemy.go) or a glob (internal/core/enemy*.go). docs-check uses it to flag a
+stale state, and reports entries git rejects. Delete rows for docs that don't exist yet, and
+every placeholder line you can't fill: an unfilled link is a docs-check ERROR.
 
 Document only what the code can't tell: intent (spec), reasons (decisions), progress (tasks,
 state) and traps. Structure, function lists and call flows come from the code graph or the
