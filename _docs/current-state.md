@@ -1,7 +1,6 @@
-# Go-Game (Pirate Adventure): current state (snapshot 2026-10-14)
+# Go-Game (Pirate Adventure): current state (snapshot 2026-10-18)
 
-Snapshot at `832df6a` on `main` (code unchanged on `chore/feature-docs-harness`, which only
-updates the AI harness). One page. Details live in each increment's entry in
+Snapshot at `f63b7e7` on `main`. One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -11,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** none yet (set by `/feature-docs start`) · playbook 2026-10-14 upgrade on `chore/playbook-2026-10-14` (log: [ai-harness-setup.md](./ai-harness-setup.md))
+- **Feature:** none yet (set by `/feature-docs start`)
 - **Next step:** pick the next gameplay task; if it spans sessions, start it with `/feature-docs start <feature>`
-- **Updated:** 2026-10-17 at `501706a`
+- **Updated:** 2026-10-18 at `f63b7e7`
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -33,7 +32,7 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `832df6a`, Windows, go1.26.7)
+## Test baseline (at `f63b7e7`, Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
@@ -53,9 +52,10 @@ Compare new runs **by test name**.
 2. `go.mod` says `go 1.24.3` and CI uses 1.24; local toolchain is 1.26.7. Language features newer than 1.24 would pass locally and fail CI. VERIFIED
 3. `readAsset` resolves by base file name — same-named assets in different folders silently collide (`internal/core/image.go:20`). VERIFIED
 4. Large files: `player.go` 381 lines, `animation.go` 365 (`InitPlayerAnimations` is 222 lines), `world.go` 334. VERIFIED (`wc -l`)
-5. ~~`Layout` returns the outside window size, so the logical resolution changes with the window/browser size (`cmd/main.go:100`).~~ **FIXED** — `Layout` now returns the fixed `screenWidth × screenHeight` constants; Ebitengine auto-scales to any device.
+5. ~~`Layout` returns the outside window size, so the logical resolution changes with the window/browser size (`cmd/main.go:100`).~~ **FIXED** (`d6e602f`) — `Layout` now returns the fixed `screenWidth × screenHeight` constants; Ebitengine auto-scales to any device.
 6. No tests for player physics, combat, quadtree or the server. VERIFIED (test list above)
 7. `DEPLOY.md` "Continuous integration" section may drift from the workflows. ASSUMED
+8. ~~`game.wasm` served without `Cache-Control` header — browser caches the old binary across deploys, preventing fixes from reaching users.~~ **FIXED** (`f63b7e7`) — server now sends `no-cache` for `/game.wasm` alongside `index.html`.
 
 ## Open decisions
 
