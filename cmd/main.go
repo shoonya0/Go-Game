@@ -96,7 +96,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 // Layout maps the outside window size to the game's logical screen size.
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return outsideWidth, outsideHeight
+	return screenWidth, screenHeight
 }
 
 func main() {
