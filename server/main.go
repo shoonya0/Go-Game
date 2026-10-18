@@ -48,10 +48,12 @@ func logRequests(next http.Handler) http.Handler {
 	})
 }
 
-// noCacheHTML keeps the entry page fresh while the content-hashed wasm can cache.
+// noCacheHTML prevents stale pages and binaries after redeploys. The wasm
+// binary has a fixed name (not content-hashed), so it must also be revalidated.
 func noCacheHTML(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/" || r.URL.Path == "/index.html" {
+		p := r.URL.Path
+		if p == "/" || p == "/index.html" || p == "/game.wasm" {
 			w.Header().Set("Cache-Control", "no-cache")
 		}
 		next.ServeHTTP(w, r)
