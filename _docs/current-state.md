@@ -53,7 +53,7 @@ Compare new runs **by test name**.
 2. `go.mod` says `go 1.24.3` and CI uses 1.24; local toolchain is 1.26.7. Language features newer than 1.24 would pass locally and fail CI. VERIFIED
 3. `readAsset` resolves by base file name — same-named assets in different folders silently collide (`internal/core/image.go:20`). VERIFIED
 4. Large files: `player.go` 381 lines, `animation.go` 365 (`InitPlayerAnimations` is 222 lines), `world.go` 334. VERIFIED (`wc -l`)
-5. `Layout` returns the outside window size, so the logical resolution changes with the window/browser size (`cmd/main.go:100`). VERIFIED (code); visual impact ASSUMED.
+5. ~~`Layout` returns the outside window size, so the logical resolution changes with the window/browser size (`cmd/main.go:100`).~~ **FIXED** — `Layout` now returns the fixed `screenWidth × screenHeight` constants; Ebitengine auto-scales to any device.
 6. No tests for player physics, combat, quadtree or the server. VERIFIED (test list above)
 7. `DEPLOY.md` "Continuous integration" section may drift from the workflows. ASSUMED
 
