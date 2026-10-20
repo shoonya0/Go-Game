@@ -11,6 +11,8 @@ const (
 
 	PowerRegenPerSecond = 10.0 // special power regenerated per second
 	SpecialPowerCost    = 34.0 // power spent per U / O special attack (~3 on a full bar)
+	AttackPowerCost     = 10.0 // power spent per normal (J / I) attack: one HUD segment
+	JumpPowerCost       = 5.0  // power spent per jump: half a HUD segment
 
 	RunPowerDrainPerSecond = 5.0  // power drained per second while running (half a HUD segment)
 	RunRecoverPower        = 10.0 // after power runs out, running stays off until it refills to this
