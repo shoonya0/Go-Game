@@ -11,9 +11,9 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `feature/hud-sprite-bars` — HUD draws health (hearts) and stamina (`Combat.Power`) as 10 sprite segments each (full/half/empty) from `assets/health.png` / `assets/stamina.png`; committed `263112f`, confirmed in-game by the user. Running (Shift + direction) now drains 5 power/s (half a segment) with regen paused; at 0 the player is exhausted and walks until power refills to 10 (`2917321`), verify passed
-- **Next step:** try the run drain in-game, then push + PR
-- **Updated:** 2026-10-20 at `2917321`
+- **Branch:** `feature/stamina-costs` (from `main`) — normal attacks J/I cost 10 power (1 stamina segment), jumps cost 5 (half); blocked without enough stamina. Stamina HUD segments narrowed to 30 px. Verify passed. Separate unmerged branch `feature/level-enemy-markers` holds the level enemy markers (`!` in `level_1.json`)
+- **Next step:** try the costs in-game, then push + PR for both branches
+- **Updated:** 2026-10-20
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
