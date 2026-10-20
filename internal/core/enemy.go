@@ -3,7 +3,8 @@ package core
 import "github.com/hajimehoshi/ebiten/v2"
 
 // EnemyKind identifies a concrete enemy species. Adding a new enemy is a matter
-// of adding a kind here and a blueprint in enemyBlueprints (enemy_types.go) — no
+// of adding a kind here and a blueprint in enemyBlueprints (enemy_types.go), then
+// placing its Marker in the level grid — no
 // changes to the shared update, physics, animation or draw code are needed.
 type EnemyKind int
 
@@ -35,6 +36,7 @@ type EnemyStats struct {
 // shared drawing code (drawSpriteFrame) is parameterised on both.
 type EnemyBlueprint struct {
 	Name         string
+	Marker       string // one-character level-grid code that spawns this kind (e.g. "!")
 	SpritePath   string
 	OriginHeight int     // sprite-sheet row height used to locate a frame's Y origin
 	BodyWidth    float64 // collision box width

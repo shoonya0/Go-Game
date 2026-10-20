@@ -76,10 +76,11 @@ func (c Checkpoint) Bounds() AABB {
 }
 
 // Level is the built, ready-to-use result of loading a level: its solid
-// platforms and its checkpoints.
+// platforms, its checkpoints and where its enemies spawn.
 type Level struct {
 	Platforms   []Platform
 	Checkpoints []Checkpoint
+	Enemies     []EnemySpawn
 }
 
 var Tiles map[TileType][2]Tile
@@ -197,9 +198,10 @@ func getTileInfo(x, y int, tileType TileType, grid [][]int, prevPlat Platform) P
 }
 
 // levelBundle is the on-disk JSON schema: a map of level name to its grid.
-// Example: {"level0": {"grid": [[0,1,...], ...]}}.
+// Cells are tile codes, or one-character enemy markers as strings (see
+// levelCell). Example: {"level0": {"grid": [[0,"!",...], [2,2,...], ...]}}.
 type levelBundle map[string]struct {
-	Grid [][]int `json:"grid"`
+	Grid [][]levelCell `json:"grid"`
 }
 
 // LoadLevel reads the embedded JSON level bundle at path and builds the named
@@ -213,11 +215,17 @@ func LoadLevel(path, name string) Level {
 		log.Fatalf("parse level %q: %v", path, err)
 	}
 
-	level, ok := bundle[name]
+	raw, ok := bundle[name]
 	if !ok {
 		log.Fatalf("level %q not found in %q", name, path)
 	}
-	return BuildLevel(level.Grid)
+	grid, spawns, err := splitGrid(raw.Grid)
+	if err != nil {
+		log.Fatalf("level %q in %q: %v", name, path, err)
+	}
+	level := BuildLevel(grid)
+	level.Enemies = spawns
+	return level
 }
 
 // BuildLevel converts a grid of tile codes into a Level: one solid Platform per
