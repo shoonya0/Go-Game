@@ -11,8 +11,9 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Next step:** pick the next gameplay task; if it spans sessions, start it with `/feature-docs start <feature>`
-- **Updated:** 2026-10-18 at `f63b7e7`
+- **Branch:** `feature/hud-sprite-bars` — HUD draws health (hearts) and stamina (`Combat.Power`) as 10 sprite segments each (full/half/empty) from `assets/health.png` / `assets/stamina.png`; committed `263112f`, confirmed in-game by the user. Running (Shift + direction) now drains 5 power/s (half a segment) with regen paused; at 0 the player is exhausted and walks until power refills to 10 (`2917321`), verify passed
+- **Next step:** try the run drain in-game, then push + PR
+- **Updated:** 2026-10-20 at `2917321`
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -21,7 +22,7 @@ and /feature-docs update. -->
 ## What a user can do today
 
 - Run a 2D side-scrolling platformer natively (Windows) or in the browser (WASM). VERIFIED (CI builds both)
-- Move (WASD), jump, attack; health/power HUD; water/larva hazards, fall damage, checkpoints, respawn. VERIFIED (code read)
+- Move (WASD), jump, attack; sprite health-heart/stamina HUD (10 segments each, on `feature/hud-sprite-bars`); water/larva hazards, fall damage, checkpoints, respawn. VERIFIED (code read)
 - Fight one enemy type (succubus) with patrol/chase/attack AI. VERIFIED (`internal/core/enemy*.go` tracked, tests pass)
 - `GameState` (menu/playing/game over) is declared and set to `ModeMenu`, but never read: there is no menu. VERIFIED (`cmd/main.go:45`)
 
@@ -38,10 +39,10 @@ and /feature-docs update. -->
 |---|---|---|
 | `node scripts/verify.mjs` | ✅ pass (gofmt, vet, new lint issues, tests) | — |
 | `go test ./...` | ✅ 9/9 pass, all in `internal/core` | — |
-| `golangci-lint run ./...` (advisory) | 3 issues | SA1019 ×2 `internal/core/hud.go:49-50`, SA9003 `internal/core/quadtree.go:217` |
+| `golangci-lint run ./...` (advisory) | 1 issue (was 3; the hud.go SA1019s went away with the sprite HUD) | SA9003 `internal/core/quadtree.go:217` |
 | GitHub CI on `main` (`ci` + `verify`, ubuntu + windows) | ✅ green since 2026-10-08 | — |
 
-Tests: `TestTileTypeFromCode`, `TestBuildLevelPlatformCount`, `TestBuildLevelCheckpoints`,
+Tests (+ `TestSegmentStates`, `TestSegmentStatesHealthSteps`, `TestRunningDrainsHalfSegmentPerSecond`, `TestRunHeldWithoutMovingRegenerates`, `TestExhaustionBlocksRunningUntilRecovered` on the HUD branch): `TestTileTypeFromCode`, `TestBuildLevelPlatformCount`, `TestBuildLevelCheckpoints`,
 `TestBuildLevelTopBottomDetection`, `TestBuildLevelWorldCoordinates`, `TestBlueprintRegistered`,
 `TestEnemyTakeDamage`, `TestEnemyPatrolTurnsAround`, `TestEnemyDetectsChasesAndAttacks`.
 Compare new runs **by test name**.

@@ -11,6 +11,9 @@ const (
 
 	PowerRegenPerSecond = 10.0 // special power regenerated per second
 	SpecialPowerCost    = 34.0 // power spent per U / O special attack (~3 on a full bar)
+
+	RunPowerDrainPerSecond = 5.0  // power drained per second while running (half a HUD segment)
+	RunRecoverPower        = 10.0 // after power runs out, running stays off until it refills to this
 )
 
 // Combat holds the player's health and special-power pools. Health is an integer
@@ -61,6 +64,25 @@ func (p *PlayerRuntime) regeneratePower() {
 	p.Combat.Power += PowerRegenPerSecond * deltaTime()
 	if p.Combat.Power > p.Combat.MaxPower {
 		p.Combat.Power = p.Combat.MaxPower
+	}
+}
+
+// updateStamina drains power while the player runs and regenerates it otherwise.
+// Running empties into exhaustion, which blocks running until power has
+// refilled to RunRecoverPower, so the player can't flicker between run and walk
+// at zero.
+func (p *PlayerRuntime) updateStamina() {
+	if p.running {
+		p.Combat.Power -= RunPowerDrainPerSecond * deltaTime()
+		if p.Combat.Power <= 0 {
+			p.Combat.Power = 0
+			p.exhausted = true
+		}
+		return
+	}
+	p.regeneratePower()
+	if p.exhausted && p.Combat.Power >= RunRecoverPower {
+		p.exhausted = false
 	}
 }
 
@@ -170,4 +192,6 @@ func (p *PlayerRuntime) respawn() {
 	p.wasInLarva = false
 	p.waterDamageAccum = 0
 	p.inWater = false
+	p.running = false
+	p.exhausted = false
 }
