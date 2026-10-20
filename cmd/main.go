@@ -44,11 +44,9 @@ func NewGame() *Game {
 	}
 
 	return &Game{
-		state:  core.ModeMenu,
-		player: core.InitPlayer(core.LoadImage(playerSpriteSheetPath)),
-		enemies: []*core.EnemyRuntime{
-			core.NewEnemy(core.KindSuccubus, core.Position{X: 700, Y: 1000}),
-		},
+		state:      core.ModeMenu,
+		player:     core.InitPlayer(core.LoadImage(playerSpriteSheetPath)),
+		enemies:    core.SpawnEnemies(level.Enemies),
 		background: core.LoadImage(core.Background_1),
 		tileset:    core.LoadImage(core.Tileset),
 		level:      level,
