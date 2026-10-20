@@ -199,7 +199,8 @@ func getTileInfo(x, y int, tileType TileType, grid [][]int, prevPlat Platform) P
 
 // levelBundle is the on-disk JSON schema: a map of level name to its grid.
 // Cells are tile codes, or one-character enemy markers as strings (see
-// levelCell). Example: {"level0": {"grid": [[0,"!",...], [2,2,...], ...]}}.
+// levelCell); markers may be written bare, see quoteBareMarkers.
+// Example: {"level0": {"grid": [[0,!,...], [2,2,...], ...]}}.
 type levelBundle map[string]struct {
 	Grid [][]levelCell `json:"grid"`
 }
@@ -211,7 +212,7 @@ func LoadLevel(path, name string) Level {
 	data := readAsset(path)
 
 	var bundle levelBundle
-	if err := json.Unmarshal(data, &bundle); err != nil {
+	if err := json.Unmarshal(quoteBareMarkers(data), &bundle); err != nil {
 		log.Fatalf("parse level %q: %v", path, err)
 	}
 

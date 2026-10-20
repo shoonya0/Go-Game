@@ -3,11 +3,54 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
+
+// quoteBareMarkers lets level files write enemy markers unquoted ([0,!,0])
+// by wrapping every bare marker character outside a JSON string in quotes,
+// turning the file into valid JSON for encoding/json.
+func quoteBareMarkers(data []byte) []byte {
+	out := make([]byte, 0, len(data)+64)
+	inString := false
+	for i := 0; i < len(data); i++ {
+		c := data[i]
+		switch {
+		case inString:
+			out = append(out, c)
+			if c == '\\' && i+1 < len(data) {
+				i++
+				out = append(out, data[i])
+			} else if c == '"' {
+				inString = false
+			}
+		case c == '"':
+			inString = true
+			out = append(out, c)
+		case isMarkerChar(c):
+			out = append(out, '"', c, '"')
+		default:
+			out = append(out, c)
+		}
+	}
+	return out
+}
+
+// isMarkerChar reports whether c may be used as a bare enemy marker: printable
+// ASCII punctuation that has no meaning in JSON. Letters are excluded because
+// they collide with true/false/null and number exponents.
+func isMarkerChar(c byte) bool {
+	if c <= ' ' || c >= 0x7f {
+		return false
+	}
+	if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') {
+		return false
+	}
+	return !strings.ContainsRune(`,[]{}:"-+.\`, rune(c))
+}
 
 // levelCell is one cell of a JSON level grid. A number is a tile code (see
 // tileTypeFromCode and CheckpointCode); a string is an enemy marker, the
-// one-character code an EnemyBlueprint registers as its Marker (e.g. "!").
+// one-character code an EnemyBlueprint registers as its Marker (e.g. !).
 type levelCell struct {
 	tile   int
 	marker string
