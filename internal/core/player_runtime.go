@@ -54,4 +54,6 @@ type PlayerRuntime struct {
 	wasInLarva       bool    // whether the player was touching larva last tick (damage edge)
 	waterDamageAccum float64 // sub-point water damage carried between ticks
 	inWater          bool    // whether the player was submerged last tick (movement/jump)
+	running          bool    // whether the player is running this tick (drains power)
+	exhausted        bool    // power ran out while running; running is blocked until it recovers
 }

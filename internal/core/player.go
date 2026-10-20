@@ -119,7 +119,7 @@ func (player *PlayerRuntime) canMove() bool {
 }
 
 // UpdatePlayer advances the player one tick: input, physics, collision, state and
-// combat (power regen, hazard/fall damage, checkpoint respawn).
+// combat (power regen/run drain, hazard/fall damage, checkpoint respawn).
 func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, checkpoints []Checkpoint) {
 	player.PreviousState = PlayerState{CurrentState: PlayerStateType(player.State.GetPlayerState())}
 
@@ -131,7 +131,7 @@ func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, ch
 
 	player.updateState(in, onGround, detectGround)
 
-	player.regeneratePower()
+	player.updateStamina()
 	player.updateCombat(qt, checkpoints, onGround)
 
 	if qt != nil {
@@ -147,8 +147,11 @@ func (player *PlayerRuntime) applyHorizontalMovement(in *InputState) {
 	}
 
 	targetVX := inputX * player.Physics.MaxSpeed
-	// Running is disabled while submerged; water keeps you to walking speed.
-	if in.RunJustPressed && !player.inWater {
+	// Running is disabled while submerged (water keeps you to walking speed) and
+	// while exhausted. It only drains power when the player is actually moving.
+	runHeld := in.RunJustPressed && !player.inWater && !player.exhausted
+	player.running = runHeld && inputX != 0
+	if runHeld {
 		if player.State.IsGrounded() {
 			targetVX = inputX * player.Physics.MaxRunSpeed
 		} else {
@@ -168,7 +171,7 @@ func (player *PlayerRuntime) applyHorizontalMovement(in *InputState) {
 	}
 
 	// Above walk speed while not holding run: bleed velocity back down to MaxSpeed.
-	if math.Abs(player.Physics.VelX) > player.Physics.MaxSpeed && !in.RunJustPressed {
+	if math.Abs(player.Physics.VelX) > player.Physics.MaxSpeed && !runHeld {
 		if player.Physics.VelX > 0 {
 			player.Physics.VelX = ReduceRight(player.Physics.VelX, player.Physics.MaxSpeed, decX)
 		} else if player.Physics.VelX < 0 {
