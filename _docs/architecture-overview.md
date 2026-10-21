@@ -52,7 +52,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 ## Main flows
 
 1. **Startup**: `main` → `NewGame` → `core.WorldInit` → `core.LoadLevel(LevelFile)` →
-   insert platforms into `DynamicQuadtree` → `InitPlayer(LoadImage(...))` → `NewEnemy(...)` (`cmd/main.go:33`).
+   insert platforms into `DynamicQuadtree` → `InitPlayer(LoadImage(...))` → `SpawnEnemies(level.Enemies)` (markers from the grid) (`cmd/main.go:33`).
 2. **Tick (~60 TPS)**: `Game.Update` → `system.HandleInput` → `core.UpdatePlayer`
    (movement → gravity/jump → resolveHorizontal/Vertical via quadtree → `updateCombat`) →
    `UpdateAnimation` → `HitEnemies` → `UpdateGroundWaves` → `UpdateCamera` → `updateEnemies` (AI, anim, cull `Removable`) (`cmd/main.go:58`).
