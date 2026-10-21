@@ -23,7 +23,7 @@ const (
 
 	hudHeartSize  = 28 // drawn heart width and height
 	hudHeartGap   = 4
-	hudStaminaW   = 60 // drawn stamina segment width
+	hudStaminaW   = 30 // drawn stamina segment width
 	hudStaminaH   = 10 // drawn stamina segment height
 	hudStaminaGap = 2
 )

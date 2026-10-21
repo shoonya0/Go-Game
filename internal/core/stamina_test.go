@@ -75,3 +75,64 @@ func TestExhaustionBlocksRunningUntilRecovered(t *testing.T) {
 		t.Fatal("recovered player cannot run")
 	}
 }
+
+func TestJumpCostsHalfSegment(t *testing.T) {
+	p := staminaPlayer()
+	p.Physics.JumpForce = 100
+	p.applyGravityAndJump(&InputState{JumpJustPressed: true})
+
+	if !p.State.IsJumping() || p.Combat.Power != MaxPlayerPower-JumpPowerCost {
+		t.Fatalf("jump: jumping=%v power=%v, want jumping with power %v", p.State.IsJumping(), p.Combat.Power, MaxPlayerPower-JumpPowerCost)
+	}
+	if JumpPowerCost != MaxPlayerPower/hudSegments/2 {
+		t.Fatalf("jump cost %v is not half a HUD segment", JumpPowerCost)
+	}
+
+	low := staminaPlayer()
+	low.Combat.Power = JumpPowerCost - 1
+	low.applyGravityAndJump(&InputState{JumpJustPressed: true})
+	if low.State.IsJumping() || low.Combat.Power != JumpPowerCost-1 {
+		t.Fatalf("jump without stamina: jumping=%v power=%v, want blocked and unchanged", low.State.IsJumping(), low.Combat.Power)
+	}
+}
+
+func TestNormalAttacksCostOneSegment(t *testing.T) {
+	if AttackPowerCost != MaxPlayerPower/hudSegments {
+		t.Fatalf("attack cost %v is not one HUD segment", AttackPowerCost)
+	}
+	for _, tc := range []struct {
+		name   string
+		skills Skills
+		want   PlayerStateType
+	}{
+		{"weak", Skills{WeakAttack: true}, PlayerStateWeakAttack},
+		{"strong", Skills{StrongAttack: true}, PlayerStateStrongAttack},
+	} {
+		p := staminaPlayer()
+		in := &InputState{Skills: tc.skills}
+		p.updateState(in, true, true)
+		if p.State.CurrentState != tc.want || p.Combat.Power != MaxPlayerPower-AttackPowerCost {
+			t.Errorf("%s attack: state=%d power=%v, want state %d and power %v", tc.name, p.State.CurrentState, p.Combat.Power, tc.want, MaxPlayerPower-AttackPowerCost)
+		}
+		p.updateState(in, true, true) // still mid-attack with the key held: no second charge
+		if p.Combat.Power != MaxPlayerPower-AttackPowerCost {
+			t.Errorf("%s attack charged twice: power=%v", tc.name, p.Combat.Power)
+		}
+
+		low := staminaPlayer()
+		low.Combat.Power = AttackPowerCost - 1
+		low.updateState(in, true, true)
+		if low.State.CurrentState == tc.want {
+			t.Errorf("%s attack started without enough stamina", tc.name)
+		}
+	}
+}
+
+func TestAirAttackCostsOneSegment(t *testing.T) {
+	p := staminaPlayer()
+	p.State.CurrentState = PlayerStateFalling
+	p.updateAirState(&InputState{Skills: Skills{WeakAttack: true}})
+	if !p.State.IsWeakAttackInAir() || p.Combat.Power != MaxPlayerPower-AttackPowerCost {
+		t.Fatalf("air attack: state=%d power=%v", p.State.CurrentState, p.Combat.Power)
+	}
+}

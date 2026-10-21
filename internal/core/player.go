@@ -192,7 +192,7 @@ func (player *PlayerRuntime) applyHorizontalMovement(in *InputState) {
 func (player *PlayerRuntime) applyGravityAndJump(in *InputState) {
 	player.Physics.VelY += player.Physics.GravityScale * physicsUnitsPerTick()
 
-	if in.JumpJustPressed && player.State.IsGrounded() && player.canMove() {
+	if in.JumpJustPressed && player.State.IsGrounded() && player.canMove() && player.trySpendPower(JumpPowerCost) {
 		player.State.SetPlayerState(int(PlayerStateJumping))
 		jumpForce := player.Physics.JumpForce
 		if player.inWater {
@@ -332,9 +332,9 @@ func (player *PlayerRuntime) updateState(in *InputState, onGround, detectGround 
 		s.SetPlayerState(int(PlayerStateSpecialAttack3))
 	case in.Skills.SpecialAttack4 && player.trySpendPower(SpecialPowerCost): // O
 		s.SetPlayerState(int(PlayerStateSpecialAttack4))
-	case in.Skills.WeakAttack:
+	case in.Skills.WeakAttack && player.trySpendPower(AttackPowerCost): // J
 		s.SetPlayerState(int(PlayerStateWeakAttack))
-	case in.Skills.StrongAttack:
+	case in.Skills.StrongAttack && player.trySpendPower(AttackPowerCost): // I
 		s.SetPlayerState(int(PlayerStateStrongAttack))
 	case player.Physics.VelX == 0:
 		s.SetPlayerState(int(PlayerStateIdle))
@@ -350,9 +350,9 @@ func (player *PlayerRuntime) updateAirState(in *InputState) {
 	s := &player.State
 	switch {
 	case s.IsFalling():
-		if in.Skills.WeakAttack {
+		if in.Skills.WeakAttack && player.trySpendPower(AttackPowerCost) {
 			s.SetPlayerState(int(PlayerStateWeakAttackInAir))
-		} else if in.Skills.StrongAttack {
+		} else if in.Skills.StrongAttack && player.trySpendPower(AttackPowerCost) {
 			s.SetPlayerState(int(PlayerStateStrongAttackInAir))
 		}
 	case player.Physics.VelY > 0 && !s.IsLanding() && !s.IsWeakAttackInAir() && !s.IsStrongAttackInAir():
