@@ -28,11 +28,12 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 | Input | `internal/system/Input.go` | Polls Ebitengine keyboard → `core.InputState` | no (writes caller's struct) |
 | Player | `internal/core/player.go`, `player_runtime.go`, `playerState.go` | Movement, gravity/jump, AABB collision resolution, state enum | `PlayerRuntime` |
 | Combat | `internal/core/combat.go`, `skills.go` | Damage, power regen, hazards (water/larva), fall damage, checkpoints, respawn | inside `PlayerRuntime` |
-| Enemies | `internal/core/enemy*.go` | Blueprint registry, AI (patrol/chase/attack), animation, damage | `EnemyRuntime` |
+| Enemies | `internal/core/enemy*.go` | Blueprint registry, AI (patrol/chase/attack), animation, damage; `AttackBox()` is the area that hits the player | `EnemyRuntime` |
 | Animation | `internal/core/animation.go`, `enemy_anim.go` | Sprite-sheet frame tables, frame advance, drawing with camera | per-runtime |
 | World / level | `internal/core/world.go` | Loads embedded `level_1.json`, builds platforms/tiles/checkpoints, draws level & water | `Level` |
 | Spatial index | `internal/core/quadtree.go`, `aabb.go` | `DynamicQuadtree` for collision broad-phase; `Collider` interface | quadtree |
 | HUD | `internal/core/hud.go` | Health hearts / stamina (power) bars, 10 sprite segments each | no |
+| Debug overlay | `internal/core/debug_draw.go` | F3 toggles outlines of body (green) and attack (red) boxes for any `HitboxProvider` (enemies today) | `Game.showHitboxes` |
 | Assets | `assets/embed.go`, `internal/core/image.go` | `go:embed` FS; `readAsset` resolves by **base file name** (subfolders searched) | embedded, read-only |
 | Time | `internal/core/time.go` | `deltaTime()` = 1/TPS, shared by physics and animation | no |
 | Web server | `server/main.go` | Serves `$WEB_ROOT` on `$PORT`, `.wasm` MIME, no-cache for HTML | no |

@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-21)
 
-Snapshot at `1915247` on `feature/stamina-costs` (`main` is at PR #7, `d8f8a79`). One page. Details live in each increment's entry in
+Snapshot at `d20fbc0` on `feature/debug-hitboxes` (`main` is at PR #8, `fdb96a3`). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -11,9 +11,9 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `feature/stamina-costs` (from `main`) — normal attacks J/I cost 10 power (1 stamina segment), jumps cost 5 (half); blocked without enough stamina. Stamina HUD segments narrowed to 30 px. Verify passed. Separate unmerged branch `feature/level-enemy-markers` holds the level enemy markers (`!` in `level_1.json`)
-- **Next step:** try the costs in-game, then push + PR for both branches
-- **Updated:** 2026-10-21 at `1915247`
+- **Branch:** `feature/debug-hitboxes` (from `main` at PR #8) — F3 toggles a debug overlay of body (green) and attack (red) boxes via `HitboxProvider`; enemies now hit with a real `AttackBox()` (no more hits on a player standing above). Verify `--full` passed. Unmerged: `feature/level-enemy-markers` (enemy markers in `level_1.json`, needs rebase)
+- **Next step:** press F3 in-game to check the boxes, then push + PR; later add `Hitboxes()` to the player
+- **Updated:** 2026-10-21
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -23,7 +23,7 @@ and /feature-docs update. -->
 
 - Run a 2D side-scrolling platformer natively (Windows) or in the browser (WASM). VERIFIED (CI builds both)
 - Move (WASD), run (Shift; drains 5 stamina/s, exhausted at 0 until 10 regenerates), jump (costs 5 stamina), attack (J/I cost 10 stamina; U/O specials 34); sprite HUD with 10 hearts + 10 stamina segments; water/larva hazards, fall damage, checkpoints, respawn. VERIFIED (code read, tests)
-- Fight one enemy type (succubus) with patrol/chase/attack AI. VERIFIED (`internal/core/enemy*.go` tracked, tests pass)
+- Fight one enemy type (succubus) with patrol/chase/attack AI; it hits only when your body is inside its attack box. F3 shows body/attack hitboxes. VERIFIED (`internal/core/enemy*.go` tracked, tests pass)
 - `GameState` (menu/playing/game over) is declared and set to `ModeMenu`, but never read: there is no menu. VERIFIED (`cmd/main.go:45`)
 
 ## How to build, run, test
@@ -33,12 +33,12 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `1915247`, Windows, go1.26.7)
+## Test baseline (at `d20fbc0`, Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs` | ✅ pass (gofmt, vet, new lint issues, tests) | — |
-| `go test ./...` | ✅ 17/17 pass, all in `internal/core` | — |
+| `go test ./...` | ✅ 21/21 pass, all in `internal/core` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue (was 3; the hud.go SA1019s went away with the sprite HUD) | SA9003 `internal/core/quadtree.go:217` |
 | GitHub CI on `main` (`ci` + `verify`, ubuntu + windows) | ✅ green since 2026-10-08 | — |
 
@@ -46,9 +46,10 @@ Tests: `TestTileTypeFromCode`, `TestBuildLevelPlatformCount`, `TestBuildLevelChe
 `TestBuildLevelTopBottomDetection`, `TestBuildLevelWorldCoordinates`, `TestBlueprintRegistered`,
 `TestEnemyTakeDamage`, `TestEnemyPatrolTurnsAround`, `TestEnemyDetectsChasesAndAttacks`,
 `TestSegmentStates`, `TestSegmentStatesHealthSteps`, `TestRunningDrainsHalfSegmentPerSecond`,
-`TestRunHeldWithoutMovingRegenerates`, `TestExhaustionBlocksRunningUntilRecovered` (all on `main`);
-this branch adds `TestJumpCostsHalfSegment`, `TestNormalAttacksCostOneSegment`,
-`TestAirAttackCostsOneSegment`.
+`TestRunHeldWithoutMovingRegenerates`, `TestExhaustionBlocksRunningUntilRecovered`, `TestJumpCostsHalfSegment`,
+`TestNormalAttacksCostOneSegment`, `TestAirAttackCostsOneSegment` (all on `main`);
+this branch adds `TestEnemyAttackBoxFacesForward`, `TestEnemyDoesNotHitPlayerAbove`,
+`TestEnemyAttacksPlayerBehind`, `TestEnemyHitboxes`.
 Compare new runs **by test name**.
 
 ## Known issues and risks
