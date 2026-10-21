@@ -31,8 +31,8 @@ func UpdateEnemy(e *EnemyRuntime, target *PlayerRuntime, qt *DynamicQuadtree) {
 }
 
 // decideBehavior runs the enemy's state machine for this tick: attack when the
-// player is in reach, chase when they are within detection range, otherwise
-// patrol. It sets the behavioural state, horizontal velocity and facing.
+// player's body is inside the attack box (turned toward them), chase when they
+// are within detection range, otherwise patrol. It sets the behavioural state, horizontal velocity and facing.
 func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
 	// Let a hurt reaction play out before re-deciding, so hits interrupt cleanly.
 	if e.State.IsHurt() {
@@ -45,7 +45,7 @@ func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
 	dist := math.Abs(dx)
 
 	switch {
-	case dist <= st.AttackRange:
+	case e.attackBoxFacing(dx < 0).Intersects(target.GetBounds()):
 		e.attack(target, dx)
 	case dist <= st.DetectRange:
 		e.chase(dx)
