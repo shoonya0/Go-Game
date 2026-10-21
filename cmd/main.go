@@ -27,6 +27,8 @@ type Game struct {
 	tileset    *ebiten.Image
 	level      core.Level
 	quadtree   *core.DynamicQuadtree
+
+	showHitboxes bool // debug overlay, toggled with F3
 }
 
 // NewGame loads assets, builds the level and returns a ready-to-run Game.
@@ -57,6 +59,9 @@ func NewGame() *Game {
 // Update advances the simulation one tick (runs at ~60 TPS).
 func (g *Game) Update() error {
 	system.HandleInput(&g.input)
+	if g.input.ToggleHitboxes {
+		g.showHitboxes = !g.showHitboxes
+	}
 
 	core.UpdatePlayer(g.player, &g.input, g.quadtree, g.level.Checkpoints)
 	g.player.UpdateAnimation()
@@ -91,7 +96,20 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.player.DrawPlayerAnimation(screen)
 	// Water is drawn after the player so the player appears submerged in it.
 	g.player.DrawWater(screen, g.quadtree, screenWidth, screenHeight, g.tileset)
+	if g.showHitboxes {
+		g.drawHitboxes(screen)
+	}
 	g.player.DrawHUD(screen)
+}
+
+// drawHitboxes outlines the body and attack boxes of everything that reports
+// them. Add the player here once it implements core.HitboxProvider.
+func (g *Game) drawHitboxes(screen *ebiten.Image) {
+	providers := make([]core.HitboxProvider, 0, len(g.enemies))
+	for _, e := range g.enemies {
+		providers = append(providers, e)
+	}
+	core.DrawHitboxes(screen, g.player.Camera, providers...)
 }
 
 // Layout maps the outside window size to the game's logical screen size.
