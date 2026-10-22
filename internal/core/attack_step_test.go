@@ -32,7 +32,7 @@ func playAttack(t *testing.T, st PlayerStateType, flipX bool, presses map[int]Sk
 
 func TestAttackSteps(t *testing.T) {
 	j, i, u := Skills{WeakAttack: true}, Skills{StrongAttack: true}, Skills{SpecialAttack3: true}
-	l, o := Skills{SpecialAttack2: true}, Skills{SpecialAttack4: true}
+	k, l, o := Skills{SpecialAttack1: true}, Skills{SpecialAttack2: true}, Skills{SpecialAttack4: true}
 	for _, c := range []struct {
 		name    string
 		st      PlayerStateType
@@ -43,10 +43,11 @@ func TestAttackSteps(t *testing.T) {
 		{"I", PlayerStateStrongAttack, map[int]Skills{0: i}, AttackStepDistance},
 		{"U", PlayerStateSpecialAttack3, map[int]Skills{0: u}, AttackStepDistance},
 		{"L one press", PlayerStateSpecialAttack2, map[int]Skills{0: l}, 0},
-		{"L two presses", PlayerStateSpecialAttack2, map[int]Skills{0: l, 20: l}, AttackStepDistance},
+		{"L two presses", PlayerStateSpecialAttack2, map[int]Skills{0: l, 20: l}, ShortAttackStepDistance},
 		{"O one press", PlayerStateSpecialAttack4, map[int]Skills{0: o}, 0},
 		{"O two presses", PlayerStateSpecialAttack4, map[int]Skills{0: o, 20: o}, AttackStepDistance},
-		{"K two presses", PlayerStateSpecialAttack1, map[int]Skills{0: {SpecialAttack1: true}, 10: {SpecialAttack1: true}}, 0},
+		{"K one press", PlayerStateSpecialAttack1, map[int]Skills{0: k}, 0},
+		{"K two presses", PlayerStateSpecialAttack1, map[int]Skills{0: k, 10: k}, ShortAttackStepDistance},
 	} {
 		for _, flip := range []bool{false, true} {
 			want := c.want

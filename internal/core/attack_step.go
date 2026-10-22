@@ -1,8 +1,10 @@
 package core
 
-// AttackStepDistance is how far an attack steps the player: three quarters of
-// a tile.
-const AttackStepDistance = 0.75 * LevelTileWidth
+// Attack steps: three quarters of a tile, or half that for the K and L combos.
+const (
+	AttackStepDistance      = 0.75 * LevelTileWidth
+	ShortAttackStepDistance = AttackStepDistance / 2
+)
 
 // attackStep moves the player during part of an attack: Distance px the way it
 // faces (negative steps back) over Frames animation frames from FirstFrame,
@@ -16,12 +18,14 @@ type attackStep struct {
 
 // attackSteps holds the attacks that move the player, timed to the sprites in
 // GideonGraves.png: J steps back as it slashes, I and U lunge forward into the
-// swing, L's second part steps in before the disc and O's before the thrust.
+// swing, the second parts of K and L edge in and O's steps in before the
+// thrust.
 var attackSteps = map[PlayerStateType]attackStep{
 	PlayerStateWeakAttack:     {1, 2, -AttackStepDistance, false},
 	PlayerStateStrongAttack:   {1, 2, AttackStepDistance, false},
 	PlayerStateSpecialAttack3: {2, 2, AttackStepDistance, false},
-	PlayerStateSpecialAttack2: {comboGateFrame, 2, AttackStepDistance, true},
+	PlayerStateSpecialAttack1: {comboGateFrame, 2, ShortAttackStepDistance, true},
+	PlayerStateSpecialAttack2: {comboGateFrame, 2, ShortAttackStepDistance, true},
 	PlayerStateSpecialAttack4: {specialAttack4GateFrame, 3, AttackStepDistance, true},
 }
 
