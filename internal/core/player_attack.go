@@ -157,39 +157,6 @@ const comboGateFrame = 5
 // second press also pays for part 2 (SpecialAttack4PowerCost2).
 const specialAttack4GateFrame = 9
 
-// O's second part opens with a step forward: while the wind-up sprites after
-// the gate play (frames 9-11), the player moves SpecialAttack4StepDistance px
-// the way it faces, then thrusts.
-const (
-	SpecialAttack4StepDistance = 0.75 * LevelTileWidth
-	specialAttack4StepFrames   = 3
-)
-
-// applyComboStep drives VelX during O's second part, through the normal
-// collision, like applyKnockback: the step forward, then standing still for the
-// thrust. It reports whether it took over horizontal movement this tick.
-func (player *PlayerRuntime) applyComboStep() bool {
-	if !player.State.IsSpecialAttack4() || !player.comboQueued {
-		return false
-	}
-	anim := player.Animations[player.State.GetPlayerState()]
-	f := player.CurrAnimFrame - specialAttack4GateFrame
-	if anim == nil || f < 0 {
-		return false
-	}
-	player.running = false
-	if f >= specialAttack4StepFrames {
-		player.Physics.VelX = 0
-		return true
-	}
-	dir := 1.0
-	if player.FlipX {
-		dir = -1
-	}
-	player.Physics.VelX = dir * SpecialAttack4StepDistance * anim.AnimationSpeed / specialAttack4StepFrames
-	return true
-}
-
 // comboGate returns the frame where the current attack stops unless its key was
 // pressed again, and false for attacks that are not combos.
 func (player *PlayerRuntime) comboGate() (int, bool) {

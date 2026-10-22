@@ -142,7 +142,7 @@ func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, ch
 
 // applyHorizontalMovement updates VelX from input.
 func (player *PlayerRuntime) applyHorizontalMovement(in *InputState) {
-	if player.applyKnockback() || player.applyComboStep() {
+	if player.applyKnockback() || player.applyAttackStep() {
 		return
 	}
 	inputX := 0.0
