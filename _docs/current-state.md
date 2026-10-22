@@ -12,7 +12,7 @@ and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
 - **Branch:** `feature/debug-hitboxes` (from `main` at PR #8) — F3 toggles a debug overlay of body (green) and attack (red) boxes via `HitboxProvider`; enemies now hit with a real `AttackBox()` (no more hits on a player standing above); the player's J/I attacks have a damage box that hits enemies once per swing (10 weak / 20 strong). Verify `--full` passed. Unmerged: `feature/level-enemy-markers` (enemy markers in `level_1.json`, needs rebase)
-- **Next step:** press F3 in-game to check the boxes and that J/I hurt the succubus, then push + PR; special attacks (K/L/U/O) have no damage box yet
+- **Next step:** PR #9 open; press F3 in-game to check the boxes and that J/I hurt the succubus, then merge (ask first); special attacks (K/L/U/O) have no damage box yet
 - **Updated:** 2026-10-22
 
 <!-- Once a feature is active, the first line becomes, for example:
