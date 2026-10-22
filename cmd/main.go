@@ -66,6 +66,7 @@ func (g *Game) Update() error {
 	core.UpdatePlayer(g.player, &g.input, g.quadtree, g.level.Checkpoints)
 	g.player.UpdateAnimation()
 	g.player.HitEnemies(g.enemies)
+	g.player.UpdateGroundWaves(g.quadtree, g.enemies)
 	g.player.UpdateCamera(screenWidth, screenHeight, float64(core.Level_1_Width), float64(core.Level_1_Height))
 
 	g.updateEnemies()
@@ -95,6 +96,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		e.DrawEnemyAnimation(screen, g.player.Camera)
 	}
 	g.player.DrawPlayerAnimation(screen)
+	g.player.DrawGroundWaves(screen)
 	// Water is drawn after the player so the player appears submerged in it.
 	g.player.DrawWater(screen, g.quadtree, screenWidth, screenHeight, g.tileset)
 	if g.showHitboxes {

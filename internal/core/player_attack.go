@@ -77,12 +77,15 @@ func (player *PlayerRuntime) HitEnemies(enemies []*EnemyRuntime) {
 	}
 }
 
-// Hitboxes reports the player's body and, while attacking, its damage box to the
-// debug overlay (HitboxProvider).
+// Hitboxes reports the player's body, its damage box while attacking and every
+// live ground wave to the debug overlay (HitboxProvider).
 func (player *PlayerRuntime) Hitboxes() []Hitbox {
 	boxes := []Hitbox{{Box: player.GetBounds(), Kind: HitboxBody}}
 	if box, striking, ok := player.AttackBox(); ok {
 		boxes = append(boxes, Hitbox{Box: box, Kind: HitboxAttack, Active: striking})
+	}
+	for _, w := range player.waves {
+		boxes = append(boxes, Hitbox{Box: w.Box(), Kind: HitboxAttack, Active: true})
 	}
 	return boxes
 }
