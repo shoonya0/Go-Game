@@ -36,6 +36,7 @@ const (
 	touchButtonGap  = 12
 	touchEdge       = 32 // distance of the button clusters from the screen edges
 	touchMenuSize   = 64
+	touchIconInset  = 15 // percent of the button cut from each side of its symbol, so it draws at 70%
 
 	// TouchHUDLeft is where the HUD starts when the menu button takes the
 	// top-left corner.
@@ -173,7 +174,8 @@ func (tc *TouchControls) Draw(screen *ebiten.Image) {
 			if tc.held[b] {
 				tint = touchPressedTint
 			}
-			drawScaled(screen, icon, r, tint)
+			inset := r.Dx() * touchIconInset / 100
+			drawScaled(screen, icon, r.Inset(inset), tint)
 		}
 	}
 }
