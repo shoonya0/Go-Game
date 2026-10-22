@@ -169,7 +169,19 @@ func (e *EnemyRuntime) TakeDamage(dmg int) {
 		e.Health = 0
 		e.VelX = 0
 		e.setState(EnemyDead)
-		return
+	} else {
+		e.setState(EnemyHurt)
 	}
-	e.setState(EnemyHurt)
+	// Hits land outside UpdateEnemy, where PrevState is captured, so the
+	// animation can't see the change: restart the clip here. This also replays
+	// hurt when an already-hurt enemy is hit again.
+	e.restartAnimation()
+}
+
+// restartAnimation rewinds the current state's clip to its first frame.
+func (e *EnemyRuntime) restartAnimation() {
+	if anim := e.Animations[int(e.State)]; anim != nil {
+		e.CurrAnimFrame = anim.AnimStartFrame
+		anim.FrameTimer = 0
+	}
 }

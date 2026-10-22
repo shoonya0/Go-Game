@@ -65,6 +65,7 @@ func (g *Game) Update() error {
 
 	core.UpdatePlayer(g.player, &g.input, g.quadtree, g.level.Checkpoints)
 	g.player.UpdateAnimation()
+	g.player.HitEnemies(g.enemies)
 	g.player.UpdateCamera(screenWidth, screenHeight, float64(core.Level_1_Width), float64(core.Level_1_Height))
 
 	g.updateEnemies()
@@ -102,13 +103,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.player.DrawHUD(screen)
 }
 
-// drawHitboxes outlines the body and attack boxes of everything that reports
-// them. Add the player here once it implements core.HitboxProvider.
+// drawHitboxes outlines the body and attack boxes of the enemies and the player.
 func (g *Game) drawHitboxes(screen *ebiten.Image) {
-	providers := make([]core.HitboxProvider, 0, len(g.enemies))
+	providers := make([]core.HitboxProvider, 0, len(g.enemies)+1)
 	for _, e := range g.enemies {
 		providers = append(providers, e)
 	}
+	providers = append(providers, g.player)
 	core.DrawHitboxes(screen, g.player.Camera, providers...)
 }
 
