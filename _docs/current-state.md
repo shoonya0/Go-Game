@@ -11,8 +11,8 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `chore/death-sprite-layout` (from `main` at PR #9) — the two player death animations at the bottom of `GideonGraves.png` now sit in equal cells: death 1 at row 42 (15 frames, 160x120), death 2 across rows 45/48/51 (12+22+8 frames, 200x120). Not wired into `InitPlayerAnimations` yet (`Dead` still points at row 8). Unmerged: `feature/level-enemy-markers` (needs rebase; only `_docs/current-state.md` conflicts)
-- **Next step:** push + PR; later add death animations (death 2 spans 3 rows, which `Animation` can't play yet)
+- **Branch:** `chore/death-sprite-layout` (from `main` at PR #9) — the two player death animations at the bottom of `GideonGraves.png` now sit in equal cells: death 1 at row 42 (15 frames, 160x120), death 2 across rows 45 and 48 (12 + 30 frames, 200x120; row 48 fills the full 6000 px). Not wired into `InitPlayerAnimations` yet (`Dead` still points at row 8). Unmerged: `feature/level-enemy-markers` (needs rebase; only `_docs/current-state.md` conflicts)
+- **Next step:** push + PR; later add death animations (death 2 spans 2 rows, which `Animation` can't play yet)
 - **Updated:** 2026-10-22
 
 <!-- Once a feature is active, the first line becomes, for example:
