@@ -60,7 +60,8 @@ type PlayerRuntime struct {
 	knockTicks       int     // ticks of heavy-hit push left
 	knockVelX        float64 // push velocity (px/s) while knockTicks last
 
-	struck      []*EnemyRuntime // enemies already hit by the current swing (HitEnemies)
+	struck      []*EnemyRuntime // enemies already hit by the current hit of the swing (HitEnemies)
+	strikeIdx   int             // which hit of the swing struck holds
 	waves       []*GroundWave   // live U ground waves
 	waveCast    bool            // the current U swing already cast its wave
 	comboQueued bool            // K/L was pressed again before the combo gate (see comboGateFrame)
