@@ -57,6 +57,8 @@ type PlayerRuntime struct {
 	running          bool    // whether the player is running this tick (drains power)
 	exhausted        bool    // power ran out while running; running is blocked until it recovers
 	damageFlash      float64 // seconds of red damage flash left
+	knockTicks       int     // ticks of heavy-hit push left
+	knockDir         float64 // push direction: -1 left, 1 right
 
 	struck      []*EnemyRuntime // enemies already hit by the current swing (HitEnemies)
 	waves       []*GroundWave   // live U ground waves
