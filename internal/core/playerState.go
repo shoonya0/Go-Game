@@ -20,15 +20,19 @@ const (
 	PlayerStateSpecialAttack4
 	PlayerStateWeakAttackInAir
 	PlayerStateStrongAttackInAir
+	PlayerStateDamaged // heavy-hit knockdown
+	PlayerStateDead    // first death: dissolves, then explodes
 
 	// not used yet
-	PlayerStateDamaged
-	PlayerStateDead
 	// ---------------- menu ----------------
 	PlayerStateMenuOpen
 	// ---------------- skills ----------------
 	PlayerStateDefense
 	PlayerStateUsePotion
+	// ---------------- status ----------------
+	PlayerStateExhausted  // out of stamina: kneels until one bar refills
+	PlayerStateDeadKneel  // second death: kneels, then bursts
+	PlayerStateKnockedOut // severe-hit knockdown: the whole row 17
 )
 
 type PlayerState struct {
@@ -104,8 +108,22 @@ func (ps *PlayerState) IsDamaged() bool {
 	return ps.CurrentState == PlayerStateDamaged
 }
 
+// IsKnockedDown reports whether the player is in either hit knockdown.
+func (ps *PlayerState) IsKnockedDown() bool {
+	return ps.CurrentState == PlayerStateDamaged || ps.CurrentState == PlayerStateKnockedOut
+}
+
 func (ps *PlayerState) IsDead() bool {
 	return ps.CurrentState == PlayerStateDead
+}
+
+// IsDying reports whether the player is playing either death animation.
+func (ps *PlayerState) IsDying() bool {
+	return ps.CurrentState == PlayerStateDead || ps.CurrentState == PlayerStateDeadKneel
+}
+
+func (ps *PlayerState) IsExhausted() bool {
+	return ps.CurrentState == PlayerStateExhausted
 }
 
 func (ps *PlayerState) IsDefense() bool {
@@ -119,7 +137,7 @@ func (ps *PlayerState) IsUsingPotion() bool {
 // IsGroundedOneShot reports whether the current state is a non-looping grounded
 // action that should return to idle once its animation finishes.
 func (ps *PlayerState) IsGroundedOneShot() bool {
-	return ps.IsLanding() || ps.IsSmugFace() || ps.IsWeakAttack() || ps.IsStrongAttack() ||
+	return ps.IsLanding() || ps.IsSmugFace() || ps.IsKnockedDown() || ps.IsWeakAttack() || ps.IsStrongAttack() ||
 		ps.IsSpecialAttack1() || ps.IsSpecialAttack2() || ps.IsSpecialAttack3() || ps.IsSpecialAttack4()
 }
 

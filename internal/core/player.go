@@ -142,6 +142,9 @@ func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, ch
 
 // applyHorizontalMovement updates VelX from input.
 func (player *PlayerRuntime) applyHorizontalMovement(in *InputState) {
+	if player.applyKnockback() {
+		return
+	}
 	inputX := 0.0
 	if player.canMove() {
 		inputX = float64(in.Direction.LeftRight)
@@ -301,6 +304,13 @@ func (player *PlayerRuntime) resolveVertical(qt *DynamicQuadtree) (onGround, det
 func (player *PlayerRuntime) updateState(in *InputState, onGround, detectGround bool) {
 	s := &player.State
 
+	switch {
+	case s.IsDying():
+		return // only the end of the death animation changes the state
+	case s.IsExhausted() && !player.exhausted:
+		s.SetPlayerState(int(PlayerStateIdle))
+	}
+
 	if !detectGround {
 		player.updateAirState(in)
 		return
@@ -323,6 +333,8 @@ func (player *PlayerRuntime) updateState(in *InputState, onGround, detectGround 
 
 	// Grounded: actions take priority, then locomotion from velocity.
 	switch {
+	case player.exhausted:
+		s.SetPlayerState(int(PlayerStateExhausted))
 	case in.SmugFace:
 		s.SetPlayerState(int(PlayerStateSmugFace))
 	case in.Skills.SpecialAttack1:

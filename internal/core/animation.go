@@ -30,12 +30,15 @@ const (
 	SpecialAttack4
 	WeakAttackInAir
 	StrongAttackInAir
+	Damaged // heavy-hit knockdown
+	Dead    // first death: dissolves, then explodes
 	// not used yet
-	Damaged
-	Dead
 	MenuOpen
 	Defense
 	UsePotion
+	Exhausted
+	DeadKneel
+	KnockedOut
 )
 
 // ---------------- animation ----------------
@@ -243,28 +246,74 @@ func InitPlayerAnimations() map[int]*Animation {
 		Looping:              false,
 	}
 
-	// animation yet to make
+	// Heavy-hit knockdown: frames 0..9 of row 17 run from the hit to landing on
+	// the back. A severe hit plays the whole row instead (KnockedOut).
 	animations[Damaged] = &Animation{
 		CurrentState:         PlayerStateDamaged,
-		SpriteSheetYPosition: 7,
-		TotalFrames:          6,
+		SpriteSheetYPosition: 17,
+		TotalFrames:          10,
+		AnimStartFrame:       0,
 		FrameWidth:           frameWidth_small,
-		FrameHeight:          frameHeight_small,
+		FrameHeight:          frameHeight_medium,
 		FrameTimer:           0,
-		AnimationSpeed:       1,
+		AnimationSpeed:       12,
 		Looping:              false,
 	}
-	animations[Dead] = &Animation{
-		CurrentState:         PlayerStateDead,
-		SpriteSheetYPosition: 8,
-		TotalFrames:          6,
+
+	// Severe-hit knockdown: the whole of row 17, lying still and the blue effect
+	// included.
+	animations[KnockedOut] = &Animation{
+		CurrentState:         PlayerStateKnockedOut,
+		SpriteSheetYPosition: 17,
+		TotalFrames:          20,
+		AnimStartFrame:       0,
 		FrameWidth:           frameWidth_small,
-		FrameHeight:          frameHeight_small,
+		FrameHeight:          frameHeight_medium,
+		FrameTimer:           0,
+		AnimationSpeed:       12,
+		Looping:              false,
+	}
+
+	// Out of stamina (row 45): the frame follows the stamina bar instead of a
+	// timer (see exhaustedFrame), so AnimationSpeed is unused.
+	animations[Exhausted] = &Animation{
+		CurrentState:         PlayerStateExhausted,
+		SpriteSheetYPosition: 45,
+		TotalFrames:          12,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_maximum,
+		FrameHeight:          frameHeight_medium,
 		FrameTimer:           0,
 		AnimationSpeed:       1,
 		Looping:              false,
 	}
 
+	// The two deaths, picked at random (see startDeath). Each respawns the player
+	// when it ends.
+	animations[Dead] = &Animation{
+		CurrentState:         PlayerStateDead,
+		SpriteSheetYPosition: 42,
+		TotalFrames:          15,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_large,
+		FrameHeight:          frameHeight_medium,
+		FrameTimer:           0,
+		AnimationSpeed:       10,
+		Looping:              false,
+	}
+	animations[DeadKneel] = &Animation{
+		CurrentState:         PlayerStateDeadKneel,
+		SpriteSheetYPosition: 48,
+		TotalFrames:          30,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_maximum,
+		FrameHeight:          frameHeight_medium,
+		FrameTimer:           0,
+		AnimationSpeed:       12,
+		Looping:              false,
+	}
+
+	// animation yet to make
 	animations[Defense] = &Animation{
 		CurrentState:         PlayerStateDefense,
 		SpriteSheetYPosition: 10,
@@ -300,6 +349,11 @@ func (player *PlayerRuntime) UpdateAnimation() {
 		player.CurrAnimFrame = anim.AnimStartFrame
 	}
 
+	if player.State.IsExhausted() {
+		player.CurrAnimFrame = player.exhaustedFrame(anim)
+		return
+	}
+
 	timePerFrame := 1.0 / anim.AnimationSpeed
 	anim.FrameTimer += deltaTime()
 
@@ -323,6 +377,10 @@ func (player *PlayerRuntime) UpdateAnimation() {
 
 		// Non-looping animation finished: resolve the follow-up state.
 		switch {
+		case player.State.IsDying():
+			player.respawn()
+			player.CurrAnimFrame = 0
+			return
 		case player.State.IsGroundedOneShot():
 			player.State.SetPlayerState(int(PlayerStateIdle))
 			player.CurrAnimFrame = 0

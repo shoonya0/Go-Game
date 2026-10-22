@@ -63,7 +63,7 @@ func (e *EnemyRuntime) attack(target *PlayerRuntime, dx float64) {
 	e.setState(EnemyAttack)
 
 	if e.attackTimer <= 0 {
-		target.ApplyDamage(e.bp.Stats.Damage)
+		target.ApplyDamageFrom(e.bp.Stats.Damage, centerX(e.GetBounds()))
 		e.attackTimer = e.bp.Stats.AttackCooldown
 	}
 }

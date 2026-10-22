@@ -17,7 +17,7 @@ const (
 	JumpPowerCost       = 5.0  // power spent per jump: half a HUD segment
 
 	RunPowerDrainPerSecond = 5.0  // power drained per second while running (half a HUD segment)
-	RunRecoverPower        = 10.0 // after power runs out, running stays off until it refills to this
+	RunRecoverPower        = 20.0 // after power runs out, the player kneels and can't run until it refills to this (2 HUD segments)
 
 	DamageFlashSeconds = 1.0 // the player blinks red this long after taking damage
 	damageBlinkSeconds = 0.1 // length of each red / normal half of a blink
@@ -44,18 +44,12 @@ func newCombat() Combat {
 }
 
 // ApplyDamage subtracts dmg from the player's health, floored at zero, and starts
-// the red damage flash. Respawn is handled by updateCombat on the next tick when
-// health reaches zero, so external callers (e.g. enemy attacks) can deal damage
-// without duplicating that logic. Every source of damage goes through here.
+// the red damage flash; a heavy hit also knocks the player backward (see hurt).
+// Death is handled by updateCombat on the next tick when health reaches zero, so
+// external callers can deal damage without duplicating that logic. Every source
+// of damage goes through here or ApplyDamageFrom.
 func (p *PlayerRuntime) ApplyDamage(dmg int) {
-	if dmg <= 0 {
-		return
-	}
-	p.damageFlash = DamageFlashSeconds
-	p.Combat.Health -= dmg
-	if p.Combat.Health < 0 {
-		p.Combat.Health = 0
-	}
+	p.hurt(dmg, p.backward())
 }
 
 // trySpendPower deducts cost and reports true when the player had enough power;
@@ -77,10 +71,13 @@ func (p *PlayerRuntime) regeneratePower() {
 }
 
 // updateStamina drains power while the player runs and regenerates it otherwise.
-// Running empties into exhaustion, which blocks running until power has
-// refilled to RunRecoverPower, so the player can't flicker between run and walk
-// at zero.
+// Power running out (by running or spending) means exhaustion, which blocks
+// running and puts the player in the exhausted state until power has refilled
+// to RunRecoverPower, so the player can't flicker between run and walk at zero.
 func (p *PlayerRuntime) updateStamina() {
+	if p.Combat.Power <= 0 {
+		p.exhausted = true
+	}
 	if p.running {
 		p.Combat.Power -= RunPowerDrainPerSecond * deltaTime()
 		if p.Combat.Power <= 0 {
@@ -96,7 +93,7 @@ func (p *PlayerRuntime) updateStamina() {
 }
 
 // updateCombat applies checkpoint pickups, environmental damage and fall damage
-// for this tick, then respawns the player if health has run out.
+// for this tick, then starts a death animation if health has run out.
 func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, checkpoints []Checkpoint, onGround bool) {
 	p.damageFlash = math.Max(p.damageFlash-deltaTime(), 0)
 	p.updateCheckpoints(checkpoints)
@@ -125,8 +122,8 @@ func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, checkpoints []Checkpoi
 		p.wasInLarva = false
 	}
 
-	if p.Combat.Health <= 0 {
-		p.respawn()
+	if p.Combat.Health <= 0 && !p.State.IsDying() {
+		p.startDeath()
 	}
 }
 
@@ -205,6 +202,7 @@ func (p *PlayerRuntime) respawn() {
 	p.running = false
 	p.exhausted = false
 	p.damageFlash = 0
+	p.knockTicks = 0
 }
 
 // flashingRed reports whether the player is drawn red this frame: the damage
