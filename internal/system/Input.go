@@ -63,5 +63,5 @@ func HandleInput(inputState *core.InputState) {
 	inputState.Skills.SpecialAttack1 = inpututil.IsKeyJustPressed(ebiten.KeyK) // a second press continues the combo
 	inputState.Skills.SpecialAttack2 = inpututil.IsKeyJustPressed(ebiten.KeyL)
 	inputState.Skills.SpecialAttack3 = ebiten.IsKeyPressed(ebiten.KeyU)
-	inputState.Skills.SpecialAttack4 = ebiten.IsKeyPressed(ebiten.KeyO)
+	inputState.Skills.SpecialAttack4 = inpututil.IsKeyJustPressed(ebiten.KeyO) // a second press finishes the attack
 }
