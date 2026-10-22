@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-22)
 
-Snapshot at `8eff08b` on `feature/special-u-wave` (`main` is at PR #10, `dbd7d4f`). One page. Details live in each increment's entry in
+Snapshot at `8eff08b` on `feature/player-attack-reconfig` (`main` is at PR #10, `dbd7d4f`). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -11,8 +11,8 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `feature/special-u-wave` (from `main` at PR #10) — damage makes the player blink red for 1 s (all damage goes through `ApplyDamage`); U sends a ground wave (`ground_wave.go`, frames 9–23 of row 30, now in 200×120 cells) along the floor the way the player faces: 30 damage per enemy, ends at the floor's end, a wall or after 1.5 s. Verify `--full` passed. Unmerged: `feature/level-enemy-markers` (needs rebase)
-- **Next step:** check U and the red flash in-game, then push + PR; death animations (rows 42/45/48) still not wired in
+- **Branch:** `feature/player-attack-reconfig` (from `main` at PR #10, 4 commits + this one, not pushed) — damage makes the player blink red for 1 s (every damage source goes through `ApplyDamage`); U sends a ground wave (`ground_wave.go`, frames 9–23 of row 30, now in 200×120 cells) along the floor the way the player faces: 30 damage per enemy, needs ground, ends at the floor's end, a wall or after 1.5 s. Verify `--full` passed, 36/36 tests. Unmerged: `feature/level-enemy-markers` (needs rebase; only `_docs/current-state.md` conflicts)
+- **Next step:** check U and the red flash in-game (`go run ./cmd`, F3 for boxes), then push + PR. Open: K/L/O deal no damage; death animations (rows 42, 45, 48) not wired in, and death 2 spans 2 rows, which `Animation` can't play yet; weak ground attack sprite swings backward (issue not filed)
 - **Updated:** 2026-10-22
 
 <!-- Once a feature is active, the first line becomes, for example:
