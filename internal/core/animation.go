@@ -10,6 +10,9 @@ import (
 // vertical origin (SpriteSheetYPosition is expressed in these units).
 const frameOriginHeight = frameHeight_minimum
 
+// damageTintGB scales green and blue while the player flashes red after a hit.
+const damageTintGB = 0.2
+
 // ---------------- states ----------------
 const (
 	Idle int = iota
@@ -328,10 +331,10 @@ func (player *PlayerRuntime) UpdateAnimation() {
 // drawSpriteFrame renders one frame of a sprite sheet: it crops the frame at
 // (frame, anim.SpriteSheetYPosition), mirrors it when flipX is set, centers it
 // horizontally on box and aligns its feet to the box's bottom, then applies the
-// camera offset. It is the shared draw path for the player and every enemy —
-// each actor supplies its own sheet, animation, scale and row-origin height, so
+// camera offset and tint (the zero ColorScale keeps the sprite's colours). It is
+// the shared draw path for the player and every enemy — each actor supplies its own sheet, animation, scale and row-origin height, so
 // sprites with different frame sizes and layouts all render through one function.
-func drawSpriteFrame(screen, img *ebiten.Image, anim *Animation, frame int, box AABB, flipX bool, scale float64, camPos Position, originHeight int) {
+func drawSpriteFrame(screen, img *ebiten.Image, anim *Animation, frame int, box AABB, flipX bool, scale float64, camPos Position, originHeight int, tint ebiten.ColorScale) {
 	width, height := anim.FrameWidth, anim.FrameHeight
 
 	frameX := frame * width
@@ -339,7 +342,7 @@ func drawSpriteFrame(screen, img *ebiten.Image, anim *Animation, frame int, box 
 	rect := image.Rect(frameX, frameY, frameX+width, frameY+height)
 	subImage := img.SubImage(rect).(*ebiten.Image)
 
-	op := &ebiten.DrawImageOptions{}
+	op := &ebiten.DrawImageOptions{ColorScale: tint}
 	if flipX {
 		// Mirror horizontally, then shift back into place.
 		op.GeoM.Scale(-scale, scale)
@@ -360,6 +363,10 @@ func drawSpriteFrame(screen, img *ebiten.Image, anim *Animation, frame int, box 
 // movement direction and offset so the sprite is centered on the collision box.
 func (player *PlayerRuntime) DrawPlayerAnimation(screen *ebiten.Image) {
 	anim := player.Animations[player.State.GetPlayerState()]
+	var tint ebiten.ColorScale // zero value draws the sprite's own colours
+	if player.flashingRed() {
+		tint.Scale(1, damageTintGB, damageTintGB, 1)
+	}
 	drawSpriteFrame(screen, player.img, anim, player.CurrAnimFrame, player.GetBounds(),
-		player.FlipX, player.Scale, player.Camera.Pos, frameOriginHeight)
+		player.FlipX, player.Scale, player.Camera.Pos, frameOriginHeight, tint)
 }
