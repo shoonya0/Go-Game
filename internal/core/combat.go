@@ -12,9 +12,14 @@ const (
 	FallSafeTiles        = 5   // falls up to this many tiles do no damage; each extra tile costs 1
 
 	PowerRegenPerSecond = 10.0 // special power regenerated per second
-	SpecialPowerCost    = 34.0 // power spent per U / O special attack (~3 on a full bar)
-	AttackPowerCost     = 10.0 // power spent per normal (J / I) attack: one HUD segment
-	JumpPowerCost       = 5.0  // power spent per jump: half a HUD segment
+	SpecialPowerCost    = 34.0 // power spent per U special attack (~3 on a full bar)
+
+	// O is a two-press combo (see specialAttack4GateFrame); each part has its own cost.
+	SpecialAttack4PowerCost1 = 10.0 // first press: one HUD segment
+	SpecialAttack4PowerCost2 = 20.0 // second press, to finish the attack: two HUD segments
+
+	AttackPowerCost = 10.0 // power spent per normal (J / I) attack: one HUD segment
+	JumpPowerCost   = 5.0  // power spent per jump: half a HUD segment
 
 	RunPowerDrainPerSecond = 5.0  // power drained per second while running (half a HUD segment)
 	RunRecoverPower        = 20.0 // after power runs out, the player kneels and can't run until it refills to this (2 HUD segments)

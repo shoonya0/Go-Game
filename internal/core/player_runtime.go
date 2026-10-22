@@ -64,5 +64,5 @@ type PlayerRuntime struct {
 	strikeIdx   int             // which hit of the swing struck holds
 	waves       []*GroundWave   // live U ground waves
 	waveCast    bool            // the current U swing already cast its wave
-	comboQueued bool            // K/L was pressed again before the combo gate (see comboGateFrame)
+	comboQueued bool            // K/L/O was pressed again before the combo gate (see comboGate)
 }
