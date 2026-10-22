@@ -38,6 +38,18 @@ func (e *EnemyRuntime) healthBars() int {
 	return (e.bp.Stats.MaxHealth + EnemyHealthPerBar - 1) / EnemyHealthPerBar
 }
 
+// healthBarStates is the full/half/empty state of each health bar. Unlike the
+// player's HUD it rounds down to the half bar, so regenerating health doesn't
+// refill a bar until a whole half is back; any health left still shows half a
+// bar.
+func (e *EnemyRuntime) healthBarStates() []segmentState {
+	halves := e.Health / (EnemyHealthPerBar / 2)
+	if e.Health > 0 && halves == 0 {
+		halves = 1
+	}
+	return halfStepStates(halves, e.healthBars())
+}
+
 // regenerateHealth refills a live enemy's health over time, up to its maximum.
 // Like water damage, the fractional part carries between ticks so integer
 // health rises steadily.
@@ -66,11 +78,10 @@ func (e *EnemyRuntime) DrawHealthBar(screen *ebiten.Image, cam Camera) {
 	}
 
 	n := e.healthBars()
-	ratio := float64(e.Health) / float64(n*EnemyHealthPerBar)
 	body := e.GetBounds()
 	width := float64(n)*enemyBarW + float64(n-1)*enemyBarGap
 	spriteTop := body.Y + body.Height - float64(anim.FrameHeight)*e.Scale
 	x := centerX(body) - width/2 - cam.Pos.X
 	y := spriteTop - enemyBarLift - enemyBarH - cam.Pos.Y
-	drawSegments(screen, enemyBars, segmentStates(ratio, n), x, y, enemyBarW, enemyBarH, enemyBarGap)
+	drawSegments(screen, enemyBars, e.healthBarStates(), x, y, enemyBarW, enemyBarH, enemyBarGap)
 }

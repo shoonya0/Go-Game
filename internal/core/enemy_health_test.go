@@ -1,6 +1,9 @@
 package core
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
 func TestEnemiesHaveAtLeastTwoWholeBars(t *testing.T) {
 	for kind, bp := range enemyBlueprints {
@@ -41,5 +44,24 @@ func TestDeadEnemyDoesNotRegenerate(t *testing.T) {
 	}
 	if e.Health != 0 {
 		t.Errorf("dead enemy regenerated to %d", e.Health)
+	}
+}
+
+func TestRegenDoesNotHideDamageOnBars(t *testing.T) {
+	e := newTestEnemy(Position{})
+	e.TakeDamage(WeakAttackDamage) // 0.5 bar: 30/40
+	want := []segmentState{segmentFull, segmentHalf}
+	if got := e.healthBarStates(); !slices.Equal(got, want) {
+		t.Fatalf("after a half-bar hit: %v, want %v", got, want)
+	}
+
+	e.Health++ // the first regen point must not refill the bar
+	if got := e.healthBarStates(); !slices.Equal(got, want) {
+		t.Errorf("one point regenerated: %v, want %v until the half bar is back", got, want)
+	}
+
+	e.Health = 1 // any health left still shows half a bar
+	if got := e.healthBarStates(); !slices.Equal(got, []segmentState{segmentHalf, segmentEmpty}) {
+		t.Errorf("at 1 HP: %v, want half then empty", got)
 	}
 }
