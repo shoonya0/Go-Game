@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-22)
 
-Snapshot at `69c80c6` on `feature/debug-hitboxes` (`main` is at PR #8, `fdb96a3`). One page. Details live in each increment's entry in
+Snapshot at `aef2b3f` on `chore/death-sprite-layout` (`main` is at PR #9, `7984365`). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -11,8 +11,8 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `feature/debug-hitboxes` (from `main` at PR #8) — F3 toggles a debug overlay of body (green) and attack (red) boxes via `HitboxProvider`; enemies now hit with a real `AttackBox()` (no more hits on a player standing above); the player's J/I attacks have a damage box that hits enemies once per swing (10 weak / 20 strong). Verify `--full` passed. Unmerged: `feature/level-enemy-markers` (enemy markers in `level_1.json`, needs rebase)
-- **Next step:** PR #9 open; press F3 in-game to check the boxes and that J/I hurt the succubus, then merge (ask first); special attacks (K/L/U/O) have no damage box yet
+- **Branch:** `chore/death-sprite-layout` (from `main` at PR #9) — the two player death animations at the bottom of `GideonGraves.png` now sit in equal cells: death 1 at row 42 (15 frames, 160x120), death 2 across rows 45/48/51 (12+22+8 frames, 200x120). Not wired into `InitPlayerAnimations` yet (`Dead` still points at row 8). Unmerged: `feature/level-enemy-markers` (needs rebase; only `_docs/current-state.md` conflicts)
+- **Next step:** push + PR; later add death animations (death 2 spans 3 rows, which `Animation` can't play yet)
 - **Updated:** 2026-10-22
 
 <!-- Once a feature is active, the first line becomes, for example:
