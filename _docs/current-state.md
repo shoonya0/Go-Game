@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-22)
 
-Snapshot at `a842636` on `feature/level-enemy-markers` (`main` is at PR #12, `c59d6b0`). One page. Details live in each increment's entry in
+Snapshot at `2abec37` on `feature/level-enemy-markers` (`main` is at PR #12, `c59d6b0`). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -11,7 +11,7 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `feature/level-enemy-markers` (rebased on `main` at PR #12, 9 commits, not pushed): enemies are placed in `assets/level_1.json` with one-character markers (`"!"` = succubus, `EnemyBlueprint.Marker`); the short knockdown draws from row 16; enemies show health bars above the sprite (`enemy_health.go`, `assets/enemyHealth.png` full/half/empty, 20 HP per bar, at least 2 bars, regen 0.1 bar/s); player damage is tuned in bars (J, jump + J, I: 0.5; jump + I: 1.5; K: 0.5 + 1; L: 1 + 2, L at 6 fps so slower than K; each attack can have several hit windows in `playerStrikes`). Verify `--full` passed, 59/59 tests
+- **Branch:** `feature/level-enemy-markers` (rebased on `main` at PR #12, 11 commits, not pushed): enemies are placed in `assets/level_1.json` with one-character markers (`"!"` = succubus, `EnemyBlueprint.Marker`); the short knockdown draws from row 16; enemies show health bars above the sprite (`enemy_health.go`, `assets/enemyHealth.png` full/half/empty, 20 HP per bar, at least 2 bars, regen 0.1 bar/s; bars round down to the half bar so regen never hides fresh damage); player damage is tuned in bars (J, jump + J, I: 0.5; jump + I: 1.5; K: 0.5 + 1; L: 1 + 2, L at 6 fps so slower than K; each attack can have several hit windows in `playerStrikes`). Verify `--full` passed, 60/60 tests
 - **Next step:** check the succubus spawns, the health bars (position, half states, regen) and K/L hits in-game (`go run ./cmd`), then push + PR. Open: the full knockdown (`KnockedOut`) still draws from row 17 while the short one uses row 16; enemies hit for 8, so only fall damage is heavy today; O deals no damage; weak ground attack sprite swings backward (issue not filed)
 - **Updated:** 2026-10-22
 
