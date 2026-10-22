@@ -30,8 +30,9 @@ const (
 	PlayerStateDefense
 	PlayerStateUsePotion
 	// ---------------- status ----------------
-	PlayerStateExhausted // out of stamina: kneels until one bar refills
-	PlayerStateDeadKneel // second death: kneels, then bursts
+	PlayerStateExhausted  // out of stamina: kneels until one bar refills
+	PlayerStateDeadKneel  // second death: kneels, then bursts
+	PlayerStateKnockedOut // severe-hit knockdown: the whole row 17
 )
 
 type PlayerState struct {
@@ -107,6 +108,11 @@ func (ps *PlayerState) IsDamaged() bool {
 	return ps.CurrentState == PlayerStateDamaged
 }
 
+// IsKnockedDown reports whether the player is in either hit knockdown.
+func (ps *PlayerState) IsKnockedDown() bool {
+	return ps.CurrentState == PlayerStateDamaged || ps.CurrentState == PlayerStateKnockedOut
+}
+
 func (ps *PlayerState) IsDead() bool {
 	return ps.CurrentState == PlayerStateDead
 }
@@ -131,7 +137,7 @@ func (ps *PlayerState) IsUsingPotion() bool {
 // IsGroundedOneShot reports whether the current state is a non-looping grounded
 // action that should return to idle once its animation finishes.
 func (ps *PlayerState) IsGroundedOneShot() bool {
-	return ps.IsLanding() || ps.IsSmugFace() || ps.IsDamaged() || ps.IsWeakAttack() || ps.IsStrongAttack() ||
+	return ps.IsLanding() || ps.IsSmugFace() || ps.IsKnockedDown() || ps.IsWeakAttack() || ps.IsStrongAttack() ||
 		ps.IsSpecialAttack1() || ps.IsSpecialAttack2() || ps.IsSpecialAttack3() || ps.IsSpecialAttack4()
 }
 

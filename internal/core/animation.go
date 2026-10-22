@@ -38,6 +38,7 @@ const (
 	UsePotion
 	Exhausted
 	DeadKneel
+	KnockedOut
 )
 
 // ---------------- animation ----------------
@@ -246,11 +247,25 @@ func InitPlayerAnimations() map[int]*Animation {
 	}
 
 	// Heavy-hit knockdown: frames 0..9 of row 17 run from the hit to landing on
-	// the back. The rest of the row (lying still, blue effect) isn't used.
+	// the back. A severe hit plays the whole row instead (KnockedOut).
 	animations[Damaged] = &Animation{
 		CurrentState:         PlayerStateDamaged,
 		SpriteSheetYPosition: 17,
 		TotalFrames:          10,
+		AnimStartFrame:       0,
+		FrameWidth:           frameWidth_small,
+		FrameHeight:          frameHeight_medium,
+		FrameTimer:           0,
+		AnimationSpeed:       12,
+		Looping:              false,
+	}
+
+	// Severe-hit knockdown: the whole of row 17, lying still and the blue effect
+	// included.
+	animations[KnockedOut] = &Animation{
+		CurrentState:         PlayerStateKnockedOut,
+		SpriteSheetYPosition: 17,
+		TotalFrames:          20,
 		AnimStartFrame:       0,
 		FrameWidth:           frameWidth_small,
 		FrameHeight:          frameHeight_medium,

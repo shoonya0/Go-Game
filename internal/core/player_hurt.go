@@ -4,9 +4,11 @@ import "math/rand/v2"
 
 // Heavy hits, exhaustion and death.
 const (
-	HeavyHitDamage    = 2 * MaxPlayerHealth / hudSegments // a hit that takes 2 hearts or more knocks the player down
-	KnockbackDistance = 1.5 * LevelTileWidth              // px a heavy hit pushes the player away from its source
-	KnockbackSeconds  = 0.4                               // how long the push lasts (the tumbling frames of the knockdown)
+	HeavyHitDamage          = 2 * MaxPlayerHealth / hudSegments // a hit that takes 2 hearts or more knocks the player down
+	KnockbackDistance       = 1.5 * LevelTileWidth              // px a heavy hit pushes the player away from its source
+	SevereHitDamage         = 3 * MaxPlayerHealth / hudSegments // 3 hearts or more: the full knockdown and a longer push
+	SevereKnockbackDistance = 2 * LevelTileWidth                // px a severe hit pushes the player
+	KnockbackSeconds        = 0.4                               // how long the push lasts (the tumbling frames of the knockdown)
 )
 
 // deathKneels picks which death animation plays; tests replace it to choose one.
@@ -34,9 +36,10 @@ func (p *PlayerRuntime) backward() float64 {
 	return -1
 }
 
-// hurt applies dmg and, for a heavy hit the player survives, starts the
-// knockdown and a push of KnockbackDistance in direction dir (-1 or 1). A dying
-// player takes no more damage.
+// hurt applies dmg and, for a heavy hit the player survives, starts a knockdown
+// and a push in direction dir (-1 or 1): KnockbackDistance and the short
+// knockdown, or for a severe hit SevereKnockbackDistance and the full one. A
+// dying player takes no more damage.
 func (p *PlayerRuntime) hurt(dmg int, dir float64) {
 	if dmg <= 0 || p.State.IsDying() {
 		return
@@ -46,16 +49,13 @@ func (p *PlayerRuntime) hurt(dmg int, dir float64) {
 	if dmg < HeavyHitDamage || p.Combat.Health == 0 {
 		return
 	}
-	p.State.SetPlayerState(int(PlayerStateDamaged))
+	state, dist := PlayerStateDamaged, KnockbackDistance
+	if dmg >= SevereHitDamage {
+		state, dist = PlayerStateKnockedOut, SevereKnockbackDistance
+	}
+	p.State.SetPlayerState(int(state))
 	p.knockTicks = int(KnockbackSeconds*tps() + 0.5)
-	p.knockDir = dir
-}
-
-// knockbackSpeed is the push velocity (px/s) that covers KnockbackDistance in
-// knockTicks ticks.
-func knockbackSpeed() float64 {
-	ticks := int(KnockbackSeconds*tps() + 0.5)
-	return KnockbackDistance / (float64(ticks) * deltaTime())
+	p.knockVelX = dir * dist / (float64(p.knockTicks) * deltaTime()) // covers dist in knockTicks ticks
 }
 
 // applyKnockback drives VelX during a knockdown: the push while it lasts, then
@@ -65,8 +65,8 @@ func (p *PlayerRuntime) applyKnockback() bool {
 	switch {
 	case p.knockTicks > 0:
 		p.knockTicks--
-		p.Physics.VelX = p.knockDir * knockbackSpeed()
-	case p.State.IsDamaged() || p.State.IsDying():
+		p.Physics.VelX = p.knockVelX
+	case p.State.IsKnockedDown() || p.State.IsDying():
 		p.Physics.VelX = 0
 	default:
 		return false
@@ -86,7 +86,7 @@ func (p *PlayerRuntime) startDeath() {
 }
 
 // exhaustedFrame keeps the out-of-stamina animation in step with the stamina
-// bar: its first frame at empty, its last once one bar (RunRecoverPower) refills.
+// bar: its first frame at empty, its last once RunRecoverPower (2 bars) refills.
 func (p *PlayerRuntime) exhaustedFrame(anim *Animation) int {
 	f := int(p.Combat.Power / RunRecoverPower * float64(anim.TotalFrames))
 	return anim.AnimStartFrame + min(max(f, 0), anim.TotalFrames-1)

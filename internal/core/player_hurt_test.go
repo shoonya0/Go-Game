@@ -35,6 +35,26 @@ func TestHeavyHitKnocksPlayerAwayFromSource(t *testing.T) {
 	}
 }
 
+func TestSevereHitPushesTwoTilesWithFullKnockdown(t *testing.T) {
+	p := staminaPlayer()
+	p.Animations = InitPlayerAnimations()
+	p.Pos.X = 500
+	p.ApplyDamageFrom(SevereHitDamage, 1000)
+	if !p.State.IsKnockedDown() || p.State.IsDamaged() {
+		t.Fatalf("state=%d, want the full knockdown", p.State.CurrentState)
+	}
+	if got := p.Animations[KnockedOut].TotalFrames; got != 20 {
+		t.Errorf("full knockdown has %d frames, want the whole row (20)", got)
+	}
+	tickKnockback(p, 2*int(tps()))
+	if got := p.Pos.X - 500; math.Abs(got+SevereKnockbackDistance) > 1e-6 {
+		t.Errorf("pushed %v px, want %v", got, -SevereKnockbackDistance)
+	}
+	if SevereKnockbackDistance != 2*LevelTileWidth || SevereHitDamage != 3*MaxPlayerHealth/hudSegments {
+		t.Errorf("severe hit: %v px from %d damage, want 2 tiles from 3 hearts", SevereKnockbackDistance, SevereHitDamage)
+	}
+}
+
 func TestHeavyHitWithoutSourcePushesBackward(t *testing.T) {
 	p := staminaPlayer()
 	p.FlipX = true // facing left: pushed right
@@ -50,7 +70,7 @@ func TestLightHitDoesNotKnockDown(t *testing.T) {
 	p := staminaPlayer()
 	p.ApplyDamageFrom(HeavyHitDamage-1, 1000)
 	tickKnockback(p, int(tps()))
-	if p.State.IsDamaged() || p.Pos.X != 0 {
+	if p.State.IsKnockedDown() || p.Pos.X != 0 {
 		t.Errorf("light hit: state=%d x=%v, want idle and unmoved", p.State.CurrentState, p.Pos.X)
 	}
 }
@@ -62,15 +82,17 @@ func TestHeavyHitIsTwoHearts(t *testing.T) {
 }
 
 func TestKnockdownReturnsToIdle(t *testing.T) {
-	p := staminaPlayer()
-	p.Animations = InitPlayerAnimations()
-	p.ApplyDamage(HeavyHitDamage)
-	for i := 0; i < 3*int(tps()) && p.State.IsDamaged(); i++ {
-		p.UpdateAnimation()
-		p.PreviousState = p.State
-	}
-	if !p.State.IsIdle() {
-		t.Errorf("after knockdown: state=%d, want idle", p.State.CurrentState)
+	for _, dmg := range []int{HeavyHitDamage, SevereHitDamage} {
+		p := staminaPlayer()
+		p.Animations = InitPlayerAnimations()
+		p.ApplyDamage(dmg)
+		for i := 0; i < 3*int(tps()) && p.State.IsKnockedDown(); i++ {
+			p.UpdateAnimation()
+			p.PreviousState = p.State
+		}
+		if !p.State.IsIdle() {
+			t.Errorf("damage %d: after knockdown state=%d, want idle", dmg, p.State.CurrentState)
+		}
 	}
 }
 
@@ -142,6 +164,10 @@ func TestOutOfStaminaKneelsInStepWithBar(t *testing.T) {
 		}
 	}
 
+	if RunRecoverPower != 2*MaxPlayerPower/hudSegments {
+		t.Errorf("kneels until %v power, want 2 bars", RunRecoverPower)
+	}
+
 	// Moving is blocked while kneeling.
 	in := &InputState{}
 	in.Direction.LeftRight = 1
@@ -151,9 +177,9 @@ func TestOutOfStaminaKneelsInStepWithBar(t *testing.T) {
 	}
 
 	p.Combat.Power = RunRecoverPower - 0.01
-	p.updateStamina() // regenerates past one bar
+	p.updateStamina() // regenerates past 2 bars
 	p.updateState(&InputState{}, true, true)
 	if !p.State.IsIdle() {
-		t.Errorf("after one bar refilled: state=%d, want idle", p.State.CurrentState)
+		t.Errorf("after 2 bars refilled: state=%d, want idle", p.State.CurrentState)
 	}
 }

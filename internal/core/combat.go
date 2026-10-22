@@ -17,7 +17,7 @@ const (
 	JumpPowerCost       = 5.0  // power spent per jump: half a HUD segment
 
 	RunPowerDrainPerSecond = 5.0  // power drained per second while running (half a HUD segment)
-	RunRecoverPower        = 10.0 // after power runs out, running stays off until it refills to this
+	RunRecoverPower        = 20.0 // after power runs out, the player kneels and can't run until it refills to this (2 HUD segments)
 
 	DamageFlashSeconds = 1.0 // the player blinks red this long after taking damage
 	damageBlinkSeconds = 0.1 // length of each red / normal half of a blink
