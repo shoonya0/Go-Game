@@ -250,7 +250,7 @@ func InitPlayerAnimations() map[int]*Animation {
 	// the back. A severe hit plays the whole row instead (KnockedOut).
 	animations[Damaged] = &Animation{
 		CurrentState:         PlayerStateDamaged,
-		SpriteSheetYPosition: 17,
+		SpriteSheetYPosition: 16,
 		TotalFrames:          10,
 		AnimStartFrame:       0,
 		FrameWidth:           frameWidth_small,
