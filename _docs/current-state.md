@@ -11,8 +11,8 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `feature/o-combo` (from `main` at PR #13, issue #14): O is a two-press combo like K/L. The first press plays sprites 0-8 and costs 1 HUD segment (`SpecialAttack4PowerCost1`); a second O before frame 9 (`specialAttack4GateFrame`) finishes all 17 frames for 2 more segments (`SpecialAttack4PowerCost2`), and is ignored without that stamina. O reads as a single press. Verify `--full` passed. Also open: `feature/mobile-settings` (touch controls, its O button already acts once per press)
-- **Next step:** try O in-game (`go run ./cmd`): one press stops after sprite 9, two presses finish it, stamina bar drops 1 then 2 segments; then push + PR for both branches (`_docs/current-state.md` will conflict between them: keep both). Open: O deals no damage; the full knockdown (`KnockedOut`) still draws from row 17
+- **Branch:** `feature/o-combo` (from `main` at PR #13, issue #14): O is a two-press combo like K/L. The first press plays sprites 0-8 and costs 1 HUD segment (`SpecialAttack4PowerCost1`); a second O before frame 9 (`specialAttack4GateFrame`) finishes all 17 frames for 2 more segments (`SpecialAttack4PowerCost2`), and is ignored without that stamina. O reads as a single press. O now hits: burst on frames 1-4 (1 bar, 70 px reach), sword thrust on frames 12-14 (2 bars, 95 px; `strikeHit.Reach` lets a hit override the attack reach); part 2 steps the player 45 px forward on frames 9-11 (`applyComboStep`), then holds still. Verify `--full` passed. Also open: `feature/mobile-settings` (touch controls, its O button already acts once per press)
+- **Next step:** try O in-game (`go run ./cmd`): one press stops after sprite 9, two presses finish it, stamina bar drops 1 then 2 segments; then push + PR for both branches (`_docs/current-state.md` will conflict between them: keep both). Open: the full knockdown (`KnockedOut`) still draws from row 17
 - **Updated:** 2026-10-22
 
 <!-- Once a feature is active, the first line becomes, for example:
