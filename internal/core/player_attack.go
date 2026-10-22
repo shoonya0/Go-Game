@@ -14,18 +14,22 @@ const (
 	SpecialAttack1Damage2 = 2 * halfBar // K, second hit: 1 bar (1.5 in all)
 	SpecialAttack2Damage1 = 2 * halfBar // L, first hit: 1 bar
 	SpecialAttack2Damage2 = 4 * halfBar // L, second hit: 2 bars (3 in all)
+	SpecialAttack4Damage1 = 2 * halfBar // O, burst (part 1): 1 bar
+	SpecialAttack4Damage2 = 4 * halfBar // O, sword thrust (part 2): 2 bars (3 in all)
 )
 
 // strikeHit is one hit of an attack: it deals Damage on animation frames
-// FirstFrame..LastFrame, at most once per enemy.
+// FirstFrame..LastFrame, at most once per enemy. Reach, when non-zero, replaces
+// the attack's Reach for this hit (O's burst is shorter than its thrust).
 type strikeHit struct {
 	FirstFrame, LastFrame int
 	Damage                int
+	Reach                 float64
 }
 
 // playerStrike is one attack's damage box: it reaches Reach px forward from the
-// body's centre and rises Height px from the feet. Most attacks hit once; K and
-// L hit twice, once per half of the combo.
+// body's centre and rises Height px from the feet. Most attacks hit once; K, L
+// and O hit twice, once per half of the combo.
 type playerStrike struct {
 	Reach, Height float64
 	Hits          []strikeHit
@@ -33,19 +37,23 @@ type playerStrike struct {
 
 // playerStrikes holds the damage box of every attack that has one. Reach, height
 // and frames are measured from the sword and slashes in GideonGraves.png. U hurts
-// through its ground wave instead; O has no box yet.
+// through its ground wave instead.
 var playerStrikes = map[PlayerStateType]playerStrike{
-	PlayerStateWeakAttack:        {Reach: 78, Height: bodyHeight, Hits: []strikeHit{{2, 4, WeakAttackDamage}}},
-	PlayerStateStrongAttack:      {Reach: 72, Height: 96, Hits: []strikeHit{{2, 5, StrongAttackDamage}}},
-	PlayerStateWeakAttackInAir:   {Reach: 100, Height: 102, Hits: []strikeHit{{2, 4, WeakAttackDamage}}},
-	PlayerStateStrongAttackInAir: {Reach: 77, Height: 120, Hits: []strikeHit{{2, 7, StrongAirAttackDamage}}},
+	PlayerStateWeakAttack:        {Reach: 78, Height: bodyHeight, Hits: []strikeHit{{2, 4, WeakAttackDamage, 0}}},
+	PlayerStateStrongAttack:      {Reach: 72, Height: 96, Hits: []strikeHit{{2, 5, StrongAttackDamage, 0}}},
+	PlayerStateWeakAttackInAir:   {Reach: 100, Height: 102, Hits: []strikeHit{{2, 4, WeakAttackDamage, 0}}},
+	PlayerStateStrongAttackInAir: {Reach: 77, Height: 120, Hits: []strikeHit{{2, 7, StrongAirAttackDamage, 0}}},
 	PlayerStateSpecialAttack1: {Reach: 70, Height: 100, Hits: []strikeHit{
-		{3, 4, SpecialAttack1Damage1}, // first crescent, before the combo gate
-		{5, 7, SpecialAttack1Damage2}, // second crescent
+		{3, 4, SpecialAttack1Damage1, 0}, // first crescent, before the combo gate
+		{5, 7, SpecialAttack1Damage2, 0}, // second crescent
 	}},
 	PlayerStateSpecialAttack2: {Reach: 95, Height: 100, Hits: []strikeHit{
-		{3, 4, SpecialAttack2Damage1}, // first blue wave, before the combo gate
-		{8, 9, SpecialAttack2Damage2}, // the blue disc
+		{3, 4, SpecialAttack2Damage1, 0}, // first blue wave, before the combo gate
+		{8, 9, SpecialAttack2Damage2, 0}, // the blue disc
+	}},
+	PlayerStateSpecialAttack4: {Reach: 95, Height: bodyHeight, Hits: []strikeHit{
+		{1, 4, SpecialAttack4Damage1, 70},  // energy burst from the fist, before the combo gate
+		{12, 14, SpecialAttack4Damage2, 0}, // sword thrust after the step forward
 	}},
 }
 
@@ -65,14 +73,25 @@ func (player *PlayerRuntime) currentStrike() (playerStrike, bool) {
 	return st, ok
 }
 
-// strikeBox places st in the world in front of the player, on the side it faces.
+// reachOn returns how far st reaches on animation frame f: the active hit's own
+// Reach if it has one, otherwise the attack's.
+func (st playerStrike) reachOn(f int) float64 {
+	if i, ok := st.hitOn(f); ok && st.Hits[i].Reach > 0 {
+		return st.Hits[i].Reach
+	}
+	return st.Reach
+}
+
+// strikeBox places st in the world in front of the player, on the side it faces,
+// sized for the current animation frame.
 func (player *PlayerRuntime) strikeBox(st playerStrike) AABB {
 	b := player.GetBounds()
+	reach := st.reachOn(player.CurrAnimFrame)
 	x := centerX(b)
 	if player.FlipX {
-		x -= st.Reach
+		x -= reach
 	}
-	return AABB{X: x, Y: b.Y + b.Height - st.Height, Width: st.Reach, Height: st.Height}
+	return AABB{X: x, Y: b.Y + b.Height - st.Height, Width: reach, Height: st.Height}
 }
 
 // AttackBox returns the damage box of the current attack and whether it is
@@ -137,6 +156,39 @@ const comboGateFrame = 5
 // specialAttack4GateFrame splits O the same way, after its first 9 sprites. The
 // second press also pays for part 2 (SpecialAttack4PowerCost2).
 const specialAttack4GateFrame = 9
+
+// O's second part opens with a step forward: while the wind-up sprites after
+// the gate play (frames 9-11), the player moves SpecialAttack4StepDistance px
+// the way it faces, then thrusts.
+const (
+	SpecialAttack4StepDistance = 0.75 * LevelTileWidth
+	specialAttack4StepFrames   = 3
+)
+
+// applyComboStep drives VelX during O's second part, through the normal
+// collision, like applyKnockback: the step forward, then standing still for the
+// thrust. It reports whether it took over horizontal movement this tick.
+func (player *PlayerRuntime) applyComboStep() bool {
+	if !player.State.IsSpecialAttack4() || !player.comboQueued {
+		return false
+	}
+	anim := player.Animations[player.State.GetPlayerState()]
+	f := player.CurrAnimFrame - specialAttack4GateFrame
+	if anim == nil || f < 0 {
+		return false
+	}
+	player.running = false
+	if f >= specialAttack4StepFrames {
+		player.Physics.VelX = 0
+		return true
+	}
+	dir := 1.0
+	if player.FlipX {
+		dir = -1
+	}
+	player.Physics.VelX = dir * SpecialAttack4StepDistance * anim.AnimationSpeed / specialAttack4StepFrames
+	return true
+}
 
 // comboGate returns the frame where the current attack stops unless its key was
 // pressed again, and false for attacks that are not combos.
