@@ -1,5 +1,7 @@
 package core
 
+import "math"
+
 // ------------------------ combat constants ------------------------
 const (
 	MaxPlayerHealth = 100 // starting/maximum health (integer)
@@ -16,6 +18,9 @@ const (
 
 	RunPowerDrainPerSecond = 5.0  // power drained per second while running (half a HUD segment)
 	RunRecoverPower        = 10.0 // after power runs out, running stays off until it refills to this
+
+	DamageFlashSeconds = 1.0 // the player blinks red this long after taking damage
+	damageBlinkSeconds = 0.1 // length of each red / normal half of a blink
 )
 
 // Combat holds the player's health and special-power pools. Health is an integer
@@ -38,13 +43,15 @@ func newCombat() Combat {
 	}
 }
 
-// ApplyDamage subtracts dmg from the player's health, floored at zero. Respawn is
-// handled by updateCombat on the next tick when health reaches zero, so external
-// callers (e.g. enemy attacks) can deal damage without duplicating that logic.
+// ApplyDamage subtracts dmg from the player's health, floored at zero, and starts
+// the red damage flash. Respawn is handled by updateCombat on the next tick when
+// health reaches zero, so external callers (e.g. enemy attacks) can deal damage
+// without duplicating that logic. Every source of damage goes through here.
 func (p *PlayerRuntime) ApplyDamage(dmg int) {
 	if dmg <= 0 {
 		return
 	}
+	p.damageFlash = DamageFlashSeconds
 	p.Combat.Health -= dmg
 	if p.Combat.Health < 0 {
 		p.Combat.Health = 0
@@ -91,6 +98,7 @@ func (p *PlayerRuntime) updateStamina() {
 // updateCombat applies checkpoint pickups, environmental damage and fall damage
 // for this tick, then respawns the player if health has run out.
 func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, checkpoints []Checkpoint, onGround bool) {
+	p.damageFlash = math.Max(p.damageFlash-deltaTime(), 0)
 	p.updateCheckpoints(checkpoints)
 
 	inWater, inLarva := p.scanHazards(qt)
@@ -101,7 +109,7 @@ func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, checkpoints []Checkpoi
 	if inWater {
 		p.waterDamageAccum += WaterDamagePerSecond * deltaTime()
 		if whole := int(p.waterDamageAccum); whole > 0 {
-			p.Combat.Health -= whole
+			p.ApplyDamage(whole)
 			p.waterDamageAccum -= float64(whole)
 		}
 	} else {
@@ -110,7 +118,7 @@ func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, checkpoints []Checkpoi
 
 	if inLarva {
 		if !p.wasInLarva {
-			p.Combat.Health -= LarvaDamage
+			p.ApplyDamage(LarvaDamage)
 		}
 		p.wasInLarva = true
 	} else {
@@ -171,7 +179,7 @@ func (p *PlayerRuntime) applyFallDamage(onGround, inWater bool) {
 		if !p.groundedPrev && !inWater {
 			tiles := int((p.Pos.Y - p.fallPeakY) / LevelTileHeight)
 			if dmg := tiles - FallSafeTiles; dmg > 0 {
-				p.Combat.Health -= dmg
+				p.ApplyDamage(dmg)
 			}
 		}
 		p.fallPeakY = p.Pos.Y // reset the baseline while grounded
@@ -196,4 +204,15 @@ func (p *PlayerRuntime) respawn() {
 	p.inWater = false
 	p.running = false
 	p.exhausted = false
+	p.damageFlash = 0
+}
+
+// flashingRed reports whether the player is drawn red this frame: the damage
+// flash alternates red and normal every damageBlinkSeconds.
+func (p *PlayerRuntime) flashingRed() bool {
+	if p.damageFlash <= 0 {
+		return false
+	}
+	elapsed := DamageFlashSeconds - p.damageFlash
+	return int(elapsed/damageBlinkSeconds)%2 == 0
 }

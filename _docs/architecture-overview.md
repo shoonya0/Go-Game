@@ -26,7 +26,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 |---|---|---|---|
 | Entry / game loop | `cmd/main.go` | Wires subsystems; implements `ebiten.Game` (Update/Draw/Layout) | `Game` struct: player, enemies, level, quadtree |
 | Input | `internal/system/Input.go` | Polls Ebitengine keyboard → `core.InputState` | no (writes caller's struct) |
-| Player | `internal/core/player.go`, `player_runtime.go`, `playerState.go`, `player_attack.go` | Movement, gravity/jump, AABB collision resolution, state enum; `HitEnemies` damages enemies inside the attack's damage box | `PlayerRuntime` |
+| Player | `internal/core/player.go`, `player_runtime.go`, `playerState.go`, `player_attack.go`, `ground_wave.go` | Movement, gravity/jump, AABB collision resolution, state enum; `HitEnemies` damages enemies inside the attack's damage box; `UpdateGroundWaves` runs U's ground wave along the floor | `PlayerRuntime` |
 | Combat | `internal/core/combat.go`, `skills.go` | Damage, power regen, hazards (water/larva), fall damage, checkpoints, respawn | inside `PlayerRuntime` |
 | Enemies | `internal/core/enemy*.go` | Blueprint registry, AI (patrol/chase/attack), animation, damage; `AttackBox()` is the area that hits the player | `EnemyRuntime` |
 | Animation | `internal/core/animation.go`, `enemy_anim.go` | Sprite-sheet frame tables, frame advance, drawing with camera | per-runtime |
@@ -55,7 +55,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
    insert platforms into `DynamicQuadtree` → `InitPlayer(LoadImage(...))` → `NewEnemy(...)` (`cmd/main.go:33`).
 2. **Tick (~60 TPS)**: `Game.Update` → `system.HandleInput` → `core.UpdatePlayer`
    (movement → gravity/jump → resolveHorizontal/Vertical via quadtree → `updateCombat`) →
-   `UpdateAnimation` → `HitEnemies` → `UpdateCamera` → `updateEnemies` (AI, anim, cull `Removable`) (`cmd/main.go:58`).
+   `UpdateAnimation` → `HitEnemies` → `UpdateGroundWaves` → `UpdateCamera` → `updateEnemies` (AI, anim, cull `Removable`) (`cmd/main.go:58`).
 3. **Frame**: `Game.Draw` — draw order matters: water after player so the player looks submerged (`cmd/main.go:87`).
 4. **Web build/deploy**: `GOOS=js GOARCH=wasm go build ./cmd` → `web/game.wasm` + `wasm_exec.js`
    → Docker multi-stage → distroless `server` on Render (`Dockerfile`, `render.yaml`).

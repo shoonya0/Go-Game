@@ -58,5 +58,5 @@ func (e *EnemyRuntime) DrawEnemyAnimation(screen *ebiten.Image, cam Camera) {
 		return
 	}
 	drawSpriteFrame(screen, e.img, anim, e.CurrAnimFrame, e.GetBounds(),
-		e.FlipX, e.Scale, cam.Pos, e.bp.OriginHeight)
+		e.FlipX, e.Scale, cam.Pos, e.bp.OriginHeight, ebiten.ColorScale{})
 }

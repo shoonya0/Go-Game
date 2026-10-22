@@ -56,6 +56,10 @@ type PlayerRuntime struct {
 	inWater          bool    // whether the player was submerged last tick (movement/jump)
 	running          bool    // whether the player is running this tick (drains power)
 	exhausted        bool    // power ran out while running; running is blocked until it recovers
+	damageFlash      float64 // seconds of red damage flash left
 
-	struck []*EnemyRuntime // enemies already hit by the current swing (HitEnemies)
+	struck      []*EnemyRuntime // enemies already hit by the current swing (HitEnemies)
+	waves       []*GroundWave   // live U ground waves
+	waveCast    bool            // the current U swing already cast its wave
+	comboQueued bool            // K/L was pressed again before the combo gate (see comboGateFrame)
 }

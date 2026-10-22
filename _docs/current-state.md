@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-22)
 
-Snapshot at `aef2b3f` on `chore/death-sprite-layout` (`main` is at PR #9, `7984365`). One page. Details live in each increment's entry in
+Snapshot at `8eff08b` on `feature/player-attack-reconfig` (`main` is at PR #10, `dbd7d4f`). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -11,8 +11,8 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `chore/death-sprite-layout` (from `main` at PR #9) — the two player death animations at the bottom of `GideonGraves.png` now sit in equal cells: death 1 at row 42 (15 frames, 160x120), death 2 across rows 45 and 48 (12 + 30 frames, 200x120; row 48 fills the full 6000 px). Not wired into `InitPlayerAnimations` yet (`Dead` still points at row 8). Unmerged: `feature/level-enemy-markers` (needs rebase; only `_docs/current-state.md` conflicts)
-- **Next step:** push + PR; later add death animations (death 2 spans 2 rows, which `Animation` can't play yet)
+- **Branch:** `feature/player-attack-reconfig` (from `main` at PR #10, 6 commits + this one, not pushed) — K/L now stop after their first 5 frames unless the same key is pressed again before frame 5 (then the full swing plays); K/L read just-pressed, not held (`comboGateFrame` in `player_attack.go`). Damage makes the player blink red for 1 s (every damage source goes through `ApplyDamage`); U sends a ground wave (`ground_wave.go`, frames 9–23 of row 30, now in 200×120 cells) along the floor the way the player faces: 30 damage per enemy, needs ground, ends at the floor's end, a wall or after 1.5 s. Verify `--full` passed, 40/40 tests. Unmerged: `feature/level-enemy-markers` (needs rebase; only `_docs/current-state.md` conflicts)
+- **Next step:** check the K/L combo, U and the red flash in-game (`go run ./cmd`, F3 for boxes), then push + PR. Open: K/L/O deal no damage; death animations (rows 42, 45, 48) not wired in, and death 2 spans 2 rows, which `Animation` can't play yet; weak ground attack sprite swings backward (issue not filed)
 - **Updated:** 2026-10-22
 
 <!-- Once a feature is active, the first line becomes, for example:
@@ -23,7 +23,7 @@ and /feature-docs update. -->
 
 - Run a 2D side-scrolling platformer natively (Windows) or in the browser (WASM). VERIFIED (CI builds both)
 - Move (WASD), run (Shift; drains 5 stamina/s, exhausted at 0 until 10 regenerates), jump (costs 5 stamina), attack (J/I cost 10 stamina; U/O specials 34); sprite HUD with 10 hearts + 10 stamina segments; water/larva hazards, fall damage, checkpoints, respawn. VERIFIED (code read, tests)
-- Fight one enemy type (succubus) with patrol/chase/attack AI; it hits only when your body is inside its attack box, and your J/I attacks hurt it (K/L/U/O don't yet). F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go` tracked, tests pass)
+- Fight one enemy type (succubus) with patrol/chase/attack AI; it hits only when your body is inside its attack box, and your J/I attacks hurt it; K/L stop halfway unless pressed again; U sends a ground wave along the floor that hurts it too (K/L/O deal no damage yet). Taking damage makes the player blink red for 1 s. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go` tracked, tests pass)
 - `GameState` (menu/playing/game over) is declared and set to `ModeMenu`, but never read: there is no menu. VERIFIED (`cmd/main.go:45`)
 
 ## How to build, run, test
@@ -33,12 +33,12 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `69c80c6`, Windows, go1.26.7)
+## Test baseline (at `8eff08b`, Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs` | ✅ pass (gofmt, vet, new lint issues, tests) | — |
-| `go test ./...` | ✅ 26/26 pass, all in `internal/core` | — |
+| `go test ./...` | ✅ 36/36 pass, all in `internal/core` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue (was 3; the hud.go SA1019s went away with the sprite HUD) | SA9003 `internal/core/quadtree.go:217` |
 | GitHub CI on `main` (`ci` + `verify`, ubuntu + windows) | ✅ green since 2026-10-08 | — |
 
@@ -47,11 +47,14 @@ Tests: `TestTileTypeFromCode`, `TestBuildLevelPlatformCount`, `TestBuildLevelChe
 `TestEnemyTakeDamage`, `TestEnemyPatrolTurnsAround`, `TestEnemyDetectsChasesAndAttacks`,
 `TestSegmentStates`, `TestSegmentStatesHealthSteps`, `TestRunningDrainsHalfSegmentPerSecond`,
 `TestRunHeldWithoutMovingRegenerates`, `TestExhaustionBlocksRunningUntilRecovered`, `TestJumpCostsHalfSegment`,
-`TestNormalAttacksCostOneSegment`, `TestAirAttackCostsOneSegment` (all on `main`);
-this branch adds `TestEnemyAttackBoxFacesForward`, `TestEnemyDoesNotHitPlayerAbove`,
+`TestNormalAttacksCostOneSegment`, `TestAirAttackCostsOneSegment`, `TestEnemyAttackBoxFacesForward`, `TestEnemyDoesNotHitPlayerAbove`,
 `TestEnemyAttacksPlayerBehind`, `TestEnemyHitboxes`, `TestPlayerAttackBoxFacesForward`,
 `TestPlayerHitsEnemyOncePerSwing`, `TestPlayerMissesEnemyBehindOrAbove`, `TestPlayerHitboxes`,
-`TestEnemyHitRestartsHurtClip`.
+`TestEnemyHitRestartsHurtClip` (all on `main`);
+this branch adds `TestDamageFlashBlinksRedForOneSecond`, `TestZeroDamageDoesNotFlash`,
+`TestRespawnClearsDamageFlash`, `TestGroundWaveCastOncePerSwing`, `TestGroundWaveRunsTheWayThePlayerFaces`,
+`TestGroundWaveFadesAfterItsFrames`, `TestGroundWaveNeedsGround`, `TestGroundWaveStopsAtWall`,
+`TestGroundWaveHitsEachEnemyOnce`, `TestPlayerHitboxesIncludeGroundWaves`.
 Compare new runs **by test name**.
 
 ## Known issues and risks

@@ -77,12 +77,57 @@ func (player *PlayerRuntime) HitEnemies(enemies []*EnemyRuntime) {
 	}
 }
 
-// Hitboxes reports the player's body and, while attacking, its damage box to the
-// debug overlay (HitboxProvider).
+// Hitboxes reports the player's body, its damage box while attacking and every
+// live ground wave to the debug overlay (HitboxProvider).
 func (player *PlayerRuntime) Hitboxes() []Hitbox {
 	boxes := []Hitbox{{Box: player.GetBounds(), Kind: HitboxBody}}
 	if box, striking, ok := player.AttackBox(); ok {
 		boxes = append(boxes, Hitbox{Box: box, Kind: HitboxAttack, Active: striking})
 	}
+	for _, w := range player.waves {
+		boxes = append(boxes, Hitbox{Box: w.Box(), Kind: HitboxAttack, Active: true})
+	}
 	return boxes
+}
+
+// comboGateFrame splits the K and L swings in two. A press plays frames
+// 0..comboGateFrame-1; the swing only goes on past that if the same key is
+// pressed again before then, otherwise the player returns to idle.
+const comboGateFrame = 5
+
+// comboPressed reports whether this tick's input presses the key of the combo
+// attack the player is performing (K for special 1, L for special 2).
+func (player *PlayerRuntime) comboPressed(in *InputState) bool {
+	switch {
+	case player.State.IsSpecialAttack1():
+		return in.Skills.SpecialAttack1
+	case player.State.IsSpecialAttack2():
+		return in.Skills.SpecialAttack2
+	}
+	return false
+}
+
+// queueCombo remembers a second K/L press made before the combo gate. The press
+// that starts the swing doesn't count, and a new swing (or none) clears it.
+func (player *PlayerRuntime) queueCombo(in *InputState) {
+	if player.State.CurrentState != player.PreviousState.CurrentState {
+		player.comboQueued = false
+		return
+	}
+	if player.CurrAnimFrame < comboGateFrame && player.comboPressed(in) {
+		player.comboQueued = true
+	}
+}
+
+// cutCombo ends a K/L swing at the combo gate when no second press was queued,
+// returning the player to idle. It reports whether it did.
+func (player *PlayerRuntime) cutCombo() bool {
+	s := &player.State
+	inCombo := s.IsSpecialAttack1() || s.IsSpecialAttack2()
+	if !inCombo || player.comboQueued || player.CurrAnimFrame != comboGateFrame {
+		return false
+	}
+	s.SetPlayerState(int(PlayerStateIdle))
+	player.CurrAnimFrame = 0
+	return true
 }
