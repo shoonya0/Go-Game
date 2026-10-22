@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-22)
 
-Snapshot at `8eff08b` on `feature/player-attack-reconfig` (`main` is at PR #10, `dbd7d4f`). One page. Details live in each increment's entry in
+Snapshot at `7688f92` on `feature/player-features` (`main` is at PR #11, `e898f8c`). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -11,8 +11,8 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `feature/player-attack-reconfig` (from `main` at PR #10, 6 commits + this one, not pushed) — K/L now stop after their first 5 frames unless the same key is pressed again before frame 5 (then the full swing plays); K/L read just-pressed, not held (`comboGateFrame` in `player_attack.go`). Damage makes the player blink red for 1 s (every damage source goes through `ApplyDamage`); U sends a ground wave (`ground_wave.go`, frames 9–23 of row 30, now in 200×120 cells) along the floor the way the player faces: 30 damage per enemy, needs ground, ends at the floor's end, a wall or after 1.5 s. Verify `--full` passed, 40/40 tests. Unmerged: `feature/level-enemy-markers` (needs rebase; only `_docs/current-state.md` conflicts)
-- **Next step:** check the K/L combo, U and the red flash in-game (`go run ./cmd`, F3 for boxes), then push + PR. Open: K/L/O deal no damage; death animations (rows 42, 45, 48) not wired in, and death 2 spans 2 rows, which `Animation` can't play yet; weak ground attack sprite swings backward (issue not filed)
+- **Branch:** `feature/player-features` (from `main` at PR #11, 3 commits, not pushed): a hit of 2 hearts or more (`HeavyHitDamage`) knocks the player down (row 17, frames 0–9) and pushes them 1.5 tiles away from the hit (`ApplyDamageFrom`; other damage pushes backward); power reaching 0 by any spend puts the player in `Exhausted` (row 45, frame follows the bar until one segment refills, no movement); at 0 HP a random death plays (row 42 or 48) and the player respawns when it ends (`player_hurt.go`). Verify `--full` passed, 47/47 tests. Unmerged: `feature/level-enemy-markers` (needs rebase; only `_docs/current-state.md` conflicts)
+- **Next step:** check knockdown, kneeling and both deaths in-game (`go run ./cmd`), then push + PR. Open: enemies hit for 8, so only fall damage is heavy today; K/L/O deal no damage; weak ground attack sprite swings backward (issue not filed)
 - **Updated:** 2026-10-22
 
 <!-- Once a feature is active, the first line becomes, for example:
@@ -22,8 +22,8 @@ and /feature-docs update. -->
 ## What a user can do today
 
 - Run a 2D side-scrolling platformer natively (Windows) or in the browser (WASM). VERIFIED (CI builds both)
-- Move (WASD), run (Shift; drains 5 stamina/s, exhausted at 0 until 10 regenerates), jump (costs 5 stamina), attack (J/I cost 10 stamina; U/O specials 34); sprite HUD with 10 hearts + 10 stamina segments; water/larva hazards, fall damage, checkpoints, respawn. VERIFIED (code read, tests)
-- Fight one enemy type (succubus) with patrol/chase/attack AI; it hits only when your body is inside its attack box, and your J/I attacks hurt it; K/L stop halfway unless pressed again; U sends a ground wave along the floor that hurts it too (K/L/O deal no damage yet). Taking damage makes the player blink red for 1 s. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go` tracked, tests pass)
+- Move (WASD), run (Shift; drains 5 stamina/s, exhausted at 0 until 10 regenerates), jump (costs 5 stamina; at 0 stamina the player kneels until one bar refills), attack (J/I cost 10 stamina; U/O specials 34); sprite HUD with 10 hearts + 10 stamina segments; water/larva hazards, fall damage, checkpoints, respawn. VERIFIED (code read, tests)
+- Fight one enemy type (succubus) with patrol/chase/attack AI; it hits only when your body is inside its attack box, and your J/I attacks hurt it; K/L stop halfway unless pressed again; U sends a ground wave along the floor that hurts it too (K/L/O deal no damage yet). Taking damage makes the player blink red for 1 s; a hit of 2+ hearts knocks them down 1.5 tiles back; at 0 HP one of two death animations plays before respawn. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go` tracked, tests pass)
 - `GameState` (menu/playing/game over) is declared and set to `ModeMenu`, but never read: there is no menu. VERIFIED (`cmd/main.go:45`)
 
 ## How to build, run, test
