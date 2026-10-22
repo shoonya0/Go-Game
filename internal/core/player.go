@@ -343,7 +343,7 @@ func (player *PlayerRuntime) updateState(in *InputState, onGround, detectGround 
 		s.SetPlayerState(int(PlayerStateSpecialAttack2))
 	case in.Skills.SpecialAttack3 && player.trySpendPower(SpecialPowerCost): // U
 		s.SetPlayerState(int(PlayerStateSpecialAttack3))
-	case in.Skills.SpecialAttack4 && player.trySpendPower(SpecialPowerCost): // O
+	case in.Skills.SpecialAttack4 && player.trySpendPower(SpecialAttack4PowerCost1): // O, part 1
 		s.SetPlayerState(int(PlayerStateSpecialAttack4))
 	case in.Skills.WeakAttack && player.trySpendPower(AttackPowerCost): // J
 		s.SetPlayerState(int(PlayerStateWeakAttack))

@@ -134,39 +134,63 @@ func (player *PlayerRuntime) Hitboxes() []Hitbox {
 // pressed again before then, otherwise the player returns to idle.
 const comboGateFrame = 5
 
+// specialAttack4GateFrame splits O the same way, after its first 9 sprites. The
+// second press also pays for part 2 (SpecialAttack4PowerCost2).
+const specialAttack4GateFrame = 9
+
+// comboGate returns the frame where the current attack stops unless its key was
+// pressed again, and false for attacks that are not combos.
+func (player *PlayerRuntime) comboGate() (int, bool) {
+	switch s := &player.State; {
+	case s.IsSpecialAttack1(), s.IsSpecialAttack2():
+		return comboGateFrame, true
+	case s.IsSpecialAttack4():
+		return specialAttack4GateFrame, true
+	}
+	return 0, false
+}
+
 // comboPressed reports whether this tick's input presses the key of the combo
-// attack the player is performing (K for special 1, L for special 2).
+// attack the player is performing (K for special 1, L for special 2, O for
+// special 4).
 func (player *PlayerRuntime) comboPressed(in *InputState) bool {
 	switch {
 	case player.State.IsSpecialAttack1():
 		return in.Skills.SpecialAttack1
 	case player.State.IsSpecialAttack2():
 		return in.Skills.SpecialAttack2
+	case player.State.IsSpecialAttack4():
+		return in.Skills.SpecialAttack4
 	}
 	return false
 }
 
-// queueCombo remembers a second K/L press made before the combo gate. The press
-// that starts the swing doesn't count, and a new swing (or none) clears it.
+// queueCombo remembers a second K/L/O press made before the combo gate. The
+// press that starts the swing doesn't count, and a new swing (or none) clears
+// it. O's second press only counts if the player can pay for part 2.
 func (player *PlayerRuntime) queueCombo(in *InputState) {
 	if player.State.CurrentState != player.PreviousState.CurrentState {
 		player.comboQueued = false
 		return
 	}
-	if player.CurrAnimFrame < comboGateFrame && player.comboPressed(in) {
-		player.comboQueued = true
+	gate, ok := player.comboGate()
+	if !ok || player.comboQueued || player.CurrAnimFrame >= gate || !player.comboPressed(in) {
+		return
 	}
+	if player.State.IsSpecialAttack4() && !player.trySpendPower(SpecialAttack4PowerCost2) {
+		return
+	}
+	player.comboQueued = true
 }
 
-// cutCombo ends a K/L swing at the combo gate when no second press was queued,
-// returning the player to idle. It reports whether it did.
+// cutCombo ends a K/L/O attack at its combo gate when no second press was
+// queued, returning the player to idle. It reports whether it did.
 func (player *PlayerRuntime) cutCombo() bool {
-	s := &player.State
-	inCombo := s.IsSpecialAttack1() || s.IsSpecialAttack2()
-	if !inCombo || player.comboQueued || player.CurrAnimFrame != comboGateFrame {
+	gate, ok := player.comboGate()
+	if !ok || player.comboQueued || player.CurrAnimFrame != gate {
 		return false
 	}
-	s.SetPlayerState(int(PlayerStateIdle))
+	player.State.SetPlayerState(int(PlayerStateIdle))
 	player.CurrAnimFrame = 0
 	return true
 }

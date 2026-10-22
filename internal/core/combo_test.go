@@ -79,3 +79,58 @@ func TestComboQueueClearedOnNewSwing(t *testing.T) {
 		t.Error("combo stayed queued into a new swing")
 	}
 }
+
+// O is split like K/L, but later: the first press plays up to sprite 9.
+func TestOStopsAtItsGateWithoutSecondPress(t *testing.T) {
+	p := comboPlayer(PlayerStateSpecialAttack4, specialAttack4GateFrame-1)
+	playFrame(p)
+	if !p.State.IsIdle() || p.CurrAnimFrame != 0 {
+		t.Errorf("after O gate got state=%d frame=%d, want idle frame 0", p.State.CurrentState, p.CurrAnimFrame)
+	}
+
+	// K's earlier gate must not cut O.
+	p = comboPlayer(PlayerStateSpecialAttack4, comboGateFrame-1)
+	playFrame(p)
+	if !p.State.IsSpecialAttack4() {
+		t.Errorf("O was cut at the K/L gate (frame %d)", comboGateFrame)
+	}
+}
+
+func TestOFirstPressCostsPartOne(t *testing.T) {
+	p := staminaPlayer()
+	p.updateState(&InputState{Skills: Skills{SpecialAttack4: true}}, true, true)
+	if !p.State.IsSpecialAttack4() || p.Combat.Power != MaxPlayerPower-SpecialAttack4PowerCost1 {
+		t.Errorf("state=%d power=%v, want O with power %v", p.State.CurrentState, p.Combat.Power, MaxPlayerPower-SpecialAttack4PowerCost1)
+	}
+
+	low := staminaPlayer()
+	low.Combat.Power = SpecialAttack4PowerCost1 - 1
+	low.updateState(&InputState{Skills: Skills{SpecialAttack4: true}}, true, true)
+	if low.State.IsSpecialAttack4() {
+		t.Error("O started without enough stamina for part 1")
+	}
+}
+
+func TestOSecondPressCostsPartTwoAndContinues(t *testing.T) {
+	o := &InputState{Skills: Skills{SpecialAttack4: true}}
+	p := comboPlayer(PlayerStateSpecialAttack4, 3)
+	p.queueCombo(o)
+	p.queueCombo(o) // a later press in the same swing is not charged again
+	if !p.comboQueued || p.Combat.Power != MaxPlayerPower-SpecialAttack4PowerCost2 {
+		t.Fatalf("queued=%v power=%v, want queued and power %v", p.comboQueued, p.Combat.Power, MaxPlayerPower-SpecialAttack4PowerCost2)
+	}
+	p.CurrAnimFrame = specialAttack4GateFrame - 1
+	playFrame(p)
+	if !p.State.IsSpecialAttack4() || p.CurrAnimFrame != specialAttack4GateFrame {
+		t.Errorf("got state=%d frame=%d, want O to go on to frame %d", p.State.CurrentState, p.CurrAnimFrame, specialAttack4GateFrame)
+	}
+}
+
+func TestOSecondPressNeedsPartTwoStamina(t *testing.T) {
+	p := comboPlayer(PlayerStateSpecialAttack4, 3)
+	p.Combat.Power = SpecialAttack4PowerCost2 - 1
+	p.queueCombo(&InputState{Skills: Skills{SpecialAttack4: true}})
+	if p.comboQueued || p.Combat.Power != SpecialAttack4PowerCost2-1 {
+		t.Errorf("queued=%v power=%v, want the press ignored and no power spent", p.comboQueued, p.Combat.Power)
+	}
+}
