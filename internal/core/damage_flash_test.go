@@ -48,7 +48,8 @@ func TestZeroDamageDoesNotFlash(t *testing.T) {
 func TestRespawnClearsDamageFlash(t *testing.T) {
 	p := staminaPlayer()
 	p.ApplyDamage(p.Combat.Health) // lethal
-	tickFlash(p, 1)                // updateCombat respawns at 0 health
+	tickFlash(p, 1)                // updateCombat starts the death animation
+	p.respawn()                    // what the end of that animation does
 	if p.Combat.Health != p.Combat.MaxHealth || p.flashingRed() {
 		t.Errorf("after respawn: health=%d red=%v, want full health and no flash", p.Combat.Health, p.flashingRed())
 	}
