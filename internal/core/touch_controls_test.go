@@ -136,3 +136,16 @@ func TestTouchSprintRunsAndDashes(t *testing.T) {
 		t.Errorf("run=%v dash=%v dir=%d, want run and dash while moving right", in.RunJustPressed, in.DashJustPressed, in.Direction.LeftRight)
 	}
 }
+
+// UpdateCamera keeps the player in the middle third of the screen, so no
+// button may reach into it.
+func TestTouchButtonsStayOutOfPlayerArea(t *testing.T) {
+	const w, h = 1360, 768
+	tc := NewTouchControls(w, h)
+	middle := image.Rect(w/3, 0, 2*w/3, h)
+	for b := TouchButton(0); b < touchButtonCount; b++ {
+		if tc.Rect(b).Overlaps(middle) {
+			t.Errorf("button %d at %v covers the middle third %v", b, tc.Rect(b), middle)
+		}
+	}
+}

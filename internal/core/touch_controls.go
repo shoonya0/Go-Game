@@ -31,13 +31,16 @@ const (
 )
 
 // Touch layout in logical screen pixels: movement buttons bottom-left, attack
-// buttons bottom-right, the menu button top-left.
+// buttons bottom-right, the menu button top-left. The clusters are kept small
+// and in the outer thirds of the screen, where the camera never puts the player
+// (see UpdateCamera), and idle buttons are see-through so they hide little.
 const (
-	touchButtonSize = 96
-	touchButtonGap  = 12
-	touchEdge       = 32 // distance of the button clusters from the screen edges
+	touchButtonSize = 80
+	touchButtonGap  = 8
+	touchEdge       = 20 // distance of the button clusters from the screen edges
 	touchMenuSize   = 64
-	touchIconInset  = 15 // percent of the button cut from each side of its symbol, so it draws at 70%
+	touchIconInset  = 15  // percent of the button cut from each side of its symbol, so it draws at 70%
+	touchIdleAlpha  = 0.5 // opacity of buttons that are not pressed
 
 	// TouchHUDLeft is where the HUD starts when the menu button takes the
 	// top-left corner.
@@ -157,7 +160,8 @@ func (tc *TouchControls) Apply(in *InputState) {
 	}
 }
 
-// Draw renders the buttons over the game; pressed buttons turn dark.
+// Draw renders the buttons over the game, see-through while idle; pressed
+// buttons turn dark and solid.
 func (tc *TouchControls) Draw(screen *ebiten.Image) {
 	if !tc.Enabled {
 		return
@@ -173,7 +177,11 @@ func (tc *TouchControls) Draw(screen *ebiten.Image) {
 		} else if tc.held[b] {
 			img = tc.sprites.down
 		}
-		drawScaled(screen, img, r, nil)
+		alpha := float32(touchIdleAlpha)
+		if tc.held[b] {
+			alpha = 1
+		}
+		drawScaled(screen, img, r, nil, alpha)
 
 		if icon := tc.sprites.icons[b]; icon != nil {
 			tint := touchIconColor
@@ -181,7 +189,7 @@ func (tc *TouchControls) Draw(screen *ebiten.Image) {
 				tint = touchPressedTint
 			}
 			inset := r.Dx() * touchIconInset / 100
-			drawScaled(screen, icon, r.Inset(inset), tint)
+			drawScaled(screen, icon, r.Inset(inset), tint, alpha)
 		}
 	}
 }
@@ -201,8 +209,9 @@ func loadTouchSprites() *touchSprites {
 	return s
 }
 
-// drawScaled draws img stretched to dst, tinted by tint when it is not nil.
-func drawScaled(screen, img *ebiten.Image, dst image.Rectangle, tint color.Color) {
+// drawScaled draws img stretched to dst at the given opacity, tinted by tint
+// when it is not nil.
+func drawScaled(screen, img *ebiten.Image, dst image.Rectangle, tint color.Color, alpha float32) {
 	b := img.Bounds()
 	op := &ebiten.DrawImageOptions{Filter: ebiten.FilterLinear}
 	op.GeoM.Scale(float64(dst.Dx())/float64(b.Dx()), float64(dst.Dy())/float64(b.Dy()))
@@ -210,5 +219,6 @@ func drawScaled(screen, img *ebiten.Image, dst image.Rectangle, tint color.Color
 	if tint != nil {
 		op.ColorScale.ScaleWithColor(tint)
 	}
+	op.ColorScale.ScaleAlpha(alpha)
 	screen.DrawImage(img, op)
 }
