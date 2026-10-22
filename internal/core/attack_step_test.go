@@ -43,7 +43,7 @@ func TestAttackSteps(t *testing.T) {
 		{"I", PlayerStateStrongAttack, map[int]Skills{0: i}, AttackStepDistance},
 		{"U", PlayerStateSpecialAttack3, map[int]Skills{0: u}, AttackStepDistance},
 		{"L one press", PlayerStateSpecialAttack2, map[int]Skills{0: l}, 0},
-		{"L two presses", PlayerStateSpecialAttack2, map[int]Skills{0: l, 20: l}, -AttackStepDistance},
+		{"L two presses", PlayerStateSpecialAttack2, map[int]Skills{0: l, 20: l}, AttackStepDistance},
 		{"O one press", PlayerStateSpecialAttack4, map[int]Skills{0: o}, 0},
 		{"O two presses", PlayerStateSpecialAttack4, map[int]Skills{0: o, 20: o}, AttackStepDistance},
 		{"K two presses", PlayerStateSpecialAttack1, map[int]Skills{0: {SpecialAttack1: true}, 10: {SpecialAttack1: true}}, 0},

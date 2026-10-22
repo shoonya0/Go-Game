@@ -16,13 +16,12 @@ type attackStep struct {
 
 // attackSteps holds the attacks that move the player, timed to the sprites in
 // GideonGraves.png: J steps back as it slashes, I and U lunge forward into the
-// swing, L's second part backs off before the disc and O's steps in before the
-// thrust.
+// swing, L's second part steps in before the disc and O's before the thrust.
 var attackSteps = map[PlayerStateType]attackStep{
 	PlayerStateWeakAttack:     {1, 2, -AttackStepDistance, false},
 	PlayerStateStrongAttack:   {1, 2, AttackStepDistance, false},
 	PlayerStateSpecialAttack3: {2, 2, AttackStepDistance, false},
-	PlayerStateSpecialAttack2: {comboGateFrame, 2, -AttackStepDistance, true},
+	PlayerStateSpecialAttack2: {comboGateFrame, 2, AttackStepDistance, true},
 	PlayerStateSpecialAttack4: {specialAttack4GateFrame, 3, AttackStepDistance, true},
 }
 
