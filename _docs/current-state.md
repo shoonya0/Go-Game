@@ -11,8 +11,8 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `feature/player-attack-reconfig` (from `main` at PR #10, 4 commits + this one, not pushed) — damage makes the player blink red for 1 s (every damage source goes through `ApplyDamage`); U sends a ground wave (`ground_wave.go`, frames 9–23 of row 30, now in 200×120 cells) along the floor the way the player faces: 30 damage per enemy, needs ground, ends at the floor's end, a wall or after 1.5 s. Verify `--full` passed, 36/36 tests. Unmerged: `feature/level-enemy-markers` (needs rebase; only `_docs/current-state.md` conflicts)
-- **Next step:** check U and the red flash in-game (`go run ./cmd`, F3 for boxes), then push + PR. Open: K/L/O deal no damage; death animations (rows 42, 45, 48) not wired in, and death 2 spans 2 rows, which `Animation` can't play yet; weak ground attack sprite swings backward (issue not filed)
+- **Branch:** `feature/player-attack-reconfig` (from `main` at PR #10, 6 commits + this one, not pushed) — K/L now stop after their first 5 frames unless the same key is pressed again before frame 5 (then the full swing plays); K/L read just-pressed, not held (`comboGateFrame` in `player_attack.go`). Damage makes the player blink red for 1 s (every damage source goes through `ApplyDamage`); U sends a ground wave (`ground_wave.go`, frames 9–23 of row 30, now in 200×120 cells) along the floor the way the player faces: 30 damage per enemy, needs ground, ends at the floor's end, a wall or after 1.5 s. Verify `--full` passed, 40/40 tests. Unmerged: `feature/level-enemy-markers` (needs rebase; only `_docs/current-state.md` conflicts)
+- **Next step:** check the K/L combo, U and the red flash in-game (`go run ./cmd`, F3 for boxes), then push + PR. Open: K/L/O deal no damage; death animations (rows 42, 45, 48) not wired in, and death 2 spans 2 rows, which `Animation` can't play yet; weak ground attack sprite swings backward (issue not filed)
 - **Updated:** 2026-10-22
 
 <!-- Once a feature is active, the first line becomes, for example:
@@ -23,7 +23,7 @@ and /feature-docs update. -->
 
 - Run a 2D side-scrolling platformer natively (Windows) or in the browser (WASM). VERIFIED (CI builds both)
 - Move (WASD), run (Shift; drains 5 stamina/s, exhausted at 0 until 10 regenerates), jump (costs 5 stamina), attack (J/I cost 10 stamina; U/O specials 34); sprite HUD with 10 hearts + 10 stamina segments; water/larva hazards, fall damage, checkpoints, respawn. VERIFIED (code read, tests)
-- Fight one enemy type (succubus) with patrol/chase/attack AI; it hits only when your body is inside its attack box, and your J/I attacks hurt it; U sends a ground wave along the floor that hurts it too (K/L/O deal no damage yet). Taking damage makes the player blink red for 1 s. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go` tracked, tests pass)
+- Fight one enemy type (succubus) with patrol/chase/attack AI; it hits only when your body is inside its attack box, and your J/I attacks hurt it; K/L stop halfway unless pressed again; U sends a ground wave along the floor that hurts it too (K/L/O deal no damage yet). Taking damage makes the player blink red for 1 s. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go` tracked, tests pass)
 - `GameState` (menu/playing/game over) is declared and set to `ModeMenu`, but never read: there is no menu. VERIFIED (`cmd/main.go:45`)
 
 ## How to build, run, test
