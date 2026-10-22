@@ -53,7 +53,8 @@ func wavePoints() [][2]float32 {
 
 // touchIconShapes are the button symbols: arrows to move, and for attacks a
 // thin slash (weak), two thick slashes (heavy), crossed slashes (K combo), a
-// burst (L, the strongest combo), a wave over the ground (U) and a sparkle (O).
+// burst (L, the strongest combo), a wave over the ground (U), a sparkle (O)
+// and a double chevron for sprint.
 var touchIconShapes = [touchButtonCount][]iconShape{
 	TouchUp:    {fillShape([2]float32{0.5, 0.24}, [2]float32{0.78, 0.68}, [2]float32{0.22, 0.68})},
 	TouchDown:  {fillShape([2]float32{0.5, 0.76}, [2]float32{0.78, 0.32}, [2]float32{0.22, 0.32})},
@@ -75,6 +76,10 @@ var touchIconShapes = [touchButtonCount][]iconShape{
 		lineShape(0.06, [2]float32{0.2, 0.7}, [2]float32{0.8, 0.7}),
 	},
 	TouchSpecial4: {fillShape(starPoints(4, 0.3, 0.09, 0.5, 0.5)...)},
+	TouchSprint: {
+		lineShape(0.08, [2]float32{0.26, 0.3}, [2]float32{0.46, 0.5}, [2]float32{0.26, 0.7}),
+		lineShape(0.08, [2]float32{0.52, 0.3}, [2]float32{0.72, 0.5}, [2]float32{0.52, 0.7}),
+	},
 }
 
 // newTouchIcon draws shapes in white into a new image, ready to be tinted.

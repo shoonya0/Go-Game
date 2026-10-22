@@ -25,6 +25,7 @@ const (
 	TouchWeak                        // J
 	TouchSpecial1                    // K
 	TouchSpecial2                    // L
+	TouchSprint                      // Left Shift
 	TouchMenu
 	touchButtonCount
 )
@@ -84,7 +85,8 @@ func NewTouchControls(w, h int) *TouchControls {
 	tc.rects[TouchLeft] = sq(cx-step-s/2, cy-s/2, s)
 	tc.rects[TouchRight] = sq(cx+step-s/2, cy-s/2, s)
 
-	// Attacks: two rows laid out like the keyboard, U I O over J K L.
+	// Attacks: two rows laid out like the keyboard, U I O over J K L, with
+	// sprint centred above them.
 	bottom := h - touchEdge - s
 	top := bottom - s - g
 	for col, b := range [3][2]TouchButton{{TouchSpecial3, TouchWeak}, {TouchStrong, TouchSpecial1}, {TouchSpecial4, TouchSpecial2}} {
@@ -92,6 +94,7 @@ func NewTouchControls(w, h int) *TouchControls {
 		tc.rects[b[0]] = sq(x, top, s)
 		tc.rects[b[1]] = sq(x, bottom, s)
 	}
+	tc.rects[TouchSprint] = sq(tc.rects[TouchStrong].Min.X, top-g-s, s)
 
 	tc.rects[TouchMenu] = sq(hudMargin, hudMargin, touchMenuSize)
 	return tc
@@ -138,6 +141,9 @@ func (tc *TouchControls) Apply(in *InputState) {
 		in.Direction.LeftRight = 1
 	}
 	in.JumpJustPressed = in.JumpJustPressed || h[TouchUp]
+	// Sprint stands in for Left Shift, which both runs and dashes.
+	in.RunJustPressed = in.RunJustPressed || h[TouchSprint]
+	in.DashJustPressed = in.DashJustPressed || h[TouchSprint]
 
 	in.Skills.WeakAttack = in.Skills.WeakAttack || h[TouchWeak]
 	in.Skills.StrongAttack = in.Skills.StrongAttack || h[TouchStrong]

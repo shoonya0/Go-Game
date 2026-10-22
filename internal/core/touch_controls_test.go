@@ -31,6 +31,9 @@ func TestTouchLayoutFitsScreenWithoutOverlap(t *testing.T) {
 	if c := touchCenter(tc, TouchSpecial2); c.X < w/2 || c.Y < h/2 {
 		t.Errorf("L button at %v, want bottom-right", c)
 	}
+	if s, i := tc.Rect(TouchSprint), tc.Rect(TouchStrong); s.Max.Y > i.Min.Y || s.Min.X != i.Min.X {
+		t.Errorf("sprint at %v, want above the I button at %v", s, i)
+	}
 	if c := touchCenter(tc, TouchMenu); c.X > w/4 || c.Y > h/4 {
 		t.Errorf("menu button at %v, want top-left", c)
 	}
@@ -120,5 +123,16 @@ func TestTouchIconsCoverButtons(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+// Sprint stands in for Left Shift, which both runs and dashes.
+func TestTouchSprintRunsAndDashes(t *testing.T) {
+	tc := NewTouchControls(1360, 768)
+	tc.Update([]image.Point{touchCenter(tc, TouchSprint), touchCenter(tc, TouchRight)})
+	var in InputState
+	tc.Apply(&in)
+	if !in.RunJustPressed || !in.DashJustPressed || in.Direction.LeftRight != 1 {
+		t.Errorf("run=%v dash=%v dir=%d, want run and dash while moving right", in.RunJustPressed, in.DashJustPressed, in.Direction.LeftRight)
 	}
 }
