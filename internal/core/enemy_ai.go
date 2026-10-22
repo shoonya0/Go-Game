@@ -24,6 +24,7 @@ func UpdateEnemy(e *EnemyRuntime, target *PlayerRuntime, qt *DynamicQuadtree) {
 		return
 	}
 
+	e.regenerateHealth()
 	e.decideBehavior(target)
 	e.applyGravity()
 	e.resolveHorizontal(qt)

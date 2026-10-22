@@ -76,6 +76,7 @@ type EnemyRuntime struct {
 	spawnX      float64 // patrol anchor (X at spawn)
 	patrolDir   float64 // current patrol direction: -1 or +1
 	attackTimer float64 // seconds until the next hit may land
+	regenAccum  float64 // sub-point health regenerated but not yet added
 	onGround    bool    // whether the enemy rested on ground last tick
 	deathDone   bool    // whether the death animation has finished
 }
