@@ -96,3 +96,32 @@ func TestOHitsUseTheirOwnReach(t *testing.T) {
 		t.Errorf("health=%d, want only the thrust (%d) to land", e.Health, SpecialAttack4Damage2)
 	}
 }
+
+// Jump + I spins a full circle, so its box also covers the side the player
+// faces away from; other attacks only hit in front.
+func TestAirHeavyAttackHitsBothSides(t *testing.T) {
+	for _, flip := range []bool{false, true} {
+		for _, c := range []struct {
+			st   PlayerStateType
+			want bool
+		}{
+			{PlayerStateStrongAttackInAir, true},
+			{PlayerStateWeakAttack, false},
+		} {
+			p := attackingPlayer(Position{X: 300, Y: 100}, c.st, playerStrikes[c.st].Hits[0].FirstFrame)
+			p.FlipX = flip
+			cx := centerX(p.GetBounds())
+			behind := Position{X: cx + 10, Y: p.Pos.Y} // enemy's near edge 10 px behind the centre
+			if !flip {
+				behind.X = cx - 10 - 46
+			}
+			e := newTestEnemy(behind)
+			e.bp = &EnemyBlueprint{BodyWidth: 46, BodyHeight: 100, Stats: EnemyStats{MaxHealth: 200}}
+			e.Health = 200
+			p.HitEnemies([]*EnemyRuntime{e})
+			if hit := e.Health < 200; hit != c.want {
+				t.Errorf("state %d facing left=%v: enemy behind hit=%v, want %v", c.st, flip, hit, c.want)
+			}
+		}
+	}
+}

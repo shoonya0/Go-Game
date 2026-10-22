@@ -27,12 +27,12 @@ type strikeHit struct {
 	Reach                 float64
 }
 
-// playerStrike is one attack's damage box: it reaches Reach px forward from the
-// body's centre and rises Height px from the feet. Most attacks hit once; K, L
+// playerStrike is one attack's damage box: it reaches Reach px forward and
+// Behind px backward from the body's centre, and rises Height px from the feet. Most attacks hit once; K, L
 // and O hit twice, once per half of the combo.
 type playerStrike struct {
-	Reach, Height float64
-	Hits          []strikeHit
+	Reach, Behind, Height float64
+	Hits                  []strikeHit
 }
 
 // playerStrikes holds the damage box of every attack that has one. Reach, height
@@ -42,7 +42,7 @@ var playerStrikes = map[PlayerStateType]playerStrike{
 	PlayerStateWeakAttack:        {Reach: 78, Height: bodyHeight, Hits: []strikeHit{{2, 4, WeakAttackDamage, 0}}},
 	PlayerStateStrongAttack:      {Reach: 72, Height: 96, Hits: []strikeHit{{2, 5, StrongAttackDamage, 0}}},
 	PlayerStateWeakAttackInAir:   {Reach: 100, Height: 102, Hits: []strikeHit{{2, 4, WeakAttackDamage, 0}}},
-	PlayerStateStrongAttackInAir: {Reach: 77, Height: 120, Hits: []strikeHit{{2, 7, StrongAirAttackDamage, 0}}},
+	PlayerStateStrongAttackInAir: {Reach: 77, Behind: 60, Height: 120, Hits: []strikeHit{{2, 7, StrongAirAttackDamage, 0}}},
 	PlayerStateSpecialAttack1: {Reach: 70, Height: 100, Hits: []strikeHit{
 		{3, 4, SpecialAttack1Damage1, 0}, // first crescent, before the combo gate
 		{5, 7, SpecialAttack1Damage2, 0}, // second crescent
@@ -87,11 +87,11 @@ func (st playerStrike) reachOn(f int) float64 {
 func (player *PlayerRuntime) strikeBox(st playerStrike) AABB {
 	b := player.GetBounds()
 	reach := st.reachOn(player.CurrAnimFrame)
-	x := centerX(b)
+	x := centerX(b) - st.Behind
 	if player.FlipX {
-		x -= reach
+		x = centerX(b) - reach
 	}
-	return AABB{X: x, Y: b.Y + b.Height - st.Height, Width: reach, Height: st.Height}
+	return AABB{X: x, Y: b.Y + b.Height - st.Height, Width: reach + st.Behind, Height: st.Height}
 }
 
 // AttackBox returns the damage box of the current attack and whether it is
