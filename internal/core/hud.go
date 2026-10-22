@@ -98,6 +98,12 @@ func halfStepStates(halves, n int) []segmentState {
 // DrawHUD renders the player's health hearts and stamina bars in the top-left
 // corner.
 func (player *PlayerRuntime) DrawHUD(screen *ebiten.Image) {
+	player.DrawHUDAt(screen, hudMargin)
+}
+
+// DrawHUDAt renders the HUD with its left edge at x, leaving room for anything
+// drawn in the corner (the touch menu button).
+func (player *PlayerRuntime) DrawHUDAt(screen *ebiten.Image, x float64) {
 	if hudHearts == nil {
 		hudHearts = loadHUDSprite(HealthSheet, heartRects)
 		hudStamina = loadHUDSprite(StaminaSheet, staminaRects)
@@ -113,9 +119,9 @@ func (player *PlayerRuntime) DrawHUD(screen *ebiten.Image) {
 	}
 
 	drawSegments(screen, hudHearts, segmentStates(healthRatio, hudSegments),
-		hudMargin, hudMargin, hudHeartSize, hudHeartSize, hudHeartGap)
+		x, hudMargin, hudHeartSize, hudHeartSize, hudHeartGap)
 	drawSegments(screen, hudStamina, segmentStates(staminaRatio, hudSegments),
-		hudMargin, hudMargin+hudHeartSize+hudRowGap, hudStaminaW, hudStaminaH, hudStaminaGap)
+		x, hudMargin+hudHeartSize+hudRowGap, hudStaminaW, hudStaminaH, hudStaminaGap)
 }
 
 // drawSegments draws one sprite per state in a row starting at (x, y), each

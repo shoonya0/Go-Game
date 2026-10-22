@@ -19,6 +19,7 @@ const (
 type Game struct {
 	state core.GameState
 	input core.InputState
+	touch *core.TouchControls // on-screen buttons for touch screens
 
 	player  *core.PlayerRuntime
 	enemies []*core.EnemyRuntime
@@ -43,6 +44,9 @@ func NewGame() *Game {
 		quadtree.Insert(&level.Platforms[i])
 	}
 
+	touch := core.NewTouchControls(screenWidth, screenHeight)
+	touch.Enabled = system.IsTouchDevice()
+
 	return &Game{
 		state:      core.ModeMenu,
 		player:     core.InitPlayer(core.LoadImage(playerSpriteSheetPath)),
@@ -50,6 +54,7 @@ func NewGame() *Game {
 		background: core.LoadImage(core.Background_1),
 		tileset:    core.LoadImage(core.Tileset),
 		level:      level,
+		touch:      touch,
 		quadtree:   quadtree,
 	}
 }
@@ -57,6 +62,7 @@ func NewGame() *Game {
 // Update advances the simulation one tick (runs at ~60 TPS).
 func (g *Game) Update() error {
 	system.HandleInput(&g.input)
+	system.HandleTouch(&g.input, g.touch)
 	if g.input.ToggleHitboxes {
 		g.showHitboxes = !g.showHitboxes
 	}
@@ -101,7 +107,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	if g.showHitboxes {
 		g.drawHitboxes(screen)
 	}
-	g.player.DrawHUD(screen)
+	if g.touch.Enabled {
+		g.player.DrawHUDAt(screen, core.TouchHUDLeft)
+	} else {
+		g.player.DrawHUD(screen)
+	}
+	g.touch.Draw(screen)
 }
 
 // drawHitboxes outlines the body and attack boxes of the enemies and the player.
