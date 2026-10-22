@@ -5,7 +5,6 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 // UIButtonsSheet holds the wooden UI buttons used by the on-screen touch
@@ -30,9 +29,6 @@ const (
 	touchButtonCount
 )
 
-// touchLabels is the key each button stands in for, drawn on the button.
-var touchLabels = [touchButtonCount]string{"W", "A", "S", "D", "U", "I", "O", "J", "K", "L", ""}
-
 // Touch layout in logical screen pixels: movement buttons bottom-left, attack
 // buttons bottom-right, the menu button top-left.
 const (
@@ -51,7 +47,7 @@ var (
 	uiMenuRect       = image.Rect(125, 1430, 329, 1641)   // square button with the menu icon
 	uiRoundUpRect    = image.Rect(2052, 1732, 2268, 1946) // round gold button
 	uiRoundDownRect  = image.Rect(1811, 1732, 2027, 1946) // round dark button, used while pressed
-	touchLabelColor  = color.RGBA{0x5a, 0x24, 0x10, 0xff}
+	touchIconColor   = color.RGBA{0x5a, 0x24, 0x10, 0xff}
 	touchPressedTint = color.RGBA{0xff, 0xd2, 0x6a, 0xff}
 )
 
@@ -69,7 +65,7 @@ type TouchControls struct {
 
 type touchSprites struct {
 	menu, up, down *ebiten.Image
-	labels         [touchButtonCount]*ebiten.Image
+	icons          [touchButtonCount]*ebiten.Image // symbols from touch_icons.go; nil for the menu
 }
 
 // NewTouchControls lays the buttons out for a logical screen of w×h pixels.
@@ -172,18 +168,12 @@ func (tc *TouchControls) Draw(screen *ebiten.Image) {
 		}
 		drawScaled(screen, img, r, nil)
 
-		if label := tc.sprites.labels[b]; label != nil {
-			tint := touchLabelColor
+		if icon := tc.sprites.icons[b]; icon != nil {
+			tint := touchIconColor
 			if tc.held[b] {
 				tint = touchPressedTint
 			}
-			// The debug font glyph is 6×16 with the letter in its upper part,
-			// so scale it to half the button height and nudge it down.
-			lh := r.Dy() / 2
-			lw := lh * 6 / 16
-			x := r.Min.X + (r.Dx()-lw)/2
-			y := r.Min.Y + (r.Dy()-lh)/2 + lh/8
-			drawScaled(screen, label, image.Rect(x, y, x+lw, y+lh), tint)
+			drawScaled(screen, icon, r, tint)
 		}
 	}
 }
@@ -195,13 +185,10 @@ func loadTouchSprites() *touchSprites {
 		up:   sheet.SubImage(uiRoundUpRect).(*ebiten.Image),
 		down: sheet.SubImage(uiRoundDownRect).(*ebiten.Image),
 	}
-	for b, text := range touchLabels {
-		if text == "" {
-			continue
+	for b, shapes := range touchIconShapes {
+		if len(shapes) > 0 {
+			s.icons[b] = newTouchIcon(shapes)
 		}
-		img := ebiten.NewImage(6, 16)
-		ebitenutil.DebugPrintAt(img, text, 0, 0)
-		s.labels[b] = img
 	}
 	return s
 }

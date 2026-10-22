@@ -104,3 +104,21 @@ func TestTouchJustPressedButtons(t *testing.T) {
 		t.Error("second menu press should close the menu")
 	}
 }
+
+// Every button but the menu (whose sprite has its own icon) shows a symbol,
+// and the symbol stays inside the button.
+func TestTouchIconsCoverButtons(t *testing.T) {
+	for b := TouchButton(0); b < touchButtonCount; b++ {
+		shapes := touchIconShapes[b]
+		if (b == TouchMenu) != (len(shapes) == 0) {
+			t.Errorf("button %d has %d icon shapes", b, len(shapes))
+		}
+		for _, sh := range shapes {
+			for _, p := range sh.pts {
+				if p[0] < 0.1 || p[0] > 0.9 || p[1] < 0.1 || p[1] > 0.9 {
+					t.Errorf("button %d icon point %v leaves the button face", b, p)
+				}
+			}
+		}
+	}
+}
