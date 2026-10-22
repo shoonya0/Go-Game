@@ -308,6 +308,10 @@ func (player *PlayerRuntime) UpdateAnimation() {
 		anim.FrameTimer -= timePerFrame
 		player.CurrAnimFrame++
 
+		if player.cutCombo() {
+			return
+		}
+
 		if player.CurrAnimFrame < anim.AnimStartFrame+anim.TotalFrames {
 			continue
 		}

@@ -130,6 +130,7 @@ func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, ch
 	onGround, detectGround := player.resolveVertical(qt)
 
 	player.updateState(in, onGround, detectGround)
+	player.queueCombo(in)
 
 	player.updateStamina()
 	player.updateCombat(qt, checkpoints, onGround)
