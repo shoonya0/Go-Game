@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-22)
 
-Snapshot at `0f0a412` on `feature/player-features` (`main` is at PR #11, `e898f8c`). One page. Details live in each increment's entry in
+Snapshot at `2abec37` on `feature/level-enemy-markers` (`main` is at PR #12, `c59d6b0`). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -11,8 +11,8 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `feature/player-features` (from `main` at PR #11, 4 commits, not pushed): a hit of 2 hearts or more (`HeavyHitDamage`) knocks the player down (row 17, frames 0–9) and pushes them 1.5 tiles away from the hit; 3 hearts or more (`SevereHitDamage`) plays the whole row and pushes 2 tiles (`ApplyDamageFrom`; other damage pushes backward); power reaching 0 by any spend puts the player in `Exhausted` (row 45, frame follows the bar until 2 segments refill, no movement); at 0 HP a random death plays (row 42 or 48) and the player respawns when it ends (`player_hurt.go`). Verify `--full` passed, 48/48 tests. Unmerged: `feature/level-enemy-markers` (needs rebase; only `_docs/current-state.md` conflicts)
-- **Next step:** check knockdown, kneeling and both deaths in-game (`go run ./cmd`), then push + PR. Open: enemies hit for 8, so only fall damage is heavy today; K/L/O deal no damage; weak ground attack sprite swings backward (issue not filed)
+- **Branch:** `feature/level-enemy-markers` (rebased on `main` at PR #12, 11 commits, not pushed): enemies are placed in `assets/level_1.json` with one-character markers (`"!"` = succubus, `EnemyBlueprint.Marker`); the short knockdown draws from row 16; enemies show health bars above the sprite (`enemy_health.go`, `assets/enemyHealth.png` full/half/empty, 20 HP per bar, at least 2 bars, regen 0.1 bar/s; bars round down to the half bar so regen never hides fresh damage); player damage is tuned in bars (J, jump + J, I: 0.5; jump + I: 1.5; K: 0.5 + 1; L: 1 + 2, L at 6 fps so slower than K; each attack can have several hit windows in `playerStrikes`). Verify `--full` passed, 60/60 tests
+- **Next step:** check the succubus spawns, the health bars (position, half states, regen) and K/L hits in-game (`go run ./cmd`), then push + PR. Open: the full knockdown (`KnockedOut`) still draws from row 17 while the short one uses row 16; enemies hit for 8, so only fall damage is heavy today; O deals no damage; weak ground attack sprite swings backward (issue not filed)
 - **Updated:** 2026-10-22
 
 <!-- Once a feature is active, the first line becomes, for example:
@@ -23,7 +23,7 @@ and /feature-docs update. -->
 
 - Run a 2D side-scrolling platformer natively (Windows) or in the browser (WASM). VERIFIED (CI builds both)
 - Move (WASD), run (Shift; drains 5 stamina/s, exhausted at 0 until 20 regenerates), jump (costs 5 stamina; at 0 stamina the player kneels until 2 bars refill), attack (J/I cost 10 stamina; U/O specials 34); sprite HUD with 10 hearts + 10 stamina segments; water/larva hazards, fall damage, checkpoints, respawn. VERIFIED (code read, tests)
-- Fight one enemy type (succubus) with patrol/chase/attack AI; it hits only when your body is inside its attack box, and your J/I attacks hurt it; K/L stop halfway unless pressed again; U sends a ground wave along the floor that hurts it too (K/L/O deal no damage yet). Taking damage makes the player blink red for 1 s; a hit of 2+ hearts knocks them down 1.5 tiles back, 3+ hearts plays the full knockdown and 2 tiles; at 0 HP one of two death animations plays before respawn. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go` tracked, tests pass)
+- Fight one enemy type (succubus) with patrol/chase/attack AI; it hits only when your body is inside its attack box, placed from the level file by grid marker; it shows 2 health bars above its head and regenerates 0.1 bar/s. Your attacks hurt it (J/I 0.5 bar, jump + I 1.5, K 0.5 + 1, L 1 + 2; K/L stop halfway unless pressed again); U sends a ground wave along the floor that hurts it too (O deals no damage yet). Taking damage makes the player blink red for 1 s; a hit of 2+ hearts knocks them down 1.5 tiles back, 3+ hearts plays the full knockdown and 2 tiles; at 0 HP one of two death animations plays before respawn. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go` tracked, tests pass)
 - `GameState` (menu/playing/game over) is declared and set to `ModeMenu`, but never read: there is no menu. VERIFIED (`cmd/main.go:45`)
 
 ## How to build, run, test

@@ -75,8 +75,12 @@ func segmentStates(ratio float64, n int) []segmentState {
 	} else if ratio > 1 {
 		ratio = 1
 	}
-	halves := int(math.Ceil(ratio*float64(2*n) - 1e-9))
+	return halfStepStates(int(math.Ceil(ratio*float64(2*n)-1e-9)), n)
+}
 
+// halfStepStates fills n segments with halves half-steps: two per full segment,
+// one for the half segment after them, the rest empty.
+func halfStepStates(halves, n int) []segmentState {
 	states := make([]segmentState, n)
 	for i := range states {
 		switch {

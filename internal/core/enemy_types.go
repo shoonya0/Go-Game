@@ -2,7 +2,9 @@ package core
 
 // enemyBlueprints is the registry of enemy species. To add an enemy: give it an
 // EnemyKind (enemy.go), drop its sprite sheet in assets/enemy/, and add one entry
-// here describing its box, stats and frame layout. No other code changes.
+// here describing its box, stats, frame layout and level-grid Marker (a unique
+// ASCII punctuation character, written bare in assets/level_1.json). No other
+// code changes.
 var enemyBlueprints = map[EnemyKind]*EnemyBlueprint{
 	KindSuccubus: &succubusBlueprint,
 }
@@ -37,6 +39,7 @@ const (
 
 var succubusBlueprint = EnemyBlueprint{
 	Name:         "Succubus",
+	Marker:       "!",
 	SpritePath:   "../assets/enemy/succubus.png",
 	OriginHeight: succubusSheetRow,
 	BodyWidth:    46,

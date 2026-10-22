@@ -44,11 +44,9 @@ func NewGame() *Game {
 	}
 
 	return &Game{
-		state:  core.ModeMenu,
-		player: core.InitPlayer(core.LoadImage(playerSpriteSheetPath)),
-		enemies: []*core.EnemyRuntime{
-			core.NewEnemy(core.KindSuccubus, core.Position{X: 700, Y: 1000}),
-		},
+		state:      core.ModeMenu,
+		player:     core.InitPlayer(core.LoadImage(playerSpriteSheetPath)),
+		enemies:    core.SpawnEnemies(level.Enemies),
 		background: core.LoadImage(core.Background_1),
 		tileset:    core.LoadImage(core.Tileset),
 		level:      level,
@@ -94,6 +92,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.player.DrawLevel(screen, g.quadtree, screenWidth, screenHeight, g.tileset)
 	for _, e := range g.enemies {
 		e.DrawEnemyAnimation(screen, g.player.Camera)
+		e.DrawHealthBar(screen, g.player.Camera)
 	}
 	g.player.DrawPlayerAnimation(screen)
 	g.player.DrawGroundWaves(screen)

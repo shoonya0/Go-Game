@@ -30,7 +30,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 | Combat | `internal/core/combat.go`, `skills.go` | Damage, power regen, hazards (water/larva), fall damage, checkpoints, respawn | inside `PlayerRuntime` |
 | Enemies | `internal/core/enemy*.go` | Blueprint registry, AI (patrol/chase/attack), animation, damage; `AttackBox()` is the area that hits the player | `EnemyRuntime` |
 | Animation | `internal/core/animation.go`, `enemy_anim.go` | Sprite-sheet frame tables, frame advance, drawing with camera | per-runtime |
-| World / level | `internal/core/world.go` | Loads embedded `level_1.json`, builds platforms/tiles/checkpoints, draws level & water | `Level` |
+| World / level | `internal/core/world.go`, `level_enemies.go` | Loads embedded `level_1.json`, builds platforms/tiles/checkpoints and enemy spawns (bare grid markers like `!` = `EnemyBlueprint.Marker`), draws level & water | `Level`, `SpawnEnemies` |
 | Spatial index | `internal/core/quadtree.go`, `aabb.go` | `DynamicQuadtree` for collision broad-phase; `Collider` interface | quadtree |
 | HUD | `internal/core/hud.go` | Health hearts / stamina (power) bars, 10 sprite segments each | no |
 | Debug overlay | `internal/core/debug_draw.go` | F3 toggles outlines of body (green) and attack (red) boxes for any `HitboxProvider` (enemies and the player) | `Game.showHitboxes` |
@@ -52,7 +52,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 ## Main flows
 
 1. **Startup**: `main` → `NewGame` → `core.WorldInit` → `core.LoadLevel(LevelFile)` →
-   insert platforms into `DynamicQuadtree` → `InitPlayer(LoadImage(...))` → `NewEnemy(...)` (`cmd/main.go:33`).
+   insert platforms into `DynamicQuadtree` → `InitPlayer(LoadImage(...))` → `SpawnEnemies(level.Enemies)` (markers from the grid) (`cmd/main.go:33`).
 2. **Tick (~60 TPS)**: `Game.Update` → `system.HandleInput` → `core.UpdatePlayer`
    (movement → gravity/jump → resolveHorizontal/Vertical via quadtree → `updateCombat`) →
    `UpdateAnimation` → `HitEnemies` → `UpdateGroundWaves` → `UpdateCamera` → `updateEnemies` (AI, anim, cull `Removable`) (`cmd/main.go:58`).
