@@ -117,6 +117,35 @@ func (e *EnemyRuntime) GetBounds() AABB {
 	return AABB{X: e.Pos.X, Y: e.Pos.Y, Width: e.bp.BodyWidth, Height: e.bp.BodyHeight}
 }
 
+// AttackBox returns the area the enemy's strike covers: from the body's centre
+// out AttackRange px in the direction it faces, at body height. The player is
+// hit only while their body overlaps it.
+func (e *EnemyRuntime) AttackBox() AABB {
+	return e.attackBoxFacing(e.FlipX)
+}
+
+// attackBoxFacing is AttackBox for an explicit facing (left = true), so the AI
+// can test a strike toward the player before turning to face them.
+func (e *EnemyRuntime) attackBoxFacing(left bool) AABB {
+	b := e.GetBounds()
+	reach := e.bp.Stats.AttackRange
+	x := centerX(b)
+	if left {
+		x -= reach
+	}
+	return AABB{X: x, Y: b.Y, Width: reach, Height: b.Height}
+}
+
+// Hitboxes reports the enemy's body and, while alive, its attack box to the
+// debug overlay (HitboxProvider).
+func (e *EnemyRuntime) Hitboxes() []Hitbox {
+	boxes := []Hitbox{{Box: e.GetBounds(), Kind: HitboxBody}}
+	if !e.State.IsDead() {
+		boxes = append(boxes, Hitbox{Box: e.AttackBox(), Kind: HitboxAttack, Active: e.State == EnemyAttack})
+	}
+	return boxes
+}
+
 // Removable reports whether the enemy has finished dying and can be culled from
 // the world by the caller.
 func (e *EnemyRuntime) Removable() bool { return e.deathDone }
@@ -140,7 +169,19 @@ func (e *EnemyRuntime) TakeDamage(dmg int) {
 		e.Health = 0
 		e.VelX = 0
 		e.setState(EnemyDead)
-		return
+	} else {
+		e.setState(EnemyHurt)
 	}
-	e.setState(EnemyHurt)
+	// Hits land outside UpdateEnemy, where PrevState is captured, so the
+	// animation can't see the change: restart the clip here. This also replays
+	// hurt when an already-hurt enemy is hit again.
+	e.restartAnimation()
+}
+
+// restartAnimation rewinds the current state's clip to its first frame.
+func (e *EnemyRuntime) restartAnimation() {
+	if anim := e.Animations[int(e.State)]; anim != nil {
+		e.CurrAnimFrame = anim.AnimStartFrame
+		anim.FrameTimer = 0
+	}
 }

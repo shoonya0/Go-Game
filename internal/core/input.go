@@ -17,5 +17,6 @@ type InputState struct {
 	RunJustPressed  bool // run modifier pressed this frame
 	Menu            bool // menu toggled
 	SmugFace        bool // taunt button pressed
+	ToggleHitboxes  bool // debug hitbox overlay toggled this frame
 	Skills          Skills
 }

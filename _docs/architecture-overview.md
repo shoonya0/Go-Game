@@ -26,13 +26,14 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 |---|---|---|---|
 | Entry / game loop | `cmd/main.go` | Wires subsystems; implements `ebiten.Game` (Update/Draw/Layout) | `Game` struct: player, enemies, level, quadtree |
 | Input | `internal/system/Input.go` | Polls Ebitengine keyboard → `core.InputState` | no (writes caller's struct) |
-| Player | `internal/core/player.go`, `player_runtime.go`, `playerState.go` | Movement, gravity/jump, AABB collision resolution, state enum | `PlayerRuntime` |
+| Player | `internal/core/player.go`, `player_runtime.go`, `playerState.go`, `player_attack.go` | Movement, gravity/jump, AABB collision resolution, state enum; `HitEnemies` damages enemies inside the attack's damage box | `PlayerRuntime` |
 | Combat | `internal/core/combat.go`, `skills.go` | Damage, power regen, hazards (water/larva), fall damage, checkpoints, respawn | inside `PlayerRuntime` |
-| Enemies | `internal/core/enemy*.go` | Blueprint registry, AI (patrol/chase/attack), animation, damage | `EnemyRuntime` |
+| Enemies | `internal/core/enemy*.go` | Blueprint registry, AI (patrol/chase/attack), animation, damage; `AttackBox()` is the area that hits the player | `EnemyRuntime` |
 | Animation | `internal/core/animation.go`, `enemy_anim.go` | Sprite-sheet frame tables, frame advance, drawing with camera | per-runtime |
 | World / level | `internal/core/world.go` | Loads embedded `level_1.json`, builds platforms/tiles/checkpoints, draws level & water | `Level` |
 | Spatial index | `internal/core/quadtree.go`, `aabb.go` | `DynamicQuadtree` for collision broad-phase; `Collider` interface | quadtree |
 | HUD | `internal/core/hud.go` | Health hearts / stamina (power) bars, 10 sprite segments each | no |
+| Debug overlay | `internal/core/debug_draw.go` | F3 toggles outlines of body (green) and attack (red) boxes for any `HitboxProvider` (enemies and the player) | `Game.showHitboxes` |
 | Assets | `assets/embed.go`, `internal/core/image.go` | `go:embed` FS; `readAsset` resolves by **base file name** (subfolders searched) | embedded, read-only |
 | Time | `internal/core/time.go` | `deltaTime()` = 1/TPS, shared by physics and animation | no |
 | Web server | `server/main.go` | Serves `$WEB_ROOT` on `$PORT`, `.wasm` MIME, no-cache for HTML | no |
@@ -54,7 +55,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
    insert platforms into `DynamicQuadtree` → `InitPlayer(LoadImage(...))` → `NewEnemy(...)` (`cmd/main.go:33`).
 2. **Tick (~60 TPS)**: `Game.Update` → `system.HandleInput` → `core.UpdatePlayer`
    (movement → gravity/jump → resolveHorizontal/Vertical via quadtree → `updateCombat`) →
-   `UpdateAnimation` → `UpdateCamera` → `updateEnemies` (AI, anim, cull `Removable`) (`cmd/main.go:58`).
+   `UpdateAnimation` → `HitEnemies` → `UpdateCamera` → `updateEnemies` (AI, anim, cull `Removable`) (`cmd/main.go:58`).
 3. **Frame**: `Game.Draw` — draw order matters: water after player so the player looks submerged (`cmd/main.go:87`).
 4. **Web build/deploy**: `GOOS=js GOARCH=wasm go build ./cmd` → `web/game.wasm` + `wasm_exec.js`
    → Docker multi-stage → distroless `server` on Render (`Dockerfile`, `render.yaml`).
