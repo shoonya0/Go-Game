@@ -79,29 +79,29 @@ func TestTouchOppositeDirectionsCancel(t *testing.T) {
 	}
 }
 
-// K and L read as just-pressed, like their keys, so holding them does not
+// K, L and O read as just-pressed, like their keys, so holding them does not
 // re-trigger the combo; the menu button toggles once per press.
 func TestTouchJustPressedButtons(t *testing.T) {
 	tc := NewTouchControls(1360, 768)
-	held := []image.Point{touchCenter(tc, TouchSpecial1), touchCenter(tc, TouchSpecial2), touchCenter(tc, TouchMenu)}
+	held := []image.Point{touchCenter(tc, TouchSpecial1), touchCenter(tc, TouchSpecial2), touchCenter(tc, TouchSpecial4), touchCenter(tc, TouchMenu)}
 
 	var in InputState
 	tc.Update(held)
 	tc.Apply(&in)
-	if !in.Skills.SpecialAttack1 || !in.Skills.SpecialAttack2 || !in.Menu {
-		t.Fatalf("first frame: K=%v L=%v menu=%v, want all true", in.Skills.SpecialAttack1, in.Skills.SpecialAttack2, in.Menu)
+	if !in.Skills.SpecialAttack1 || !in.Skills.SpecialAttack2 || !in.Skills.SpecialAttack4 || !in.Menu {
+		t.Fatalf("first frame: K=%v L=%v O=%v menu=%v, want all true", in.Skills.SpecialAttack1, in.Skills.SpecialAttack2, in.Skills.SpecialAttack4, in.Menu)
 	}
 
 	in.Skills = Skills{}
 	tc.Update(held)
 	tc.Apply(&in)
-	if in.Skills.SpecialAttack1 || in.Skills.SpecialAttack2 || !in.Menu {
-		t.Fatalf("held: K=%v L=%v menu=%v, want K/L false and menu still open", in.Skills.SpecialAttack1, in.Skills.SpecialAttack2, in.Menu)
+	if in.Skills.SpecialAttack1 || in.Skills.SpecialAttack2 || in.Skills.SpecialAttack4 || !in.Menu {
+		t.Fatalf("held: K=%v L=%v O=%v menu=%v, want K/L/O false and menu still open", in.Skills.SpecialAttack1, in.Skills.SpecialAttack2, in.Skills.SpecialAttack4, in.Menu)
 	}
 
 	tc.Update(nil)
 	tc.Apply(&in)
-	tc.Update(held[2:])
+	tc.Update(held[3:])
 	tc.Apply(&in)
 	if in.Menu {
 		t.Error("second menu press should close the menu")

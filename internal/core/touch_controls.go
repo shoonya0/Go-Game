@@ -154,7 +154,7 @@ func (tc *TouchControls) Apply(in *InputState) {
 	in.Skills.SpecialAttack1 = in.Skills.SpecialAttack1 || tc.justPressed(TouchSpecial1)
 	in.Skills.SpecialAttack2 = in.Skills.SpecialAttack2 || tc.justPressed(TouchSpecial2)
 	in.Skills.SpecialAttack3 = in.Skills.SpecialAttack3 || h[TouchSpecial3]
-	in.Skills.SpecialAttack4 = in.Skills.SpecialAttack4 || h[TouchSpecial4]
+	in.Skills.SpecialAttack4 = in.Skills.SpecialAttack4 || tc.justPressed(TouchSpecial4)
 
 	if tc.justPressed(TouchMenu) {
 		in.Menu = !in.Menu
