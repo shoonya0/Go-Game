@@ -134,3 +134,45 @@ func TestOSecondPressNeedsPartTwoStamina(t *testing.T) {
 		t.Errorf("queued=%v power=%v, want the press ignored and no power spent", p.comboQueued, p.Combat.Power)
 	}
 }
+
+// playO runs the per-tick player update (state, combo queue, animation) on a
+// grounded player, pressing O on the given ticks, until the O attack ends. It
+// returns the last O sprite shown and the power left.
+func playO(t *testing.T, pressTicks ...int) (lastFrame int, power float64) {
+	t.Helper()
+	p := staminaPlayer()
+	p.Animations = InitPlayerAnimations()
+	pressed := map[int]bool{}
+	for _, tick := range pressTicks {
+		pressed[tick] = true
+	}
+	lastFrame = -1
+	for tick := 0; tick < 600; tick++ {
+		in := InputState{Skills: Skills{SpecialAttack4: pressed[tick]}}
+		p.PreviousState = PlayerState{CurrentState: p.State.CurrentState}
+		p.updateState(&in, true, true)
+		p.queueCombo(&in)
+		p.UpdateAnimation()
+		if p.State.IsSpecialAttack4() {
+			lastFrame = p.CurrAnimFrame
+		} else if lastFrame >= 0 {
+			return lastFrame, p.Combat.Power
+		}
+	}
+	t.Fatal("O attack never ended")
+	return
+}
+
+func TestOPlaysInTwoPartsTickByTick(t *testing.T) {
+	last, power := playO(t, 0)
+	if last != specialAttack4GateFrame-1 || power != MaxPlayerPower-SpecialAttack4PowerCost1 {
+		t.Errorf("one press: last sprite %d power %v, want sprite %d and power %v",
+			last, power, specialAttack4GateFrame-1, MaxPlayerPower-SpecialAttack4PowerCost1)
+	}
+
+	full := InitPlayerAnimations()[SpecialAttack4].TotalFrames - 1
+	last, power = playO(t, 0, 20) // second press about a third of a second in
+	if want := MaxPlayerPower - SpecialAttack4PowerCost1 - SpecialAttack4PowerCost2; last != full || power != want {
+		t.Errorf("two presses: last sprite %d power %v, want sprite %d and power %v", last, power, full, want)
+	}
+}
