@@ -39,6 +39,7 @@ const (
 	touchButtonGap  = 8
 	touchEdge       = 20 // distance of the button clusters from the screen edges
 	touchMenuSize   = 64
+	touchSprintSize = 104 // sprint is held a lot, so it is the biggest button
 	touchIconInset  = 15  // percent of the button cut from each side of its symbol, so it draws at 70%
 	touchIdleAlpha  = 0.5 // opacity of buttons that are not pressed
 
@@ -89,7 +90,7 @@ func NewTouchControls(w, h int) *TouchControls {
 	tc.rects[TouchRight] = sq(cx+step-s/2, cy-s/2, s)
 
 	// Attacks: two rows laid out like the keyboard, U I O over J K L, with
-	// sprint centred above them.
+	// a larger sprint button above the right column.
 	bottom := h - touchEdge - s
 	top := bottom - s - g
 	for col, b := range [3][2]TouchButton{{TouchSpecial3, TouchWeak}, {TouchStrong, TouchSpecial1}, {TouchSpecial4, TouchSpecial2}} {
@@ -97,7 +98,7 @@ func NewTouchControls(w, h int) *TouchControls {
 		tc.rects[b[0]] = sq(x, top, s)
 		tc.rects[b[1]] = sq(x, bottom, s)
 	}
-	tc.rects[TouchSprint] = sq(tc.rects[TouchStrong].Min.X, top-g-s, s)
+	tc.rects[TouchSprint] = sq(w-touchEdge-touchSprintSize, top-g-touchSprintSize, touchSprintSize)
 
 	tc.rects[TouchMenu] = sq(hudMargin, hudMargin, touchMenuSize)
 	return tc

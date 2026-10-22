@@ -31,8 +31,8 @@ func TestTouchLayoutFitsScreenWithoutOverlap(t *testing.T) {
 	if c := touchCenter(tc, TouchSpecial2); c.X < w/2 || c.Y < h/2 {
 		t.Errorf("L button at %v, want bottom-right", c)
 	}
-	if s, i := tc.Rect(TouchSprint), tc.Rect(TouchStrong); s.Max.Y > i.Min.Y || s.Min.X != i.Min.X {
-		t.Errorf("sprint at %v, want above the I button at %v", s, i)
+	if s, o := tc.Rect(TouchSprint), tc.Rect(TouchSpecial4); s.Max.Y > o.Min.Y || s.Max.X != o.Max.X || s.Dx() <= o.Dx() {
+		t.Errorf("sprint at %v, want a bigger button above the O button at %v, right edges aligned", s, o)
 	}
 	if c := touchCenter(tc, TouchMenu); c.X > w/4 || c.Y > h/4 {
 		t.Errorf("menu button at %v, want top-left", c)
