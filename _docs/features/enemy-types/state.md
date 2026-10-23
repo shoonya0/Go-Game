@@ -1,10 +1,11 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23 at `fda2323`)
+## Now (updated 2026-10-23 at `2dc16c3`)
 
-- **Status:** ⏳ planned
-- **Current task:** 1. Characterisation tests for the succubus (see [tasks.md](./tasks.md))
-- **Stopped at:** planning done; branch `feature/enemy-types` created from `origin/main`, no code yet
+- **Status:** 🟡 in progress
+- **Current task:** 2. Clips with their own sheet (see [tasks.md](./tasks.md))
+- **Stopped at:** task 1 done: `internal/core/enemy_behavior_test.go` pins landing, wall
+  bounce, chase left, hurt freeze, one-shot → patrol, death hold/removable, dead fall
 - **Open questions / blockers:** task 11: where the raw battler sheets live once baked
   (the user decides; they must leave the embed)
 - **Don't forget:** assets changed on 2026-10-23. Removed: the desert set, `Bat with VFX/`,
@@ -15,6 +16,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-23: task 1, succubus characterisation tests
+
+- Changed: `internal/core/enemy_behavior_test.go` (7 tests)
+- Verified: `node scripts/verify.mjs` pass; mutation (one-shot → idle) fails `TestEnemyOneShotClipsReturnToPatrol`
+- Docs touched: tasks (1 ticked, patrol-frame note on 2), state
 
 ### 2026-10-23: choose one sprite format + guard
 
