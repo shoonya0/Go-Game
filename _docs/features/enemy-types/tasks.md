@@ -11,54 +11,68 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [ ] 2. Clips with their own sheet: `ClipDef` with sheet path + frame size + row; image
       cache keyed by path; succubus migrated → check: new `TestEnemyClipsFitTheirSheets`
       (decodes each sheet's config and checks frames × width fit), all enemy tests green
-- [ ] 3. Optional clip fallback (`Alert → Patrol → Idle`) → check: `TestEnemyMissingClipFallsBack`
-- [ ] 4. Extract `Mover` + `groundMover` from `enemy_ai.go`; succubus uses it → check:
+- [ ] 3. Standard clip names + fallbacks (`alert`/`run` → `walk`, `attack_2` → `attack_1`);
+      chase plays `run` → check: `TestEnemyMissingClipFallsBack`
+- [ ] 4. Per-frame `Hold` timing + draw-time motion (bob, lean, hit shake) → check:
+      `TestClipHoldTiming`, manual look at the succubus
+- [ ] 5. Extract `Mover` + `groundMover` from `enemy_ai.go`; succubus uses it → check:
       enemy tests unchanged and green
-- [ ] 5. Extract `Attacker` + `meleeAttack` (damage on a `HitFrame`, `Box` for F3) → check:
-      `TestEnemyDetectsChasesAndAttacks` green, new `TestMeleeHitLandsOnHitFrame`
-- [ ] 6. Registry validation test: unique markers, every required clip present, speeds
-      > 0, Mover/Attacker set → check: `TestBlueprintsValid`
-- [ ] 7. `node scripts/verify.mjs --full`, `code-reviewer` agent, update docs (state.md,
+- [ ] 6. Extract `Attacker` + `meleeAttack` (damage on a `HitFrame`, `Box` for F3, random
+      `attack_1`/`attack_2`) → check: `TestEnemyDetectsChasesAndAttacks` green, new
+      `TestMeleeHitLandsOnHitFrame`
+- [ ] 7. Registry validation test: unique markers, required clips present, speeds > 0,
+      Mover/Attacker set → check: `TestBlueprintsValid`
+- [ ] 8. `node scripts/verify.mjs --full`, `code-reviewer` agent, update docs (state.md,
       design.md trimmed to what the code doesn't show)
 
-## Increment 2: ground roster (melee)
+## Increment 2: battler baking tool
 
-- [ ] 8. Ledge probe in `groundMover`: patrol turns at platform edges → check:
+- [ ] 9. `tools/battler2strip` (stdlib Go): sheet + mapping JSON → right-facing strips,
+      scaled to draw height, plus a printed blueprint snippet → check: `go test ./tools/...`
+      (a cell-rect test with a non-integer cell height, e.g. 1298/6), depguard/layers still pass
+- [ ] 10. Mapping for the goblin; bake; check every clip by eye (contact-sheet output) →
+      check: baked strips look right, size printed
+- [ ] 11. Decide what stays in `assets/`: keep raw sheets out of the `//go:embed` (move to
+      `art-src/` or similar, ask the user) → check: WASM size before/after in `verify.mjs --full`
+
+## Increment 3: ground roster (melee) + guard
+
+- [ ] 12. Ledge probe in `groundMover`: patrol turns at platform edges → check:
       `TestGroundEnemyTurnsAtLedge`
-- [ ] 9. Desert four: Snake, Hyena, Scorpio, Mummy (48 px strips; pick scale against
-      60 px tiles) + markers + embed check → check: `TestBlueprintsValid`,
-      `TestAssetPathsAreEmbedded`, run `go run ./cmd` and look at each one
-- [ ] 10. Rename `White_Golem/Golem_1_*` → `WhiteGolem_*` (D4), add White Golem → check:
-      no duplicate base names under `assets/` (add `TestAssetBaseNamesUnique`)
-- [ ] 11. Skeleton White + Yellow as one blueprint with colour variants; random pick
-      between attack1/attack2 → check: `TestSkeletonVariantsShareBlueprint`, manual look
-- [ ] 12. Mushroom (no stun yet) and Slime (map its 8×3 grid rows by eye) → check: manual look
-- [ ] 13. Place one of each in `level_1.json` (or a test level), web smoke check,
+- [ ] 13. Two-character level markers (D6) → check: `TestQuoteBareMarkers` extended, level loads
+- [ ] 14. Guard trait (D8): `EnemyGuard`, `GuardChance`, front-only block → check:
+      `TestGuardBlocksFrontHit`, `TestGuardIgnoresBackHit`
+- [ ] 15. Goblin (first baked enemy, melee ×2 + guard) → check: manual look, F3 boxes
+- [ ] 16. Rename `White_Golem/Golem_1_*` → `WhiteGolem_*` (D4), add White Golem → check:
+      new `TestAssetBaseNamesUnique`
+- [ ] 17. Skeleton White + Yellow strips as one blueprint with colour variants → check:
+      `TestSkeletonVariantsShareBlueprint`, manual look
+- [ ] 18. Mushroom (no stun yet) → check: manual look
+- [ ] 19. Bake + add the other ground battlers, a few per session: kobold, gnoll, skeleton,
+      zombies, troll, werewolf, wolf, German shepherd, rat, crab, sahuagin, slime, turnip →
+      check: `TestBlueprintsValid`, manual look at each
+- [ ] 20. Training dummy (`static` mover, no attack) → check: `TestStaticEnemyNeverMoves`
+- [ ] 21. Place one of each in `level_1.json` (or a test level), web smoke check,
       `verify.mjs --full`, docs update
 
-## Increment 3: flying movement
+## Increment 4: flying movement
 
-- [ ] 14. `flyingMover`: no gravity, hover height, leash, 2D chase, return to spawn,
+- [ ] 22. `flyingMover`: no gravity, hover height, leash, 2D chase, return to spawn,
       tile collision → check: `TestFlyingEnemyIgnoresGravity`, `TestFlyingEnemyLeash`
-- [ ] 15. Ground wave skips enemies that aren't grounded (`Mover.Grounded`) → check:
+- [ ] 23. Ground wave skips enemies that aren't grounded (`Mover.Grounded`) → check:
       `TestGroundWaveMissesFlyers`
-- [ ] 16. Flying Demon (melee) → check: manual look, F3 boxes
+- [ ] 24. Flying Demon (strips) and Bat (battler) → check: manual look, F3 boxes
 
-## Increment 4: more attack styles
+## Increment 5: more attack styles
 
-- [ ] 17. `EnemyEffects` + `Projectile` (owned by `Game`, like ground waves); Deceased with
-      `rangedAttack` using `Ball.png` → check: `TestProjectileHitsPlayer`,
-      `TestProjectileStopsAtTile`
-- [ ] 18. `diveAttack` (start → loop → end); Vulture (swoop) → check: `TestDiveAttackPhases`
-- [ ] 19. Smasher (Enemy3) using all three dive clips → check: manual look
-- [ ] 20. `EnemySleep` / `EnemyWake` + Bat (sleep until the player is near, two attacks) →
-      check: `TestBatWakesOnProximity`
-- [ ] 21. `verify.mjs --full`, web smoke check, `/code-review`, docs update, PR (ask before merge)
+- [ ] 25. `EnemyEffects` + `Projectile` (owned by `Game`, like ground waves); a ranged enemy
+      (kobold or gnoll `shoot` clip) → check: `TestProjectileHitsPlayer`, `TestProjectileStopsAtTile`
+- [ ] 26. `diveAttack` (start → loop → end); Smasher (Enemy3) → check: `TestDiveAttackPhases`, manual look
+- [ ] 27. `verify.mjs --full`, web smoke check, `/code-review`, docs update, PR (ask before merge)
 
 ## Later (not planned yet)
 
 - [ ] Bosses: Striker (`Striker/`, 128×96, dash/jump), Orange Golem (rename files first, D4)
 - [ ] Mushroom stun attack (`Mushroom-AttackWithStun`, `Mushroom-Stun`): needs a player stun state
-- [ ] `waterMover` once there is a water-enemy sprite
+- [ ] `waterMover` (Sahuagin, crab, water slime are candidates)
 - [ ] `readAsset` by full path instead of base name (project known issue #3)
-- [ ] Two-character level markers if the ~20 single characters run out (D6)

@@ -18,13 +18,14 @@
   uses melee, the Deceased walks and shoots, the Bat flies and has two melee attacks. One
   axis would need a type for every combination.
 
-## D3. Keep the sprite strips as shipped; one sheet per clip (2026-10-23)
+## D3. Strips are the game's one sprite format; one sheet per clip (2026-10-23)
 
-- **Decision:** a clip names its own sheet. Don't repack strips into one grid the way the
-  succubus sheet was repacked.
-- **Why:** repacking is manual work for each enemy and has to be redone when an asset
-  changes. Ebitengine batches draws well even across separate images, and the strips are small
-  (the largest folder is under 70 KB).
+- **Decision:** a clip names its own sheet. Strip packs are used as shipped. Battler sheets
+  are baked into strips offline (D7). Strips are **not** repacked into the battler format.
+- **Why:** the battler format holds 3 frames per motion, and repacking strips into it would
+  drop most frames (Golem die 13 → 3, Mushroom attack-with-stun 24 → 3). Strips also have
+  clips (dash, wake-up, smash-loop) with no battler motion. Ebitengine batches draws well
+  even across separate images.
 
 ## D4. Give every enemy asset a unique base name (2026-10-23)
 
@@ -46,7 +47,30 @@
 
 ## D6. Level markers are a scarce resource (2026-10-23)
 
-- **Note:** `isMarkerChar` allows about 20 punctuation characters, and the roster needs about 14
-  plus variants. Assign them in [spec.md](./spec.md)'s order when each enemy lands. If they run
-  out, move to two-character markers (a change in `quoteBareMarkers`), not letters, which
-  clash with JSON literals.
+- **Note:** `isMarkerChar` allows about 20 punctuation characters, and with the battlers the
+  roster has about 23 enemies plus variants, so they **will** run out. Do two-character markers
+  (a change in `quoteBareMarkers`) before the battler roster lands (tasks.md), not letters,
+  which clash with JSON literals.
+
+## D7. Bake battler sheets into strips with an offline tool (2026-10-23)
+
+- **Decision:** `tools/battler2strip` (stdlib Go, not part of the game build) reads a
+  battler sheet plus a mapping (clip → chain of motion cells, per-frame timing) and writes
+  `<Enemy>_<clip>.png` strips facing right, with whole-pixel cells, scaled to draw size.
+  Only the baked strips are embedded; the raw sheets stay out of `assets/` (or out of the
+  embed).
+- **Why:** one runtime format (D3). It fixes the 9 sheets whose height doesn't divide by 6
+  and the mixed facing, and cuts the 15 MB of raw sheets (cells up to 435 px) to the drawn
+  size, which matters for the WASM download (`Free Sprites/` alone is 15 MB).
+- **Smoothness:** chaining motions gives 6–9 frame attacks and deaths. Draw-time motion
+  (bob, lean, squash, hit shake) is applied in the game, not baked, so strip enemies get
+  it too. New frames are not drawn: walk/run stay 3–4 frames.
+- **Rejected:** reading battler sheets at runtime. Two formats in the game, raw sheets embedded.
+
+## D8. Guard is an optional trait driven by a `guard` clip (2026-10-23)
+
+- **Decision:** an enemy with a `guard` clip and `GuardChance > 0` may block a player hit
+  that comes from the side it faces: no damage, `guard` plays, then it resumes. Hits from
+  behind always land. Enemies without the clip never guard.
+- **Why:** user request. Every battler sheet has a Guard motion; the strip packs don't, so it
+  must be optional rather than part of the shared state machine's required clips.

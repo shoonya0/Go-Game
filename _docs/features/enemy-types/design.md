@@ -57,10 +57,24 @@ typed, and the zero value means "idle".
 
 ## Clips and sheets
 
-`ClipDef{Sheet string; FrameW, FrameH, Row, Start, Frames int; FPS float64; Loop bool}`.
-Sheets load through one cache keyed by path (replaces `enemyImages` keyed by kind). A
-missing optional clip falls back: `Alert → Patrol → Idle`. `drawSpriteFrame` already takes
-the image and frame size per call; only the Y origin (`Row * FrameH`) changes source.
+`ClipDef{Sheet string; FrameW, FrameH, Row, Start, Frames int; FPS float64; Loop bool;
+Hold []float64}`. `Hold` (optional) is a per-frame duration multiplier, so a strike or
+impact frame can stay up longer than the in-betweens. Sheets load through one cache keyed
+by path (this replaces `enemyImages`, which is keyed by kind). Standard clip names and their
+fallbacks are listed in [spec.md](./spec.md). `drawSpriteFrame` already takes the image and
+frame size per call; only the Y origin (`Row * FrameH`) changes source.
+
+**Draw-time motion** (D7): `motionFX{BobPx, BobHz, LeanDeg, HitShakePx}` per clip, applied as
+a `GeoM` offset/rotation in `DrawEnemyAnimation`, driven by the clip's elapsed time. The
+collision box doesn't move.
+
+## Battler baking (offline, `tools/battler2strip`)
+
+Input: a sheet plus a mapping file per enemy (JSON next to the tool, not embedded):
+`{"cellCols":9,"cellRows":6,"facesLeft":true,"drawHeight":120,"clips":{"attack_1":[[1,0,0],[1,0,1],…]}}`
+where each entry is `[motionBlock, row, frame]`. Output: `assets/enemy/<Enemy>/<Enemy>_<clip>.png`
+plus a printed Go snippet with frame sizes and counts, to paste into the blueprint. Cell
+size = sheet size ÷ 9 and ÷ 6 as floats, each cell's rect rounded, so non-integer heights work.
 
 ## Projectiles
 
@@ -70,5 +84,9 @@ This is the only `cmd/main.go` change the feature needs.
 
 ## New states
 
-Add `EnemySleep` and `EnemyWake` only when the Bat lands (increment 4). Keep them out of
-`IsOneShot` except `EnemyWake`, which hands over to `EnemyAlert`.
+- `EnemyGuard` (D8): a one-shot entered from `TakeDamage` when the blow comes from the
+  facing side and a `GuardChance` roll passes. It deals no damage and hands back like hurt.
+  The roll goes through a seeded `rand.Rand` held by the enemy, so tests are deterministic.
+- `EnemyRun` is not a state: chase plays `run` and patrol plays `walk`. Clip choice is a
+  function of state plus speed.
+- `EnemySleep` / `EnemyWake` only if a sleeping enemy is added (none in the current roster).
