@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-23)
 
-Snapshot at `59449eb` on `feature/enemy-types` (`main` is at `fda2323`, PR #17 merged). One page. Details live in each increment's entry in
+Snapshot at `6c45e04` on `feature/enemy-types` (`main` is at `fda2323`, PR #17 merged). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -10,10 +10,10 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation), tasks 1–7 of 8 done
-- **Branch:** `feature/enemy-types` (from `main` at `fda2323`), 20 local commits, not pushed: characterisation tests, `EnemyClip` + standard clip names, per-frame hold + draw-time motion, skeleton (white/yellow) + mushroom, `Mover`/`groundMover`, `Attacker`/`meleeAttack` (hit frames, random attack_1/2), `TestBlueprintsValid`
-- **Next step:** task 8 (close increment 1: full verify, code review, trim design.md) in [tasks.md](./features/enemy-types/tasks.md), then push + PR (ask before merge: `main` deploys). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
-- **Updated:** 2026-10-23 (task 7 done; page refreshed)
+- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation) done, tasks 1–8; next increment 2 (battler baking)
+- **Branch:** `feature/enemy-types` (from `main` at `fda2323`), 23 local commits, not pushed: characterisation tests, `EnemyClip` + standard clip names, per-frame hold + draw-time motion, skeleton (white/yellow) + mushroom, `Mover`/`groundMover`, `Attacker`/`meleeAttack` (hit frames, random attack_1/2, wait for cooldown instead of whiffing), `TestBlueprintsValid`
+- **Next step:** push + PR for increment 1 (ask before merge: `main` deploys), then task 9 (`tools/battler2strip`) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Updated:** 2026-10-23 (task 8 done, increment 1 closed)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -23,7 +23,7 @@ and /feature-docs update. -->
 
 - Run a 2D side-scrolling platformer natively (Windows) or in the browser (WASM). VERIFIED (CI builds both)
 - Move (WASD), run (Shift; drains 5 stamina/s, exhausted at 0 until 20 regenerates), jump (costs 5 stamina; at 0 stamina the player kneels until 2 bars refill), attack (J/I cost 10 stamina; U 34; O 10, plus 20 for its second part); sprite HUD with 10 hearts + 10 stamina segments; water/larva hazards, fall damage, checkpoints, respawn. VERIFIED (code read, tests)
-- Fight three enemy types in level 1, each placed by a grid marker: the succubus (`!`), the skeleton in white (`@`) and yellow (`#`), and the mushroom (`&`). All patrol, chase and attack; they hit only when your body is inside their attack box. The skeleton and mushroom deal damage on the frame the weapon connects and the skeleton alternates two attacks; the succubus still hits as its attack starts. Each shows 2 health bars above its head and regenerates 0.1 bar/s; sprites bob, lean and shake when hit (draw-time motion). On branch, skeleton/mushroom checked by the user in game; hit timing not yet. Your attacks hurt it (J/I 0.5 bar, jump + I 1.5 and its spin hits behind you too, K 0.5 + 1, L 1 + 2, O 1 + 2); K, L and O stop halfway unless pressed again (O after sprite 9); U sends a ground wave along the floor that hurts it too. Attacks move the player (`internal/core/attack_step.go`): J steps 45 px back, I and U 45 px forward, K's second part 15 px and O's 45 px forward; L doesn't move. Taking damage makes the player blink red for 1 s; a hit of 2+ hearts knocks them down 1.5 tiles back, 3+ hearts plays the full knockdown and 2 tiles; at 0 HP one of two death animations plays before respawn. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go`, tests pass)
+- Fight three enemy types in level 1, each placed by a grid marker: the succubus (`!`), the skeleton in white (`@`) and yellow (`#`), and the mushroom (`&`). All patrol, chase and attack; they hit only when your body is inside their attack box. The skeleton and mushroom deal damage on the frame the weapon connects and the skeleton alternates two attacks; the succubus still hits as its attack starts. Between swings an enemy stands idle until its cooldown is ready, so no swing misses. Each shows 2 health bars above its head and regenerates 0.1 bar/s; sprites bob, lean and shake when hit (draw-time motion). On branch, skeleton/mushroom checked by the user in game; hit timing not yet. Your attacks hurt it (J/I 0.5 bar, jump + I 1.5 and its spin hits behind you too, K 0.5 + 1, L 1 + 2, O 1 + 2); K, L and O stop halfway unless pressed again (O after sprite 9); U sends a ground wave along the floor that hurts it too. Attacks move the player (`internal/core/attack_step.go`): J steps 45 px back, I and U 45 px forward, K's second part 15 px and O's 45 px forward; L doesn't move. Taking damage makes the player blink red for 1 s; a hit of 2+ hearts knocks them down 1.5 tiles back, 3+ hearts plays the full knockdown and 2 tiles; at 0 HP one of two death animations plays before respawn. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go`, tests pass)
 - On a touch screen, buttons for every key: arrows bottom-left, attack symbols and a bigger sprint button bottom-right, a menu button top-left (the HUD moves right of it). Idle buttons are half see-through and stay out of the middle third of the screen. VERIFIED (tests; web build with simulated touches; not on a real device)
 - `GameState` (menu/playing/game over) is declared and set to `ModeMenu`, but never read: there is no menu, so the touch menu button and Escape only toggle `InputState.Menu`. VERIFIED (`cmd/main.go`)
 
@@ -34,12 +34,12 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `59449eb`, Windows, go1.26.7)
+## Test baseline (at `6c45e04`, Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
-| `go test ./...` | ✅ 99/99 top-level tests pass, all in `internal/core` | — |
+| `go test ./...` | ✅ 100/100 top-level tests pass, all in `internal/core` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
 | GitHub CI | not run: `feature/enemy-types` isn't pushed yet | — |
 

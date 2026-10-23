@@ -1,65 +1,45 @@
-# Enemy types: design (planned, not in the code yet)
+# Enemy types: design
 
-A proposal for increment 1. Once the code exists, the code wins: shrink this file to what
-the code doesn't show (the reasons stay in [decisions.md](./decisions.md)).
+Increment 1 is in the code; this page keeps only what the code doesn't show (why it is
+shaped this way, and the parts still to build). Reasons for decisions live in
+[decisions.md](./decisions.md); clip names and fallbacks in [spec.md](./spec.md).
 
 ## Shape
 
-```text
-EnemyBlueprint (data, one per species)
-  ├─ Clips    map[EnemyState]EnemyClip // sheet path + frame size + count + speed + loop
-  ├─ Mover    Mover                    // ground | flying | (water)
-  ├─ Attacker Attacker                 // melee | ranged | dive
-  ├─ Stats    EnemyStats               // + per-part tuning lives in the part's own struct
-  └─ Traits   StartState, AttackClips […], Variants
+A species is data: an `EnemyBlueprint` (`internal/core/enemy.go`, instances in
+`enemy_types.go`) with clips, stats, a `Mover` and an `Attacker`. `UpdateEnemy`
+(`enemy_ai.go`) is the shared brain: patrol → notice → chase → attack, hurt interrupts,
+dead is final. `Attacker.InRange` decides "attack", so a ranged enemy attacks from far away
+and a diver from above without a change to the brain.
 
-UpdateEnemy (shared, unchanged order)
-  brain:  decideBehavior → intent {Idle | Patrol | Chase(dx,dy) | Attack}
-  move:   bp.Mover.Move(e, intent, qt)        // velocity, gravity or not, tile collision
-  attack: bp.Attacker.Update(e, target, fx)   // range test, damage timing, projectiles
-```
+## Built parts: what the code doesn't say
 
-The brain stays shared: patrol → notice → chase → attack, hurt interrupts, dead is final.
-`Attacker.InRange` replaces today's attack-box test so a ranged enemy "attacks" from far
-away and a diver attacks from above.
+- **Mover** (`enemy_move.go`) is split into `Steer` (intent → velocity, called as the brain
+  decides) and `Move` (integrate + collide), not one `Move(e, intent, qt)`: the brain's tests
+  check velocity right after `decideBehavior`, and a dead enemy just steers to `moveHold` and
+  keeps falling.
+- **Attacker** (`enemy_attack.go`): the attack_1/attack_2 pick is a swappable func var (like
+  `deathKneels`), not a per-enemy seeded `rand.Rand`. A swing lands once, on its clip's
+  `HitFrame`. `AttackCooldown` can outlast a whole attack clip, so `Ready` holds a new swing
+  back (the enemy idles, facing the player) until the cooldown ends by the hit frame;
+  otherwise the skeleton whiffed every other swing (`TestMeleeEverySwingLands`). The
+  succubus keeps `HitFrame` 0. `EnemyEffects` joins `Update` with projectiles (task 25).
+- **Clips** (`enemy_clips.go`, `enemy_motion.go`): draw-time motion is in screen pixels and
+  moves only the sprite; the collision box stays put (D7).
 
-## Parts (Go interfaces, implemented as small structs holding their tuning)
+## Parts still to build
 
-**Mover: done (task 5),** `internal/core/enemy_move.go`. It differs from the first plan: it has
-`Steer` (intent → velocity, called by the brain as it decides) and `Move` (integrate + collide)
-instead of a single `Move(e, intent, qt)`. That way the brain's tests can still check
-velocity right after `decideBehavior`, and a dead enemy just steers to `moveHold` and keeps
-falling.
+| Part | Notes |
+|---|---|
+| ledge probe in `groundMover` | task 12 |
+| `flyingMover` | no gravity, `HoverHeight`, `Leash` (tiles), steers in X and Y, bobbing optional |
+| `waterMover` | later; like flying but clamped to water tiles |
+| `rangedAttack` | spawns a `Projectile` on `FireFrame`; `KeepDistance` |
+| `diveAttack` | phases start → loop (falling) → end; uses up to 3 clips |
 
-**Attacker: done (task 6),** `internal/core/enemy_attack.go`: `InRange`, `Box`, `Start` (a new
-swing picks `attack_1` or `attack_2`) and `Update`. The `EnemyEffects` parameter comes with
-projectiles (task 25). The random pick is a swappable func var (like `deathKneels`), not a
-per-enemy seeded `rand.Rand`. A swing lands on its clip's `HitFrame`, once per swing. If the
-cooldown blocks it there, it lands as soon as the cooldown is ready: `AttackCooldown` lasts
-longer than an attack clip, so missing would make every other swing visibly whiff. The succubus keeps
-`HitFrame` 0, so it still hits as soon as it starts attacking.
-
-| Part | Today's code it comes from | Notes |
-|---|---|---|
-| `groundMover` | done (task 5) | ledge probe still to add (task 12) |
-| `flyingMover` | new | no gravity, `HoverHeight`, `Leash` (tiles), steers in X and Y, bobbing optional |
-| `waterMover` | later | like flying but clamped to water tiles |
-| `meleeAttack` | done (task 6) | |
-| `rangedAttack` | new | spawns a `Projectile` on `FireFrame`; `KeepDistance` |
-| `diveAttack` | new | phases start → loop (falling) → end; uses up to 3 clips |
-
-## Per-instance state
-
-Part-specific runtime state (dive phase, fire timer, wake flag) goes in one small field on
-`EnemyRuntime` per part, e.g. `dive diveState`, not in a generic `map[string]any`. That keeps it
-typed, and the zero value means "idle".
-
-## Clips and sheets
-
-**Done (tasks 2–4):** `EnemyClip` (`internal/core/enemy.go`), sheets cached by path,
-per-frame `Hold`, and draw-time motion (D7, `internal/core/enemy_motion.go`). Motion values
-are screen pixels and move only the sprite; the collision box stays put. Standard clip names
-and their fallbacks are listed in [spec.md](./spec.md).
+Part-specific runtime state (dive phase, fire timer, wake flag) goes in one small typed
+field on `EnemyRuntime` per part, like `swing swingState`, not in a `map[string]any`; the
+zero value means "idle".
 
 ## Battler baking (offline, `tools/battler2strip`)
 
@@ -80,6 +60,5 @@ This is the only `cmd/main.go` change the feature needs.
 - `EnemyGuard` (D8): a one-shot entered from `TakeDamage` when the blow comes from the
   facing side and a `GuardChance` roll passes. It deals no damage and hands back like hurt.
   The roll goes through a seeded `rand.Rand` held by the enemy, so tests are deterministic.
-- `EnemyRun` is not a state: chase plays `run` and patrol plays `walk`. Clip choice is a
-  function of state plus speed.
+- `EnemyRun` is not a state: chase plays `run` and patrol plays `walk`.
 - `EnemySleep` / `EnemyWake` only if a sleeping enemy is added (none in the current roster).

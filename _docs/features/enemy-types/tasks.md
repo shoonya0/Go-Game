@@ -26,8 +26,9 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [x] 7. Registry validation test: unique markers, required clips present, speeds > 0,
       Mover/Attacker set → check: `TestBlueprintsValid` (markers stay in
       `TestEnemyMarkersUniqueSingleChar`; mutation: no Attacker on the mushroom fails it)
-- [ ] 8. `node scripts/verify.mjs --full`, `code-reviewer` agent, update docs (state.md,
-      design.md trimmed to what the code doesn't show)
+- [x] 8. `node scripts/verify.mjs --full`, `code-reviewer` agent, update docs (state.md,
+      design.md trimmed to what the code doesn't show). The reviewer found swings whiffing
+      when the cooldown outlasts the clip; fixed test-first (`TestMeleeEverySwingLands`, `6c45e04`)
 
 ## Increment 2: battler baking tool
 

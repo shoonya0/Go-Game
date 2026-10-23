@@ -1,14 +1,16 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23 at `e75496d`)
+## Now (updated 2026-10-23 at `6c45e04`)
 
-- **Status:** 🟡 in progress
-- **Current task:** 8. Close increment 1: `verify.mjs --full`, `code-reviewer`, trim design.md
-  (see [tasks.md](./tasks.md))
-- **Stopped at:** task 7 done: `TestBlueprintsValid` in `internal/core/enemy_test.go`. The hit
-  timing from task 6 hasn't been looked at in a running game yet
+- **Status:** 🟡 in progress; increment 1 done (tasks 1-8)
+- **Current task:** 9. `tools/battler2strip` (see [tasks.md](./tasks.md)). Before it: push
+  `feature/enemy-types` + PR for increment 1 (ask the user before merging: `main` deploys)
+- **Stopped at:** task 8 done: full verify 8/8, code review, design.md trimmed. Enemies now
+  idle between swings until the cooldown is ready (`Attacker.Ready`); hit timing and the
+  idle pause haven't been looked at in a running game yet
 - **Traps:** `TestBlueprintsValid` needs speeds > 0, so the static training dummy (task 20)
-  will need it relaxed for a `static` mover. The mushroom art faces left (`FacesLeft`). No ledge probe yet (task 12)
+  will need it relaxed for a `static` mover. The mushroom art faces left (`FacesLeft`). No ledge probe yet (task 12).
+  A new Attacker must implement `Ready` (a ranged one: its fire timer)
 - **Open questions / blockers:** task 11: where the raw battler sheets live once baked
   (the user decides; they must leave the embed)
 - **Don't forget:** assets changed on 2026-10-23. Removed: the desert set, `Bat with VFX/`,
@@ -19,6 +21,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-23: task 8, close increment 1
+
+- Changed: `enemy_attack.go` (`Attacker.Ready`, `hitTime`), `enemy_ai.go` (idle until ready), `enemy_clips.go` (`timeTo`); new `TestMeleeEverySwingLands`
+- Verified: `verify.mjs --full` 8/8 before and after; the test failed for all 4 species before the fix; code-reviewer: one blocking finding (whiffed swings), fixed
+- Docs touched: design (trimmed to what the code doesn't show), tasks (8 ticked), state, current-state
 
 ### 2026-10-23: task 7, blueprint validation
 
@@ -43,9 +51,3 @@
 - Changed: `enemy_types.go` (skeleton builder, mushroom), `enemy.go` (kinds, `FacesLeft`), `enemy_anim.go` (`drawFlipX`), `level_1.json`, assets `Skeleton_*/`, `Mushroom/`
 - Verified: `verify.mjs --full` 8/8 after each; new `TestSkeletonVariantsShareBlueprint`, `TestLeftFacingArtMirrorsTheOtherWay`; `TestEnemiesHaveAtLeastTwoWholeBars` caught 30 HP
 - Docs touched: tasks (4 ticked, notes on 17/18), spec (roster checked), state
-
-### 2026-10-23: task 4, Hold timing + draw-time motion
-
-- Changed: `enemy.go` (Hold, Motion, clipTime), `enemy_anim.go`, `enemy_clips.go`, new `enemy_motion.go`, `animation.go` (`drawSpriteFramePosed`), succubus tuning
-- Verified: `verify.mjs --full` 8/8; new `TestClipHoldTiming`, `TestMotionPose`, `TestEnemyClipTimeRestarts`, `TestClipDurationCountsHolds`
-- Docs touched: design (clips section trimmed), state
