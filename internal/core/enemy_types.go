@@ -27,7 +27,7 @@ func blueprintFor(kind EnemyKind) *EnemyBlueprint {
 // in a fixed cell, content centered horizontally and bottom-aligned.
 //
 //	row 0: idle   (4)   row 3: attack (6)
-//	row 1: patrol (8)   row 4: hurt   (2)
+//	row 1: stand + patrol (1+7)   row 4: hurt (2)
 //	row 2: alert  (3)   row 5: died   (6)
 const (
 	succubusSheet       = "../assets/enemy/succubus.png"
@@ -53,7 +53,7 @@ var succubusBlueprint = EnemyBlueprint{
 	},
 	Clips: map[EnemyState]EnemyClip{
 		EnemyIdle:   succubusClip(0, 0, 4, 6, true),
-		EnemyPatrol: succubusClip(1, 1, 8, 10, true),
+		EnemyPatrol: succubusClip(1, 1, 7, 10, true), // column 0 is a front-facing stand, not a step
 		EnemyAlert:  succubusClip(2, 0, 3, 8, true),
 		EnemyAttack: succubusClip(3, 0, 6, 12, false),
 		EnemyHurt:   succubusClip(4, 0, 2, 8, false),

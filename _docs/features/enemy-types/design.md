@@ -7,7 +7,7 @@ the code doesn't show (the reasons stay in [decisions.md](./decisions.md)).
 
 ```text
 EnemyBlueprint (data, one per species)
-  ├─ Clips    map[EnemyState]ClipDef   // sheet path + frame size + count + speed + loop
+  ├─ Clips    map[EnemyState]EnemyClip // sheet path + frame size + count + speed + loop
   ├─ Mover    Mover                    // ground | flying | (water)
   ├─ Attacker Attacker                 // melee | ranged | dive
   ├─ Stats    EnemyStats               // + per-part tuning lives in the part's own struct
@@ -57,12 +57,10 @@ typed, and the zero value means "idle".
 
 ## Clips and sheets
 
-`ClipDef{Sheet string; FrameW, FrameH, Row, Start, Frames int; FPS float64; Loop bool;
-Hold []float64}`. `Hold` (optional) is a per-frame duration multiplier, so a strike or
-impact frame can stay up longer than the in-betweens. Sheets load through one cache keyed
-by path (this replaces `enemyImages`, which is keyed by kind). Standard clip names and their
-fallbacks are listed in [spec.md](./spec.md). `drawSpriteFrame` already takes the image and
-frame size per call; only the Y origin (`Row * FrameH`) changes source.
+**Done (task 2):** `EnemyClip` in `internal/core/enemy.go`, sheets cached by path.
+**Still planned:** an optional `Hold []float64` on `EnemyClip`, a per-frame duration
+multiplier so a strike or impact frame stays up longer than the in-betweens (task 4).
+Standard clip names and their fallbacks are listed in [spec.md](./spec.md).
 
 **Draw-time motion** (D7): `motionFX{BobPx, BobHz, LeanDeg, HitShakePx}` per clip, applied as
 a `GeoM` offset/rotation in `DrawEnemyAnimation`, driven by the clip's elapsed time. The

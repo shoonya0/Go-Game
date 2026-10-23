@@ -8,11 +8,11 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [x] 1. Characterisation tests for today's succubus first (patrol, chase, attack, hurt,
       death, ground landing) so the refactor can't change behaviour → check:
       `go test ./internal/core -run 'TestEnemy|TestBlueprint' -v`
-- [ ] 2. Clips with their own sheet: `ClipDef` with sheet path + frame size + row; image
+- [x] 2. Clips with their own sheet: `EnemyClip` with sheet path + frame size + row; image
       cache keyed by path; succubus migrated → check: new `TestEnemyClipsFitTheirSheets`
       (decodes each sheet's config and checks frames × width fit), all enemy tests green.
-      It will flag the succubus patrol clip: `frame(1, 1, 8, …)` ends at column 8 of an
-      8-column sheet (2160 px), so the last walk frame is cut outside the image. Fix it here
+      It caught the succubus patrol clip running one column past its 8-column row; fixed
+      to 7 frames (column 0 of that row is a front-facing stand, not a step)
 - [ ] 3. Standard clip names + fallbacks (`alert`/`run` → `walk`, `attack_2` → `attack_1`);
       chase plays `run` → check: `TestEnemyMissingClipFallsBack`
 - [ ] 4. Per-frame `Hold` timing + draw-time motion (bob, lean, hit shake) → check:

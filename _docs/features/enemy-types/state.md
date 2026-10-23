@@ -1,11 +1,11 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23 at `2dc16c3`)
+## Now (updated 2026-10-23 at `19b6be7`)
 
 - **Status:** 🟡 in progress
-- **Current task:** 2. Clips with their own sheet (see [tasks.md](./tasks.md))
-- **Stopped at:** task 1 done: `internal/core/enemy_behavior_test.go` pins landing, wall
-  bounce, chase left, hurt freeze, one-shot → patrol, death hold/removable, dead fall
+- **Current task:** 3. Standard clip names + fallbacks (see [tasks.md](./tasks.md))
+- **Stopped at:** task 2 done: `EnemyClip` per state with its own sheet (`internal/core/enemy.go`),
+  sheets cached by path, succubus walk fixed to 7 frames. Not yet looked at in a running game
 - **Open questions / blockers:** task 11: where the raw battler sheets live once baked
   (the user decides; they must leave the embed)
 - **Don't forget:** assets changed on 2026-10-23. Removed: the desert set, `Bat with VFX/`,
@@ -16,6 +16,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-23: task 2, clips with their own sheet
+
+- Changed: `enemy.go`, `enemy_anim.go`, `enemy_types.go`, new `enemy_clips_test.go`; test call sites renamed
+- Verified: `verify.mjs --full` 8/8; `TestEnemyClipsFitTheirSheets` failed on the 8-frame walk, passes at 7
+- Docs touched: tasks (2 ticked), design (EnemyClip done), state
 
 ### 2026-10-23: task 1, succubus characterisation tests
 
