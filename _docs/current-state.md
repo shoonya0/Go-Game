@@ -11,7 +11,7 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `refactor/asset-folders` (PR #17, 7 commits incl. the two post-#15/#16 state refreshes; CI not checked yet): assets grouped into `assets/player/`, `enemy/`, `UI/`, `levels/` (level 1 in `levels/deepForest/`, backgrounds in its `background/`); `assets/embed.go` lists the folders, so **a new asset folder must be added to its `//go:embed` line** (`TestAssetPathsAreEmbedded` in `internal/core/asset_paths_test.go` fails otherwise). PR #15 and #16 are merged into `main`
+- **Branch:** `refactor/asset-folders` (PR #17, includes the two post-#15/#16 state refreshes; CI not checked yet): assets grouped into `assets/player/`, `enemy/`, `UI/`, `levels/` (level 1 in `levels/deepForest/`, backgrounds in its `background/`); `assets/embed.go` lists the folders, so **a new asset folder must be added to its `//go:embed` line** (`TestAssetPathsAreEmbedded` in `internal/core/asset_paths_test.go` fails otherwise). PR #15 and #16 are merged into `main`
 - **Next step:** CI green on the asset-folders PR, then ask before merging (deploys to Render). Untracked, not in the PR (no code uses them yet): `assets/levels/portal.png`, `assets/enemy/Bat with VFX/` (8 sheets), `assets/enemy/Mushroom/` (7 sheets); commit them with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name). Then try the touch controls on a real phone/tablet
 - **Updated:** 2026-10-23
 
@@ -58,7 +58,7 @@ enemy health / level marker tests.
 6. No tests for player physics with collision, quadtree or the server; combat, stamina, attack steps (without a level), touch input and HUD math are covered. VERIFIED (test names)
 7. `DEPLOY.md` "Continuous integration" section may drift from the workflows. ASSUMED
 8. ~~`game.wasm` served without `Cache-Control` header — browser caches the old binary across deploys, preventing fixes from reaching users.~~ **FIXED** (`f63b7e7`) — server now sends `no-cache` for `/game.wasm` alongside `index.html`.
-9. `assets/UIButtons.png` is 3.1 MB and embedded in the WASM, though touch controls use only three of its sprites; cropping it would shrink the phone download. VERIFIED (`du`)
+9. `assets/UI/UIButtons.png` is 3.1 MB and embedded in the WASM, though touch controls use only three of its sprites; cropping it would shrink the phone download. VERIFIED (`du`)
 10. The ground J sprite slashes behind the player, and J now steps back into it. Issue not filed. VERIFIED (sprite sheet)
 11. The full knockdown (`KnockedOut`) still draws from row 17 while the short one uses row 16. ASSUMED (not rechecked this session)
 
