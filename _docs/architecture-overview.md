@@ -38,6 +38,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 | Assets | `assets/embed.go`, `internal/core/image.go` | `go:embed` FS; `readAsset` resolves by **base file name** (subfolders searched); files live in `player/`, `enemy/`, `UI/`, `levels/`, and each folder must be on the `//go:embed` line | embedded, read-only |
 | Time | `internal/core/time.go` | `deltaTime()` = 1/TPS, shared by physics and animation | no |
 | Web server | `server/main.go` | Serves `$WEB_ROOT` on `$PORT`, `.wasm` MIME, no-cache for HTML | no |
+| Battler baker | `tools/battler2strip/` | Offline, not in the game build: bakes an RPG Maker battler sheet + mapping JSON into right-facing strips and prints a blueprint snippet | no |
 
 ## Layers and allowed imports (target, enforced by golangci-lint depguard)
 
@@ -47,8 +48,11 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 | **internal/system** | ❌ | — | ✅ (types only) | ❌ | ✅ |
 | **internal/core** | ❌ | ❌ | — | ✅ | ✅ |
 | **server** | ❌ | ❌ | ❌ | ❌ | ❌ (stdlib only) |
+| **tools/** | ❌ | ❌ | ❌ | ❌ | ❌ (stdlib only) |
 
 `server` must stay CGO-free and stdlib-only: the Dockerfile builds it with `CGO_ENABLED=0`.
+`tools/` holds offline programs that aren't part of the game build (`tools/battler2strip` bakes
+battler sheets into enemy strips, enemy-types D7); they stay stdlib-only too.
 
 ## Main flows
 

@@ -29,6 +29,14 @@ linters:
           deny:
             - pkg: "player/assets"
               desc: "cmd must load assets through core.LoadImage, not the embed FS directly."
+        tools:
+          files: ["**/tools/**"]
+          list-mode: strict
+          allow:
+            - $gostd
+          deny:
+            - pkg: "player"
+              desc: "tools/ are offline stdlib-only programs: never import game packages (they would pull ebiten into the tool)."
         server:
           files: ["**/server/**"]
           list-mode: strict
