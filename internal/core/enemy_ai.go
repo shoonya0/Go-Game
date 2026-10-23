@@ -50,11 +50,16 @@ func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
 }
 
 // attack faces the player and swings, standing still. A new swing starts each
-// time the enemy enters its attack state; the Attacker decides when it lands.
+// time the enemy enters its attack state, once the Attacker is ready (it idles
+// until then); the Attacker decides when the swing lands.
 func (e *EnemyRuntime) attack(target *PlayerRuntime, dx float64) {
 	e.faceToward(dx)
 	e.bp.Mover.Steer(e, moveIntent{mode: moveHold})
 	if e.State != EnemyAttack {
+		if !e.bp.Attacker.Ready(e) {
+			e.setState(EnemyIdle)
+			return
+		}
 		e.bp.Attacker.Start(e)
 	}
 	e.setState(EnemyAttack)

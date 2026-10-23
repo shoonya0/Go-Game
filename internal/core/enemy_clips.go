@@ -96,9 +96,12 @@ func (c EnemyClip) hold(i int) float64 {
 }
 
 // duration is how long one play of the clip takes, in seconds.
-func (c EnemyClip) duration() float64 {
+func (c EnemyClip) duration() float64 { return c.timeTo(c.Frames) }
+
+// timeTo is how long the clip plays before frame f comes up, in seconds.
+func (c EnemyClip) timeTo(f int) float64 {
 	frames := 0.0
-	for i := range c.Frames {
+	for i := range f {
 		frames += c.hold(i)
 	}
 	return frames / c.FPS

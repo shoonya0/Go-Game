@@ -111,3 +111,47 @@ func TestMeleeSwingLandsAfterCooldown(t *testing.T) {
 		t.Errorf("health = %d once the cooldown was ready, want %d (the blocked swing lands)", near.Combat.Health, want)
 	}
 }
+
+// Swing after swing, every swing lands exactly once: an enemy whose cooldown
+// outlasts its attack clip waits before swinging again instead of whiffing.
+func TestMeleeEverySwingLands(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		kind   EnemyKind
+		second bool
+	}{
+		{"skeleton attack_1", KindSkeletonWhite, false},
+		{"skeleton attack_2", KindSkeletonWhite, true},
+		{"mushroom", KindMushroom, false},
+		{"succubus", KindSuccubus, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			setSecondAttack(t, tc.second)
+			qt := waveWorld(0, 1200)
+			bp := blueprintFor(tc.kind)
+			e := newTestEnemy(Position{X: 300, Y: waveGroundY - bp.BodyHeight})
+			e.bp, e.Scale, e.Health = bp, bp.Scale, bp.Stats.MaxHealth
+			e.Animations = bp.newAnimations()
+			p := &PlayerRuntime{Pos: Position{X: 330, Y: waveGroundY - bodyHeight}, Combat: Combat{Health: 1000, MaxHealth: 1000}}
+
+			swings, hits := 0, 0
+			for range 6 * int(tps()) {
+				health := p.Combat.Health
+				UpdateEnemy(e, p, qt)
+				if p.Combat.Health < health {
+					hits++
+				}
+				if e.State == EnemyAttack && e.PrevState != EnemyAttack {
+					if swings > hits {
+						t.Fatalf("swing %d ended without a hit (%d hits)", swings, hits)
+					}
+					swings++
+				}
+				e.UpdateEnemyAnimation()
+			}
+			if swings < 4 || hits < swings-1 {
+				t.Errorf("%d swings, %d hits in 6s; want every swing to land", swings, hits)
+			}
+		})
+	}
+}

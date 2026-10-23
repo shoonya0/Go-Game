@@ -10,6 +10,9 @@ type Attacker interface {
 	InRange(e *EnemyRuntime, target AABB) bool
 	// Box is the area a strike covers with the enemy's current facing.
 	Box(e *EnemyRuntime) AABB
+	// Ready reports whether a swing started now would land; until then the
+	// enemy waits instead of swinging.
+	Ready(e *EnemyRuntime) bool
 	// Start begins a new swing, as the enemy enters its attack state.
 	Start(e *EnemyRuntime)
 	// Update runs each tick of a swing while the target is in range.
@@ -38,14 +41,25 @@ func (meleeAttack) InRange(e *EnemyRuntime, target AABB) bool {
 
 func (meleeAttack) Box(e *EnemyRuntime) AABB { return meleeBox(e, e.FlipX) }
 
+// Ready holds a new swing back until the cooldown will be over by its hit
+// frame. The cooldown can outlast a whole attack clip, so a swing started any
+// sooner would end without landing.
+func (meleeAttack) Ready(e *EnemyRuntime) bool {
+	soonest := e.bp.Clips[ClipAttack1].hitTime()
+	if c, ok := e.bp.Clips[ClipAttack2]; ok {
+		soonest = min(soonest, c.hitTime())
+	}
+	return e.attackTimer <= soonest
+}
+
 func (meleeAttack) Start(e *EnemyRuntime) {
 	_, hasSecond := e.bp.Clips[ClipAttack2]
 	e.swing = swingState{second: hasSecond && rollSecondAttack()}
 }
 
 func (meleeAttack) Update(e *EnemyRuntime, target *PlayerRuntime) {
-	// The cooldown outlasts an attack clip, so a swing it blocks lands as soon
-	// as it's ready instead of missing.
+	// Ready lets a swing start only when the cooldown ends by its hit frame; if
+	// tick rounding still blocks it there, it lands as soon as it's ready.
 	if e.swing.landed || e.swingFrame() < e.currentClip().HitFrame || e.attackTimer > 0 {
 		return
 	}
@@ -66,6 +80,9 @@ func meleeBox(e *EnemyRuntime, left bool) AABB {
 	}
 	return AABB{X: x, Y: b.Y, Width: reach, Height: b.Height}
 }
+
+// hitTime is how long a swing with this clip takes to reach its HitFrame.
+func (c EnemyClip) hitTime() float64 { return c.timeTo(c.HitFrame) }
 
 // swingFrame is how many frames of the attack clip have played. On the tick
 // the attack starts, the clip hasn't been rewound yet (UpdateEnemyAnimation
