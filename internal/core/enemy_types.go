@@ -51,13 +51,13 @@ var succubusBlueprint = EnemyBlueprint{
 		AttackCooldown: 1.0,
 		PatrolTiles:    4,
 	},
-	Clips: map[EnemyState]EnemyClip{
-		EnemyIdle:   succubusClip(0, 0, 4, 6, true),
-		EnemyPatrol: succubusClip(1, 1, 7, 10, true), // column 0 is a front-facing stand, not a step
-		EnemyAlert:  succubusClip(2, 0, 3, 8, true),
-		EnemyAttack: succubusClip(3, 0, 6, 12, false),
-		EnemyHurt:   succubusClip(4, 0, 2, 8, false),
-		EnemyDead:   succubusClip(5, 0, 6, 8, false),
+	Clips: map[ClipName]EnemyClip{ // no run clip: chasing falls back to alert
+		ClipIdle:    succubusClip(0, 0, 4, 6, true),
+		ClipWalk:    succubusClip(1, 1, 7, 10, true), // column 0 is a front-facing stand, not a step
+		ClipAlert:   succubusClip(2, 0, 3, 8, true),
+		ClipAttack1: succubusClip(3, 0, 6, 12, false),
+		ClipHurt:    succubusClip(4, 0, 2, 8, false),
+		ClipDeath:   succubusClip(5, 0, 6, 8, false),
 	},
 }
 

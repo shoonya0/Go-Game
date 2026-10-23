@@ -50,16 +50,16 @@ type EnemyBlueprint struct {
 	BodyHeight float64
 	Scale      float64 // render scale of the sprite
 	Stats      EnemyStats
-	Clips      map[EnemyState]EnemyClip
+	Clips      map[ClipName]EnemyClip // must hold requiredClips; others fall back (enemy_clips.go)
 }
 
 // newAnimations builds a fresh animation table for one instance. Each instance
 // needs its own because Animation carries a mutable FrameTimer; sharing one table
 // would couple the playback of every enemy of the kind.
-func (bp *EnemyBlueprint) newAnimations() map[int]*Animation {
-	anims := make(map[int]*Animation, len(bp.Clips))
-	for st, c := range bp.Clips {
-		anims[int(st)] = &Animation{
+func (bp *EnemyBlueprint) newAnimations() map[ClipName]*Animation {
+	anims := make(map[ClipName]*Animation, len(bp.Clips))
+	for name, c := range bp.Clips {
+		anims[name] = &Animation{
 			SpriteSheetYPosition: c.Row,
 			AnimStartFrame:       c.Start,
 			TotalFrames:          c.Frames,
@@ -81,7 +81,7 @@ type EnemyRuntime struct {
 	// State and animation.
 	State         EnemyState
 	PrevState     EnemyState
-	Animations    map[int]*Animation
+	Animations    map[ClipName]*Animation
 	CurrAnimFrame int
 
 	// Spatial state.
@@ -207,7 +207,7 @@ func (e *EnemyRuntime) TakeDamage(dmg int) {
 
 // restartAnimation rewinds the current state's clip to its first frame.
 func (e *EnemyRuntime) restartAnimation() {
-	if anim := e.Animations[int(e.State)]; anim != nil {
+	if anim := e.currentAnim(); anim != nil {
 		e.CurrAnimFrame = anim.AnimStartFrame
 		anim.FrameTimer = 0
 	}

@@ -171,7 +171,7 @@ func TestEnemyHitRestartsHurtClip(t *testing.T) {
 	e.PrevState = e.State
 
 	e.TakeDamage(1)
-	if want := e.Animations[int(EnemyHurt)].AnimStartFrame; e.CurrAnimFrame != want {
+	if want := e.animFor(EnemyHurt).AnimStartFrame; e.CurrAnimFrame != want {
 		t.Errorf("hurt again: frame %d, want restart at %d", e.CurrAnimFrame, want)
 	}
 }

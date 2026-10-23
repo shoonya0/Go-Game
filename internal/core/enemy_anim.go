@@ -8,7 +8,7 @@ import "github.com/hajimehoshi/ebiten/v2"
 // while death holds on its final frame and marks the enemy removable. It mirrors
 // PlayerRuntime.UpdateAnimation so both actors animate identically.
 func (e *EnemyRuntime) UpdateEnemyAnimation() {
-	anim := e.Animations[int(e.State)]
+	anim := e.currentAnim()
 	if anim == nil {
 		return
 	}
@@ -46,17 +46,17 @@ func (e *EnemyRuntime) UpdateEnemyAnimation() {
 			return
 		}
 		e.setState(EnemyPatrol)
-		e.CurrAnimFrame = e.Animations[int(EnemyPatrol)].AnimStartFrame
+		e.CurrAnimFrame = e.animFor(EnemyPatrol).AnimStartFrame
 	}
 }
 
 // DrawEnemyAnimation draws the current frame through the shared sprite path,
 // positioned relative to the supplied camera (the player owns the only camera).
 func (e *EnemyRuntime) DrawEnemyAnimation(screen *ebiten.Image, cam Camera) {
-	anim := e.Animations[int(e.State)]
+	anim := e.currentAnim()
 	if anim == nil {
 		return
 	}
-	drawSpriteFrame(screen, enemySheet(e.bp.Clips[e.State].Sheet), anim, e.CurrAnimFrame, e.GetBounds(),
+	drawSpriteFrame(screen, enemySheet(e.bp.Clips[e.clipFor(e.State)].Sheet), anim, e.CurrAnimFrame, e.GetBounds(),
 		e.FlipX, e.Scale, cam.Pos, anim.FrameHeight, ebiten.ColorScale{})
 }

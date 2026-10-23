@@ -87,7 +87,7 @@ func TestEnemyOneShotClipsReturnToPatrol(t *testing.T) {
 	for _, st := range []EnemyState{EnemyAttack, EnemyHurt} {
 		e := newAnimatedTestEnemy(Position{})
 		e.State, e.PrevState = st, EnemyPatrol // entered this tick
-		anim := e.Animations[int(st)]
+		anim := e.animFor(st)
 
 		tickEnemyAnim(e, 1)
 		if e.State != st || e.CurrAnimFrame != anim.AnimStartFrame {
@@ -105,7 +105,7 @@ func TestEnemyDeathHoldsLastFrameThenRemovable(t *testing.T) {
 	e := newAnimatedTestEnemy(Position{})
 	e.TakeDamage(e.Health)
 	e.PrevState = e.State
-	anim := e.Animations[int(EnemyDead)]
+	anim := e.animFor(EnemyDead)
 	last := anim.AnimStartFrame + anim.TotalFrames - 1
 
 	tickEnemyAnim(e, clipTicks(anim)/2)
