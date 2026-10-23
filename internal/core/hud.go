@@ -10,8 +10,8 @@ import (
 // HUD sprite sheets. Each holds three states of a single segment: full, half
 // and empty.
 const (
-	HealthSheet  = "../assets/health.png"
-	StaminaSheet = "../assets/stamina.png"
+	HealthSheet  = "../assets/UI/health.png"
+	StaminaSheet = "../assets/UI/stamina.png"
 )
 
 // HUD layout constants. Health and stamina (the Combat.Power pool) are each

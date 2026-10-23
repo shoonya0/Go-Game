@@ -15,7 +15,7 @@ type TileLength int
 
 const (
 	// tileset constants
-	Tileset                     = "../assets/LevelTile.png"
+	Tileset                     = "../assets/levels/LevelTile.png"
 	Grass            TileType   = "grass"
 	Rock             TileType   = "stone"
 	Ice              TileType   = "ice"
@@ -37,9 +37,9 @@ const (
 	BotTileXStart               = TotTopTilesWidth
 
 	// level constants
-	LevelFile        = "../assets/level_1.json" // embedded JSON level bundle
-	DefaultLevelName = "level0"                 // key to load from the bundle
-	Background_1     = "../assets/LBackground_3.png"
+	LevelFile        = "../assets/levels/level_1.json" // embedded JSON level bundle
+	DefaultLevelName = "level0"                        // key to load from the bundle
+	Background_1     = "../assets/levels/LBackground_3.png"
 
 	// ---------------- level constants ----------------
 	LevelTileWidth      = 60      // before it was 40

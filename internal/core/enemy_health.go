@@ -8,7 +8,7 @@ import (
 
 // EnemyHealthSheet holds the three states of one enemy health bar: full, half
 // and empty, like the player's stamina sheet.
-const EnemyHealthSheet = "../assets/enemyHealth.png"
+const EnemyHealthSheet = "../assets/UI/enemyHealth.png"
 
 // Enemy health is counted in bars, shown above the enemy like the player's
 // stamina segments. Player attack damage is tuned in half bars.

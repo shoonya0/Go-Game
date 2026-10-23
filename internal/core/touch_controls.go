@@ -9,7 +9,7 @@ import (
 
 // UIButtonsSheet holds the wooden UI buttons used by the on-screen touch
 // controls.
-const UIButtonsSheet = "../assets/UIButtons.png"
+const UIButtonsSheet = "../assets/UI/UIButtons.png"
 
 // TouchButton identifies one on-screen button of the touch controls.
 type TouchButton int

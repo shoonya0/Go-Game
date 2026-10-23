@@ -5,5 +5,5 @@ package assets
 
 import "embed"
 
-//go:embed *.png *.json enemy/*.png
+//go:embed enemy levels player UI
 var FS embed.FS
