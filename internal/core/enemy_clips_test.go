@@ -3,6 +3,7 @@ package core
 import (
 	"bytes"
 	"image"
+	"reflect"
 	"testing"
 )
 
@@ -73,6 +74,32 @@ func TestEnemyClipsFitTheirSheets(t *testing.T) {
 			if bottom := (c.Row + 1) * c.FrameH; bottom > cfg.Height {
 				t.Errorf("%s clip %v: row ends at y=%d, past the %dpx-high sheet %q", bp.Name, name, bottom, cfg.Height, c.Sheet)
 			}
+		}
+	}
+}
+
+// TestSkeletonVariantsShareBlueprint checks the skeleton colours are the same
+// enemy: only name, marker and sheet paths differ.
+func TestSkeletonVariantsShareBlueprint(t *testing.T) {
+	white, yellow := blueprintFor(KindSkeletonWhite), blueprintFor(KindSkeletonYellow)
+	if white.Marker == yellow.Marker || white.Name == yellow.Name {
+		t.Errorf("skeleton colours share name or marker: %q %q / %q %q", white.Name, white.Marker, yellow.Name, yellow.Marker)
+	}
+	if white.Stats != yellow.Stats || white.BodyWidth != yellow.BodyWidth ||
+		white.BodyHeight != yellow.BodyHeight || white.Scale != yellow.Scale {
+		t.Error("skeleton colours differ in stats, body or scale")
+	}
+	if len(white.Clips) != len(yellow.Clips) {
+		t.Fatalf("skeleton colours have %d and %d clips", len(white.Clips), len(yellow.Clips))
+	}
+	for name, w := range white.Clips {
+		y := yellow.Clips[name]
+		if w.Sheet == y.Sheet {
+			t.Errorf("clip %v: both colours draw %q", name, w.Sheet)
+		}
+		w.Sheet, y.Sheet = "", ""
+		if !reflect.DeepEqual(w, y) {
+			t.Errorf("clip %v differs between colours beyond its sheet: %+v / %+v", name, w, y)
 		}
 	}
 }

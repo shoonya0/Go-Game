@@ -10,6 +10,8 @@ type EnemyKind int
 
 const (
 	KindSuccubus EnemyKind = iota
+	KindSkeletonWhite
+	KindSkeletonYellow
 )
 
 // EnemyStats are the tunable gameplay numbers for an enemy species. They live in

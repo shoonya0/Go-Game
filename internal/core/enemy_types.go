@@ -6,7 +6,9 @@ package core
 // ASCII punctuation character, written bare in assets/levels/deepForest/level_1.json). No other
 // code changes.
 var enemyBlueprints = map[EnemyKind]*EnemyBlueprint{
-	KindSuccubus: &succubusBlueprint,
+	KindSuccubus:       &succubusBlueprint,
+	KindSkeletonWhite:  skeletonBlueprint("White", "@"),
+	KindSkeletonYellow: skeletonBlueprint("Yellow", "#"),
 }
 
 // blueprintFor returns the blueprint for a kind, panicking on an unregistered
@@ -66,5 +68,51 @@ func succubusClip(row, start, frames int, fps float64, loop bool) EnemyClip {
 	return EnemyClip{
 		Sheet: succubusSheet, Row: row, Start: start, Frames: frames,
 		FrameW: succubusFrameWidth, FrameH: succubusFrameHeight, FPS: fps, Loop: loop,
+	}
+}
+
+// ---------------- skeleton ----------------
+
+// The skeleton ships as one 96×64 strip per animation, facing right, in two
+// colours with the same frames: assets/enemy/Skeleton_<Colour>/Skeleton_01_<Colour>_<Anim>.png.
+// The body is about 46px tall in the cell, feet on the bottom row.
+const (
+	skeletonFrameWidth  = 96
+	skeletonFrameHeight = 64
+)
+
+// skeletonBlueprint is the skeleton in one colour. The colours differ only in
+// their sheets, name and marker.
+func skeletonBlueprint(colour, marker string) *EnemyBlueprint {
+	clip := func(anim string, frames int, fps float64, loop bool) EnemyClip {
+		return EnemyClip{
+			Sheet:  "../assets/enemy/Skeleton_" + colour + "/Skeleton_01_" + colour + "_" + anim + ".png",
+			Frames: frames, FrameW: skeletonFrameWidth, FrameH: skeletonFrameHeight, FPS: fps, Loop: loop,
+		}
+	}
+	return &EnemyBlueprint{
+		Name:       "Skeleton " + colour,
+		Marker:     marker,
+		BodyWidth:  30,
+		BodyHeight: 88,
+		Scale:      2, // 46px of art -> ~92px on screen
+		Stats: EnemyStats{
+			MaxHealth:      40,
+			Damage:         10,
+			WalkSpeed:      50,
+			ChaseSpeed:     110,
+			DetectRange:    380,
+			AttackRange:    70,
+			AttackCooldown: 1.2,
+			PatrolTiles:    2.5,
+		},
+		Clips: map[ClipName]EnemyClip{ // no run clip: chasing walks faster
+			ClipIdle:    clip("Idle", 8, 8, true),
+			ClipWalk:    clip("Walk", 10, 12, true),
+			ClipAttack1: clip("Attack1", 10, 14, false).held(1, 1, 1, 1, 1, 2, 1.5), // frames 5-6: thrust at full reach
+			ClipAttack2: clip("Attack2", 9, 14, false).held(1, 1, 1, 1, 1.5, 2),     // frames 4-5: second thrust
+			ClipHurt:    clip("Hurt", 5, 12, false).moving(motionFX{HitShakePx: 3}),
+			ClipDeath:   clip("Die", 13, 12, false),
+		},
 	}
 }
