@@ -57,14 +57,10 @@ typed, and the zero value means "idle".
 
 ## Clips and sheets
 
-**Done (task 2):** `EnemyClip` in `internal/core/enemy.go`, sheets cached by path.
-**Still planned:** an optional `Hold []float64` on `EnemyClip`, a per-frame duration
-multiplier so a strike or impact frame stays up longer than the in-betweens (task 4).
-Standard clip names and their fallbacks are listed in [spec.md](./spec.md).
-
-**Draw-time motion** (D7): `motionFX{BobPx, BobHz, LeanDeg, HitShakePx}` per clip, applied as
-a `GeoM` offset/rotation in `DrawEnemyAnimation`, driven by the clip's elapsed time. The
-collision box doesn't move.
+**Done (tasks 2–4):** `EnemyClip` (`internal/core/enemy.go`), sheets cached by path,
+per-frame `Hold`, and draw-time motion (D7, `internal/core/enemy_motion.go`). Motion values
+are screen pixels and move only the sprite; the collision box stays put. Standard clip names
+and their fallbacks are listed in [spec.md](./spec.md).
 
 ## Battler baking (offline, `tools/battler2strip`)
 

@@ -1,12 +1,13 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23 at `ba831b3`)
+## Now (updated 2026-10-23 at `a8077b3`)
 
 - **Status:** 🟡 in progress
 - **Current task:** 4. Per-frame `Hold` timing + draw-time motion (see [tasks.md](./tasks.md))
-- **Stopped at:** task 3 done: `ClipName` + fallbacks + state → clip table in
-  `internal/core/enemy_clips.go`; blueprints and `EnemyRuntime.Animations` are keyed by clip name.
-  The succubus has no run clip, so it still chases with alert. Not yet looked at in a running game
+- **Stopped at:** task 4 code and tests done, `verify.mjs --full` 8/8, code-reviewer: no blocking findings,
+  committed in `a8077b3`. Not ticked: it still needs the user to look at the succubus in a running
+  game. Tuning to judge: chase lean 5° + bob 3px@3Hz, hurt shake 4px, attack frame 3 held ×2
+  (values in `enemy_types.go`)
 - **Open questions / blockers:** task 11: where the raw battler sheets live once baked
   (the user decides; they must leave the embed)
 - **Don't forget:** assets changed on 2026-10-23. Removed: the desert set, `Bat with VFX/`,
@@ -17,6 +18,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-23: task 4, Hold timing + draw-time motion
+
+- Changed: `enemy.go` (Hold, Motion, clipTime), `enemy_anim.go`, `enemy_clips.go`, new `enemy_motion.go`, `animation.go` (`drawSpriteFramePosed`), succubus tuning
+- Verified: `verify.mjs --full` 8/8; new `TestClipHoldTiming`, `TestMotionPose`, `TestEnemyClipTimeRestarts`, `TestClipDurationCountsHolds`
+- Docs touched: design (clips section trimmed), state
 
 ### 2026-10-23: task 3, standard clip names + fallbacks
 
@@ -41,13 +48,3 @@
 - Changed: docs only. Decided: battlers are baked into strips with chained motions (D7), guard trait (D8)
 - Verified: docs-check
 - Docs touched: spec (roster, standard clips), decisions D3/D6/D7/D8, design, tasks rewritten (nothing ticked yet)
-
-### 2026-10-23: check the Free Sprites battler format
-
-- Changed: nothing in code; scanned the sheets with a scratch Go tool (frame gaps and grid overlay)
-- Verified: all 17 `Free Sprites/` sheets are 9 cols × 6 rows; goblin and rat match `imagePattern.png`
-- Docs touched: state.md (open question: how to handle the two sprite formats)
-
-## Known issues
-
-- Duplicate asset base names `Golem_1_*.png` (`assets/enemy/White_Golem/`, `assets/enemy/Orange_Golem/`), fixed by task 10

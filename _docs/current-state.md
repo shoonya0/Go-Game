@@ -12,8 +12,8 @@ and /feature-docs update. -->
 
 - **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation), tasks 1–3 of 8 done
 - **Branch:** `feature/enemy-types` (from `main` at `fda2323`), 9 local commits, not pushed: plan docs, succubus characterisation tests, `EnemyClip` (each animation names its own sheet), succubus walk-frame fix, standard clip names with fallbacks (`internal/core/enemy_clips.go`)
-- **Next step:** task 4 in [tasks.md](./features/enemy-types/tasks.md): per-frame hold timing plus draw-time bob, lean and hit shake. Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
-- **Updated:** 2026-10-23 (after task 3)
+- **Next step:** finish task 4 in [tasks.md](./features/enemy-types/tasks.md) (committed; needs a look at the succubus in a running game), then task 5 (`Mover` + `groundMover`). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Updated:** 2026-10-23 (task 4 implemented)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
