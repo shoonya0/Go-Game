@@ -1,10 +1,10 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23 at `6c45e04`)
+## Now (updated 2026-10-23 at `2bc4469`)
 
-- **Status:** 🟡 in progress; increment 1 done (tasks 1-8)
-- **Current task:** 9. `tools/battler2strip` (see [tasks.md](./tasks.md)). Before it: push
-  `feature/enemy-types` + PR for increment 1 (ask the user before merging: `main` deploys)
+- **Status:** 🟡 in progress; increment 1 merged to `main` (PR #18, `2bc4469`)
+- **Current task:** 9. `tools/battler2strip` (see [tasks.md](./tasks.md)), on a fresh
+  `feature/enemy-types` branched from `main` at `2bc4469`
 - **Stopped at:** task 8 done: full verify 8/8, code review, design.md trimmed. Enemies now
   idle between swings until the cooldown is ready (`Attacker.Ready`); hit timing and the
   idle pause haven't been looked at in a running game yet
