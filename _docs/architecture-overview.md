@@ -63,7 +63,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 ## Data and state
 
 - All runtime state is in memory, owned by `Game` in `cmd/main.go`. No persistence, no save files.
-- Level data: `assets/levels/level_1.json` (embedded). Assets are addressed by base file name only, so
+- Level data: `assets/levels/deepForest/level_1.json` (embedded). Assets are addressed by base file name only, so
   **two assets with the same file name in different folders collide** (`internal/core/image.go:20`).
 - Single-threaded: no goroutines/channels in the current code.
 

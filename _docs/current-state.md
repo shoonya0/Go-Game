@@ -11,7 +11,7 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `refactor/asset-folders` (local, 3 commits): assets grouped into `assets/player/`, `enemy/`, `UI/`, `levels/`; `assets/embed.go` lists the folders, so **a new asset folder must be added to its `//go:embed` line** (`TestAssetPathsAreEmbedded` in `internal/core/asset_paths_test.go` fails otherwise). PR #15 and #16 are merged into `main`
+- **Branch:** `refactor/asset-folders` (local, 4 commits): assets grouped into `assets/player/`, `enemy/`, `UI/`, `levels/` (level 1 in `levels/deepForest/`, backgrounds in its `background/`); `assets/embed.go` lists the folders, so **a new asset folder must be added to its `//go:embed` line** (`TestAssetPathsAreEmbedded` in `internal/core/asset_paths_test.go` fails otherwise). PR #15 and #16 are merged into `main`
 - **Next step:** push and open a PR for `refactor/asset-folders`; `assets/levels/portal.png` is untracked (no code uses it yet). Then try the touch controls on a real phone/tablet
 - **Updated:** 2026-10-23
 

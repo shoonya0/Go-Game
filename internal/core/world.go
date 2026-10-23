@@ -37,9 +37,9 @@ const (
 	BotTileXStart               = TotTopTilesWidth
 
 	// level constants
-	LevelFile        = "../assets/levels/level_1.json" // embedded JSON level bundle
-	DefaultLevelName = "level0"                        // key to load from the bundle
-	Background_1     = "../assets/levels/LBackground_3.png"
+	LevelFile        = "../assets/levels/deepForest/level_1.json" // embedded JSON level bundle
+	DefaultLevelName = "level0"                                   // key to load from the bundle
+	Background_1     = "../assets/levels/deepForest/background/LBackground_3.png"
 
 	// ---------------- level constants ----------------
 	LevelTileWidth      = 60      // before it was 40
