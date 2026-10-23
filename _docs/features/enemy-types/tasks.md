@@ -20,9 +20,9 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
       (its art is weak); the look moved to the skeleton and mushroom (17, 18), pulled ahead
 - [x] 5. Extract `Mover` + `groundMover` from `enemy_ai.go`; succubus uses it → check:
       enemy tests unchanged and green (19/19, no test file touched)
-- [ ] 6. Extract `Attacker` + `meleeAttack` (damage on a `HitFrame`, `Box` for F3, random
+- [x] 6. Extract `Attacker` + `meleeAttack` (damage on a `HitFrame`, `Box` for F3, random
       `attack_1`/`attack_2`) → check: `TestEnemyDetectsChasesAndAttacks` green, new
-      `TestMeleeHitLandsOnHitFrame`
+      `TestMeleeHitLandsOnHitFrame` (mutation: ignoring HitFrame fails all 3 cases)
 - [ ] 7. Registry validation test: unique markers, required clips present, speeds > 0,
       Mover/Attacker set → check: `TestBlueprintsValid`
 - [ ] 8. `node scripts/verify.mjs --full`, `code-reviewer` agent, update docs (state.md,

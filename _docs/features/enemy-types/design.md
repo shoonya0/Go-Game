@@ -31,21 +31,20 @@ instead of a single `Move(e, intent, qt)`. That way the brain's tests can still 
 velocity right after `decideBehavior`, and a dead enemy just steers to `moveHold` and keeps
 falling.
 
-```go
-// Attacker decides when the enemy can strike and what a strike does.
-type Attacker interface {
-	InRange(e *EnemyRuntime, target AABB) bool
-	Update(e *EnemyRuntime, target *PlayerRuntime, fx *EnemyEffects)
-	Box(e *EnemyRuntime) AABB // for the F3 overlay
-}
-```
+**Attacker: done (task 6),** `internal/core/enemy_attack.go`: `InRange`, `Box`, `Start` (a new
+swing picks `attack_1` or `attack_2`) and `Update`. The `EnemyEffects` parameter comes with
+projectiles (task 25). The random pick is a swappable func var (like `deathKneels`), not a
+per-enemy seeded `rand.Rand`. A swing lands on its clip's `HitFrame`, once per swing. If the
+cooldown blocks it there, it lands as soon as the cooldown is ready: `AttackCooldown` lasts
+longer than an attack clip, so missing would make every other swing visibly whiff. The succubus keeps
+`HitFrame` 0, so it still hits as soon as it starts attacking.
 
 | Part | Today's code it comes from | Notes |
 |---|---|---|
 | `groundMover` | done (task 5) | ledge probe still to add (task 12) |
 | `flyingMover` | new | no gravity, `HoverHeight`, `Leash` (tiles), steers in X and Y, bobbing optional |
 | `waterMover` | later | like flying but clamped to water tiles |
-| `meleeAttack` | `attack`, `attackBoxFacing` | `HitFrame` lands damage on a clip frame instead of on entry |
+| `meleeAttack` | done (task 6) | |
 | `rangedAttack` | new | spawns a `Projectile` on `FireFrame`; `KeepDistance` |
 | `diveAttack` | new | phases start → loop (falling) → end; uses up to 3 clips |
 

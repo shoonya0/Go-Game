@@ -1,13 +1,13 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23 at `ff36581`)
+## Now (updated 2026-10-23 at `489b9db`)
 
 - **Status:** 🟡 in progress
-- **Current task:** 6. Extract `Attacker` + `meleeAttack` (see [tasks.md](./tasks.md))
-- **Stopped at:** task 5 done: `Mover` (`Steer` + `Move` + `Grounded`) and `groundMover` in
-  `internal/core/enemy_move.go`; every blueprint sets `Mover: groundMover{}`. Skeleton and
-  mushroom (17, 18) confirmed working in game
-- **Traps:** a blueprint without a `Mover` panics on its first tick (task 7's validation test
+- **Current task:** 7. Registry validation test `TestBlueprintsValid` (see [tasks.md](./tasks.md))
+- **Stopped at:** task 6 done: `Attacker` + `meleeAttack` in `internal/core/enemy_attack.go`;
+  hits land on the clip's `HitFrame` (skeleton 5 / 4, mushroom 5, succubus 0), random
+  `attack_1`/`attack_2`. Not yet looked at in game
+- **Traps:** a blueprint without a `Mover` or `Attacker` panics on its first tick (task 7's validation test
   should catch it). The mushroom art faces left (`FacesLeft`). No ledge probe yet (task 12)
 - **Open questions / blockers:** task 11: where the raw battler sheets live once baked
   (the user decides; they must leave the embed)
@@ -19,6 +19,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-23: task 6, Attacker + meleeAttack
+
+- Changed: new `enemy_attack.go` + test; `enemy.go` (`HitFrame`, `Attacker`, `swing`), `enemy_ai.go`, `enemy_clips.go` (`clipFor` picks attack_2), `enemy_types.go`
+- Verified: `verify.mjs --full` 8/8; reviewer measured missed swings when cooldown > clip (mushroom −40%), fixed test-first (`TestMeleeSwingLandsAfterCooldown`)
+- Docs touched: design (Attacker done), tasks (6 ticked), state
 
 ### 2026-10-23: task 5, Mover + groundMover
 
@@ -43,9 +49,3 @@
 - Changed: new `enemy_clips.go`; `enemy.go`, `enemy_anim.go`, `enemy_health.go`, `enemy_types.go` use clip names; tests switched to `animFor`
 - Verified: `verify.mjs --full` 8/8; new `TestEnemyMissingClipFallsBack`, `TestSuccubusChasesWithAlertClip`, `TestEveryEnemyStateHasAClip`
 - Docs touched: spec (fallback chain), tasks (3 ticked), state
-
-### 2026-10-23: task 2, clips with their own sheet
-
-- Changed: `enemy.go`, `enemy_anim.go`, `enemy_types.go`, new `enemy_clips_test.go`; test call sites renamed
-- Verified: `verify.mjs --full` 8/8; `TestEnemyClipsFitTheirSheets` failed on the 8-frame walk, passes at 7
-- Docs touched: tasks (2 ticked), design (EnemyClip done), state
