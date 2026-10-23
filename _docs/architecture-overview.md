@@ -1,6 +1,6 @@
 # Architecture overview
 
-> Snapshot 2026-10-07 at `91400c1`; enemy rows rechecked 2026-10-23 at `68463d7` (branch `feature/enemy-types`). Map for humans and agents.
+> Snapshot 2026-10-07 at `91400c1`; enemy rows rechecked 2026-10-23 at `ba831b3` (branch `feature/enemy-types`). Map for humans and agents.
 > Rows marked **target** describe intended rules the code does not fully enforce yet.
 
 Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native desktop
@@ -29,7 +29,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 | Touch controls | `internal/core/touch_controls.go`, `touch_icons.go` | On-screen buttons for touch screens: layout, hit-testing, merging into `InputState`, drawing (sprites from `UIButtons.png`, symbols drawn with `ebiten/vector`) | `Game.touch` |
 | Player | `internal/core/player.go`, `player_runtime.go`, `playerState.go`, `player_attack.go`, `player_hurt.go`, `ground_wave.go` | Movement, gravity/jump, AABB collision resolution, state enum; `HitEnemies` damages enemies inside the attack's damage box, once per hit window; `player_hurt.go` handles heavy-hit knockback, the out-of-stamina kneel and the two deaths; `UpdateGroundWaves` runs U's ground wave along the floor; `attack_step.go` moves the player during some attacks (table `attackSteps`) | `PlayerRuntime` |
 | Combat | `internal/core/combat.go`, `skills.go` | Damage, power regen, hazards (water/larva), fall damage, checkpoints, respawn | inside `PlayerRuntime` |
-| Enemies | `internal/core/enemy*.go` | Blueprint registry (each blueprint lists its animations as `EnemyClip`s, and every clip names its own sheet; sheets are cached by path), AI (patrol/chase/attack), animation, damage; `AttackBox()` is the area that hits the player; `enemy_health.go` regenerates health and draws the health bars above the sprite | `EnemyRuntime` |
+| Enemies | `internal/core/enemy*.go` | Blueprint registry (each blueprint lists its animations as `EnemyClip`s under standard clip names with fallbacks, `enemy_clips.go`; every clip names its own sheet, cached by path), AI (patrol/chase/attack), animation, damage; `AttackBox()` is the area that hits the player; `enemy_health.go` regenerates health and draws the health bars above the sprite | `EnemyRuntime` |
 | Animation | `internal/core/animation.go`, `enemy_anim.go` | Sprite-sheet frame tables, frame advance, drawing with camera | per-runtime |
 | World / level | `internal/core/world.go`, `level_enemies.go` | Loads embedded `level_1.json`, builds platforms/tiles/checkpoints and enemy spawns (bare grid markers like `!` = `EnemyBlueprint.Marker`), draws level & water | `Level`, `SpawnEnemies` |
 | Spatial index | `internal/core/quadtree.go`, `aabb.go` | `DynamicQuadtree` for collision broad-phase; `Collider` interface | quadtree |

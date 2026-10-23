@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-23)
 
-Snapshot at `68463d7` on `feature/enemy-types` (`main` is at `fda2323`, PR #17 merged). One page. Details live in each increment's entry in
+Snapshot at `ba831b3` on `feature/enemy-types` (`main` is at `fda2323`, PR #17 merged). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -10,10 +10,10 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation), tasks 1–2 of 8 done
-- **Branch:** `feature/enemy-types` (from `main` at `fda2323`), 5 local commits, not pushed: plan docs, succubus characterisation tests, `EnemyClip` (each animation names its own sheet), succubus walk-frame fix
-- **Next step:** task 3 in [tasks.md](./features/enemy-types/tasks.md): standard clip names (idle, walk, alert, run, attack_1, attack_2, guard, hurt, death) with fallbacks. Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
-- **Updated:** 2026-10-23 (after task 2)
+- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation), tasks 1–3 of 8 done
+- **Branch:** `feature/enemy-types` (from `main` at `fda2323`), 9 local commits, not pushed: plan docs, succubus characterisation tests, `EnemyClip` (each animation names its own sheet), succubus walk-frame fix, standard clip names with fallbacks (`internal/core/enemy_clips.go`)
+- **Next step:** task 4 in [tasks.md](./features/enemy-types/tasks.md): per-frame hold timing plus draw-time bob, lean and hit shake. Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Updated:** 2026-10-23 (after task 3)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -34,12 +34,12 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `68463d7`, Windows, go1.26.7)
+## Test baseline (at `ba831b3`, Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
-| `go test ./...` | ✅ 85/85 pass, all in `internal/core` | — |
+| `go test ./...` | ✅ 88/88 pass, all in `internal/core` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
 | GitHub CI | not run: `feature/enemy-types` isn't pushed yet | — |
 
@@ -47,7 +47,7 @@ Compare runs **by test name**: `go test ./internal/core -v | grep "^--- "` lists
 baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAttackSteps`,
 `TestAirHeavyAttackHitsBothSides`, `TestAttackDamageInBars`, `TestComboAttacksHitTwicePerSwing`, the
 enemy health / level marker tests, and on `feature/enemy-types` the succubus characterisation tests
-(`internal/core/enemy_behavior_test.go`) and `TestEnemyClipsFitTheirSheets`.
+(`internal/core/enemy_behavior_test.go`) and the clip tests in `internal/core/enemy_clips_test.go`.
 
 ## Known issues and risks
 
@@ -73,5 +73,5 @@ enemy health / level marker tests, and on `feature/enemy-types` the succubus cha
 
 ## Next task
 
-- enemy-types task 3: standard clip names with fallbacks ([tasks.md](./features/enemy-types/tasks.md)).
+- enemy-types task 4: per-frame hold timing + draw-time motion ([tasks.md](./features/enemy-types/tasks.md)).
 - Other candidates: draw a real menu for the menu button; crop `UIButtons.png`; touch buttons for jump (Space), F, R, Q; file the J sprite issue; untrack `game.exe`; tests for player physics with collision.

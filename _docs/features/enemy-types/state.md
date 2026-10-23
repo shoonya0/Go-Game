@@ -1,6 +1,6 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23 at `c4850cd`)
+## Now (updated 2026-10-23 at `ba831b3`)
 
 - **Status:** 🟡 in progress
 - **Current task:** 4. Per-frame `Hold` timing + draw-time motion (see [tasks.md](./tasks.md))
