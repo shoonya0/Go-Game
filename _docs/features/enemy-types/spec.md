@@ -25,7 +25,9 @@ shepherd sizes).
 
 Every enemy is built from the same clip names, so the AI never asks which species it runs.
 Required: `idle`, `walk`, `attack_1`, `hurt`, `death`. Optional, with a fallback when missing:
-`alert` → `walk`, `run` → `walk`, `attack_2` → `attack_1`, `guard` → none (the trait is off).
+`run` → `alert` → `walk`, `attack_2` → `attack_1`, `guard` → none (the trait is off). Patrol
+plays `walk` and chasing plays `run`. Names, fallbacks and the state → clip table live in
+`internal/core/enemy_clips.go`.
 
 ## Two sprite formats, one game format (D3, D7)
 

@@ -1,11 +1,12 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23 at `19b6be7`)
+## Now (updated 2026-10-23 at `c4850cd`)
 
 - **Status:** 🟡 in progress
-- **Current task:** 3. Standard clip names + fallbacks (see [tasks.md](./tasks.md))
-- **Stopped at:** task 2 done: `EnemyClip` per state with its own sheet (`internal/core/enemy.go`),
-  sheets cached by path, succubus walk fixed to 7 frames. Not yet looked at in a running game
+- **Current task:** 4. Per-frame `Hold` timing + draw-time motion (see [tasks.md](./tasks.md))
+- **Stopped at:** task 3 done: `ClipName` + fallbacks + state → clip table in
+  `internal/core/enemy_clips.go`; blueprints and `EnemyRuntime.Animations` are keyed by clip name.
+  The succubus has no run clip, so it still chases with alert. Not yet looked at in a running game
 - **Open questions / blockers:** task 11: where the raw battler sheets live once baked
   (the user decides; they must leave the embed)
 - **Don't forget:** assets changed on 2026-10-23. Removed: the desert set, `Bat with VFX/`,
@@ -16,6 +17,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-23: task 3, standard clip names + fallbacks
+
+- Changed: new `enemy_clips.go`; `enemy.go`, `enemy_anim.go`, `enemy_health.go`, `enemy_types.go` use clip names; tests switched to `animFor`
+- Verified: `verify.mjs --full` 8/8; new `TestEnemyMissingClipFallsBack`, `TestSuccubusChasesWithAlertClip`, `TestEveryEnemyStateHasAClip`
+- Docs touched: spec (fallback chain), tasks (3 ticked), state
 
 ### 2026-10-23: task 2, clips with their own sheet
 
@@ -40,12 +47,6 @@
 - Changed: nothing in code; scanned the sheets with a scratch Go tool (frame gaps and grid overlay)
 - Verified: all 17 `Free Sprites/` sheets are 9 cols × 6 rows; goblin and rat match `imagePattern.png`
 - Docs touched: state.md (open question: how to handle the two sprite formats)
-
-### 2026-10-23: plan the feature
-
-- Changed: docs only (`_docs/features/enemy-types/`, registry, Active work, rules pointer)
-- Verified: `go build ./...` ok with the untracked folders; asset base-name scan found the golem collision
-- Docs touched: README, spec, design, decisions, tasks, state
 
 ## Known issues
 

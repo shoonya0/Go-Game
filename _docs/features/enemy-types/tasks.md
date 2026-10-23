@@ -13,7 +13,7 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
       (decodes each sheet's config and checks frames × width fit), all enemy tests green.
       It caught the succubus patrol clip running one column past its 8-column row; fixed
       to 7 frames (column 0 of that row is a front-facing stand, not a step)
-- [ ] 3. Standard clip names + fallbacks (`alert`/`run` → `walk`, `attack_2` → `attack_1`);
+- [x] 3. Standard clip names + fallbacks (`alert`/`run` → `walk`, `attack_2` → `attack_1`);
       chase plays `run` → check: `TestEnemyMissingClipFallsBack`
 - [ ] 4. Per-frame `Hold` timing + draw-time motion (bob, lean, hit shake) → check:
       `TestClipHoldTiming`, manual look at the succubus
