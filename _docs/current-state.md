@@ -10,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `refactor/asset-folders` (PR #17, includes the two post-#15/#16 state refreshes; CI not checked yet): assets grouped into `assets/player/`, `enemy/`, `UI/`, `levels/` (level 1 in `levels/deepForest/`, backgrounds in its `background/`); `assets/embed.go` lists the folders, so **a new asset folder must be added to its `//go:embed` line** (`TestAssetPathsAreEmbedded` in `internal/core/asset_paths_test.go` fails otherwise). PR #15 and #16 are merged into `main`
-- **Next step:** CI green on the asset-folders PR, then ask before merging (deploys to Render). Untracked, not in the PR (no code uses them yet): `assets/levels/portal.png`, `assets/enemy/Bat with VFX/` (8 sheets), `assets/enemy/Mushroom/` (7 sheets); commit them with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name). Then try the touch controls on a real phone/tablet
+- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation)
+- **Branch:** `feature/enemy-types` (from `main` at `fda2323`; PR #17 asset-folders is merged). Planning only so far
+- **Next step:** task 1 in [tasks.md](./features/enemy-types/tasks.md): succubus characterisation tests, then split enemy behaviour into movers and attackers. Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
 - **Updated:** 2026-10-23
 
 <!-- Once a feature is active, the first line becomes, for example:
