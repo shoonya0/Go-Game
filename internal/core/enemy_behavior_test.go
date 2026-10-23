@@ -25,9 +25,10 @@ func tickEnemyAnim(e *EnemyRuntime, n int) {
 	}
 }
 
-// clipTicks is how many ticks a clip takes to play once.
-func clipTicks(anim *Animation) int {
-	return int(float64(anim.TotalFrames)/anim.AnimationSpeed*tps()) + 1
+// clipTicks is how many ticks the enemy's clip for state st takes to play
+// once, held frames included.
+func clipTicks(e *EnemyRuntime, st EnemyState) int {
+	return int(e.bp.Clips[e.clipFor(st)].duration()*tps()) + 1
 }
 
 func TestEnemyLandsOnGround(t *testing.T) {
@@ -94,7 +95,7 @@ func TestEnemyOneShotClipsReturnToPatrol(t *testing.T) {
 			t.Fatalf("state %d first tick: state=%d frame=%d, want to start the clip", st, e.State, e.CurrAnimFrame)
 		}
 		e.PrevState = e.State
-		tickEnemyAnim(e, clipTicks(anim))
+		tickEnemyAnim(e, clipTicks(e, st))
 		if e.State != EnemyPatrol {
 			t.Errorf("state %d after its clip: state=%d, want EnemyPatrol", st, e.State)
 		}
@@ -108,11 +109,11 @@ func TestEnemyDeathHoldsLastFrameThenRemovable(t *testing.T) {
 	anim := e.animFor(EnemyDead)
 	last := anim.AnimStartFrame + anim.TotalFrames - 1
 
-	tickEnemyAnim(e, clipTicks(anim)/2)
+	tickEnemyAnim(e, clipTicks(e, EnemyDead)/2)
 	if e.Removable() {
 		t.Fatal("removable halfway through the death clip")
 	}
-	tickEnemyAnim(e, clipTicks(anim))
+	tickEnemyAnim(e, clipTicks(e, EnemyDead))
 	if !e.Removable() || e.CurrAnimFrame != last || e.State != EnemyDead {
 		t.Errorf("after death clip: removable=%v frame=%d state=%d, want removable on frame %d, still dead",
 			e.Removable(), e.CurrAnimFrame, e.State, last)

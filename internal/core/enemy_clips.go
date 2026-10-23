@@ -78,3 +78,35 @@ func (e *EnemyRuntime) animFor(s EnemyState) *Animation {
 
 // currentAnim is the animation for the enemy's current state.
 func (e *EnemyRuntime) currentAnim() *Animation { return e.animFor(e.State) }
+
+// currentClip is the clip description for the enemy's current state.
+func (e *EnemyRuntime) currentClip() EnemyClip { return e.bp.Clips[e.clipFor(e.State)] }
+
+// hold is how many base frame durations frame i of the clip stays up.
+func (c EnemyClip) hold(i int) float64 {
+	if i >= 0 && i < len(c.Hold) && c.Hold[i] > 0 {
+		return c.Hold[i]
+	}
+	return 1
+}
+
+// duration is how long one play of the clip takes, in seconds.
+func (c EnemyClip) duration() float64 {
+	frames := 0.0
+	for i := range c.Frames {
+		frames += c.hold(i)
+	}
+	return frames / c.FPS
+}
+
+// held returns the clip with per-frame Hold multipliers, in frame order.
+func (c EnemyClip) held(hold ...float64) EnemyClip {
+	c.Hold = hold
+	return c
+}
+
+// moving returns the clip with draw-time motion m.
+func (c EnemyClip) moving(m motionFX) EnemyClip {
+	c.Motion = m
+	return c
+}

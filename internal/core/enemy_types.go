@@ -53,10 +53,10 @@ var succubusBlueprint = EnemyBlueprint{
 	},
 	Clips: map[ClipName]EnemyClip{ // no run clip: chasing falls back to alert
 		ClipIdle:    succubusClip(0, 0, 4, 6, true),
-		ClipWalk:    succubusClip(1, 1, 7, 10, true), // column 0 is a front-facing stand, not a step
-		ClipAlert:   succubusClip(2, 0, 3, 8, true),
-		ClipAttack1: succubusClip(3, 0, 6, 12, false),
-		ClipHurt:    succubusClip(4, 0, 2, 8, false),
+		ClipWalk:    succubusClip(1, 1, 7, 10, true),                                                 // column 0 is a front-facing stand, not a step
+		ClipAlert:   succubusClip(2, 0, 3, 8, true).moving(motionFX{BobPx: 3, BobHz: 3, LeanDeg: 5}), // chase: a standing pose, so lean in
+		ClipAttack1: succubusClip(3, 0, 6, 12, false).held(1, 1, 1, 2),                               // frame 3 is the big slash
+		ClipHurt:    succubusClip(4, 0, 2, 8, false).moving(motionFX{HitShakePx: 4}),
 		ClipDeath:   succubusClip(5, 0, 6, 8, false),
 	},
 }

@@ -67,6 +67,9 @@ func TestEnemyClipsFitTheirSheets(t *testing.T) {
 			if right := (c.Start + c.Frames) * c.FrameW; right > cfg.Width {
 				t.Errorf("%s clip %v: frames end at x=%d, past the %dpx-wide sheet %q", bp.Name, name, right, cfg.Width, c.Sheet)
 			}
+			if len(c.Hold) > c.Frames {
+				t.Errorf("%s clip %v: %d Hold entries for %d frames", bp.Name, name, len(c.Hold), c.Frames)
+			}
 			if bottom := (c.Row + 1) * c.FrameH; bottom > cfg.Height {
 				t.Errorf("%s clip %v: row ends at y=%d, past the %dpx-high sheet %q", bp.Name, name, bottom, cfg.Height, c.Sheet)
 			}

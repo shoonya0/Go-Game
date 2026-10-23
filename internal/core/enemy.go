@@ -37,6 +37,11 @@ type EnemyClip struct {
 	FrameW, FrameH int     // size of one frame cell
 	FPS            float64 // frames shown per second
 	Loop           bool
+	// Hold stretches single frames: frame i of the clip shows for Hold[i] times
+	// as long as the others, so a strike or impact frame stays up. Missing or
+	// non-positive entries mean 1.
+	Hold   []float64
+	Motion motionFX // movement added at draw time (enemy_motion.go)
 }
 
 // EnemyBlueprint is the immutable description of an enemy species: its clips,
@@ -83,6 +88,7 @@ type EnemyRuntime struct {
 	PrevState     EnemyState
 	Animations    map[ClipName]*Animation
 	CurrAnimFrame int
+	clipTime      float64 // seconds since the current clip (re)started; drives Motion
 
 	// Spatial state.
 	FlipX      bool // true when the enemy faces left
@@ -211,4 +217,5 @@ func (e *EnemyRuntime) restartAnimation() {
 		e.CurrAnimFrame = anim.AnimStartFrame
 		anim.FrameTimer = 0
 	}
+	e.clipTime = 0
 }
