@@ -24,7 +24,7 @@ func TestBlueprintRegistered(t *testing.T) {
 	if bp == nil || bp.Name != "Succubus" {
 		t.Fatalf("blueprintFor(KindSuccubus) = %+v, want a Succubus blueprint", bp)
 	}
-	anims := bp.NewAnimations()
+	anims := bp.newAnimations()
 	for _, st := range []EnemyState{EnemyIdle, EnemyPatrol, EnemyAlert, EnemyAttack, EnemyHurt, EnemyDead} {
 		if anims[int(st)] == nil {
 			t.Errorf("succubus blueprint missing animation for state %d", st)

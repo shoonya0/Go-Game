@@ -26,36 +26,57 @@ type EnemyStats struct {
 	PatrolTiles    float64 // half-width (in tiles) of the patrol path around spawn
 }
 
-// EnemyBlueprint is the immutable description of an enemy species: which sprite
-// sheet to use, how its frames are laid out, its collision box, and its stats.
-// This is the "different sprites take on the general enemy" part — every field
-// that varies per species is data here, while behaviour is shared code.
-//
-// Sprite sheets differ in frame size and layout, so each blueprint carries its
-// own OriginHeight (the sprite-sheet row unit) and its own Animations table; the
-// shared drawing code (drawSpriteFrame) is parameterised on both.
-type EnemyBlueprint struct {
-	Name         string
-	Marker       string // one-character level-grid code that spawns this kind (e.g. !)
-	SpritePath   string
-	OriginHeight int     // sprite-sheet row height used to locate a frame's Y origin
-	BodyWidth    float64 // collision box width
-	BodyHeight   float64 // collision box height
-	Scale        float64 // render scale of the sprite
-	Stats        EnemyStats
+// EnemyClip describes one animation of a species: which sprite sheet holds it
+// and where its frames sit. Each clip names its own sheet, so a species whose art
+// ships as one PNG strip per animation and a species packed into one grid are
+// described the same way.
+type EnemyClip struct {
+	Sheet          string  // asset path of the sheet holding this clip
+	Row            int     // sheet row, in FrameH units (0 for a one-row strip)
+	Start, Frames  int     // first column and number of frames
+	FrameW, FrameH int     // size of one frame cell
+	FPS            float64 // frames shown per second
+	Loop           bool
+}
 
-	// NewAnimations builds a fresh animation table for one instance. It is a
-	// factory (not a shared map) because Animation carries a mutable FrameTimer;
-	// sharing one map across instances would couple their playback.
-	NewAnimations func() map[int]*Animation
+// EnemyBlueprint is the immutable description of an enemy species: its clips,
+// its collision box, and its stats. This is the "different sprites take on the
+// general enemy" part — every field that varies per species is data here, while
+// behaviour is shared code.
+type EnemyBlueprint struct {
+	Name       string
+	Marker     string // one-character level-grid code that spawns this kind (e.g. !)
+	BodyWidth  float64
+	BodyHeight float64
+	Scale      float64 // render scale of the sprite
+	Stats      EnemyStats
+	Clips      map[EnemyState]EnemyClip
+}
+
+// newAnimations builds a fresh animation table for one instance. Each instance
+// needs its own because Animation carries a mutable FrameTimer; sharing one table
+// would couple the playback of every enemy of the kind.
+func (bp *EnemyBlueprint) newAnimations() map[int]*Animation {
+	anims := make(map[int]*Animation, len(bp.Clips))
+	for st, c := range bp.Clips {
+		anims[int(st)] = &Animation{
+			SpriteSheetYPosition: c.Row,
+			AnimStartFrame:       c.Start,
+			TotalFrames:          c.Frames,
+			FrameWidth:           c.FrameW,
+			FrameHeight:          c.FrameH,
+			AnimationSpeed:       c.FPS,
+			Looping:              c.Loop,
+		}
+	}
+	return anims
 }
 
 // EnemyRuntime is the complete, mutable state of one enemy instance. It mirrors
 // the shape of PlayerRuntime (sprite + spatial + combat + per-tick bookkeeping)
 // but only carries what an AI-driven enemy needs.
 type EnemyRuntime struct {
-	img *ebiten.Image
-	bp  *EnemyBlueprint // the species blueprint (shared, read-only)
+	bp *EnemyBlueprint // the species blueprint (shared, read-only)
 
 	// State and animation.
 	State         EnemyState
@@ -81,31 +102,34 @@ type EnemyRuntime struct {
 	deathDone   bool    // whether the death animation has finished
 }
 
-// enemyImages caches one GPU image per species so spawning many enemies of the
-// same kind does not re-upload the sheet. The game loop is single-threaded, so
-// no synchronisation is required.
-var enemyImages = map[EnemyKind]*ebiten.Image{}
+// enemySheets caches one GPU image per sheet path, so spawning many enemies of
+// the same kind (or clips sharing a sheet) does not re-upload it. The game loop
+// is single-threaded, so no synchronisation is required.
+var enemySheets = map[string]*ebiten.Image{}
 
-// enemyImage returns the (cached) sprite sheet for a species.
-func enemyImage(kind EnemyKind, path string) *ebiten.Image {
-	if img, ok := enemyImages[kind]; ok {
+// enemySheet returns the (cached) image for a sheet path.
+func enemySheet(path string) *ebiten.Image {
+	if img, ok := enemySheets[path]; ok {
 		return img
 	}
 	img := LoadImage(path)
-	enemyImages[kind] = img
+	enemySheets[path] = img
 	return img
 }
 
 // NewEnemy builds a ready-to-run enemy of the given kind at pos, wiring its
-// blueprint, sprite sheet, animations and starting stats.
+// blueprint, animations and starting stats. It loads every clip's sheet now, so
+// a missing asset fails at spawn rather than mid-fight.
 func NewEnemy(kind EnemyKind, pos Position) *EnemyRuntime {
 	bp := blueprintFor(kind)
+	for _, c := range bp.Clips {
+		enemySheet(c.Sheet)
+	}
 	return &EnemyRuntime{
-		img:        enemyImage(kind, bp.SpritePath),
 		bp:         bp,
 		State:      EnemyPatrol,
 		PrevState:  EnemyPatrol,
-		Animations: bp.NewAnimations(),
+		Animations: bp.newAnimations(),
 		Scale:      bp.Scale,
 		Pos:        pos,
 		Health:     bp.Stats.MaxHealth,

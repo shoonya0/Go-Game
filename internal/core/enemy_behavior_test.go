@@ -9,7 +9,7 @@ import "testing"
 // tick UpdateEnemyAnimation. It still loads no sprite sheet.
 func newAnimatedTestEnemy(pos Position) *EnemyRuntime {
 	e := newTestEnemy(pos)
-	e.Animations = e.bp.NewAnimations()
+	e.Animations = e.bp.newAnimations()
 	return e
 }
 
