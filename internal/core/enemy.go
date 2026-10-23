@@ -12,6 +12,7 @@ const (
 	KindSuccubus EnemyKind = iota
 	KindSkeletonWhite
 	KindSkeletonYellow
+	KindMushroom
 )
 
 // EnemyStats are the tunable gameplay numbers for an enemy species. They live in
@@ -56,6 +57,7 @@ type EnemyBlueprint struct {
 	BodyWidth  float64
 	BodyHeight float64
 	Scale      float64 // render scale of the sprite
+	FacesLeft  bool    // the art faces left, so drawing mirrors it the other way
 	Stats      EnemyStats
 	Clips      map[ClipName]EnemyClip // must hold requiredClips; others fall back (enemy_clips.go)
 }

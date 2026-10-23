@@ -9,6 +9,7 @@ var enemyBlueprints = map[EnemyKind]*EnemyBlueprint{
 	KindSuccubus:       &succubusBlueprint,
 	KindSkeletonWhite:  skeletonBlueprint("White", "@"),
 	KindSkeletonYellow: skeletonBlueprint("Yellow", "#"),
+	KindMushroom:       &mushroomBlueprint,
 }
 
 // blueprintFor returns the blueprint for a kind, panicking on an unregistered
@@ -114,5 +115,50 @@ func skeletonBlueprint(colour, marker string) *EnemyBlueprint {
 			ClipHurt:    clip("Hurt", 5, 12, false).moving(motionFX{HitShakePx: 3}),
 			ClipDeath:   clip("Die", 13, 12, false),
 		},
+	}
+}
+
+// ---------------- mushroom ----------------
+
+// The mushroom ships as one 80×64 strip per animation, facing left (it is
+// knocked back to the right when hit and slams to the left). The body is about
+// 33px tall, feet on the bottom row. Its stun clips wait for a player stun state.
+const (
+	mushroomFrameWidth  = 80
+	mushroomFrameHeight = 64
+)
+
+var mushroomBlueprint = EnemyBlueprint{
+	Name:       "Mushroom",
+	Marker:     "&",
+	BodyWidth:  44,
+	BodyHeight: 64,
+	Scale:      2, // 33px of art -> ~66px on screen
+	FacesLeft:  true,
+	Stats: EnemyStats{
+		MaxHealth:      40,
+		Damage:         8,
+		WalkSpeed:      40,
+		ChaseSpeed:     130,
+		DetectRange:    320,
+		AttackRange:    56,
+		AttackCooldown: 1.0,
+		PatrolTiles:    2.5,
+	},
+	Clips: map[ClipName]EnemyClip{ // no walk art: patrol plays the run cycle slower
+		ClipIdle:    mushroomClip("Idle", 7, 8, true),
+		ClipWalk:    mushroomClip("Run", 8, 8, true),
+		ClipRun:     mushroomClip("Run", 8, 14, true).moving(motionFX{LeanDeg: 4}),
+		ClipAttack1: mushroomClip("Attack", 10, 14, false).held(1, 1, 1, 1, 1, 2.5), // frame 5: the slam lands
+		ClipHurt:    mushroomClip("Hit", 5, 12, false).moving(motionFX{HitShakePx: 3}),
+		ClipDeath:   mushroomClip("Die", 15, 12, false),
+	},
+}
+
+// mushroomClip is one of the mushroom's strips.
+func mushroomClip(anim string, frames int, fps float64, loop bool) EnemyClip {
+	return EnemyClip{
+		Sheet:  "../assets/enemy/Mushroom/Mushroom-" + anim + ".png",
+		Frames: frames, FrameW: mushroomFrameWidth, FrameH: mushroomFrameHeight, FPS: fps, Loop: loop,
 	}
 }

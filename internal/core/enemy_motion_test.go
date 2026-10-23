@@ -89,3 +89,24 @@ func TestEnemyClipTimeRestarts(t *testing.T) {
 		t.Errorf("after hurt: state=%d clipTime=%v, want patrol with a fresh clock", e.State, e.clipTime)
 	}
 }
+
+// TestLeftFacingArtMirrorsTheOtherWay checks art drawn facing left (the
+// mushroom) is mirrored when the enemy faces right, and right-facing art when
+// it faces left.
+func TestLeftFacingArtMirrorsTheOtherWay(t *testing.T) {
+	for _, tc := range []struct {
+		kind       EnemyKind
+		facingLeft bool
+		want       bool
+	}{
+		{KindSkeletonWhite, false, false},
+		{KindSkeletonWhite, true, true},
+		{KindMushroom, false, true},
+		{KindMushroom, true, false},
+	} {
+		e := &EnemyRuntime{bp: blueprintFor(tc.kind), FlipX: tc.facingLeft}
+		if got := e.drawFlipX(); got != tc.want {
+			t.Errorf("%s facing left=%v: mirrored=%v, want %v", e.bp.Name, tc.facingLeft, got, tc.want)
+		}
+	}
+}

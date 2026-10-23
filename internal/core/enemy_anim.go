@@ -68,5 +68,10 @@ func (e *EnemyRuntime) DrawEnemyAnimation(screen *ebiten.Image, cam Camera) {
 	}
 	clip := e.currentClip()
 	drawSpriteFramePosed(screen, enemySheet(clip.Sheet), anim, e.CurrAnimFrame, e.GetBounds(),
-		e.FlipX, e.Scale, cam.Pos, anim.FrameHeight, ebiten.ColorScale{}, clip.Motion.pose(e.clipTime, e.FlipX))
+		e.drawFlipX(), e.Scale, cam.Pos, anim.FrameHeight, ebiten.ColorScale{}, clip.Motion.pose(e.clipTime, e.FlipX))
 }
+
+// drawFlipX reports whether the sprite must be mirrored to face the way the
+// enemy faces: FlipX means facing left, and art that already faces left is
+// mirrored only when facing right.
+func (e *EnemyRuntime) drawFlipX() bool { return e.FlipX != e.bp.FacesLeft }
