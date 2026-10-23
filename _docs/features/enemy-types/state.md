@@ -1,14 +1,13 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23 at `2bc4469`)
+## Now (updated 2026-10-23, task 9)
 
 - **Status:** 🟡 in progress; increment 1 merged to `main` (PR #18, `2bc4469`)
-- **Current task:** 9. `tools/battler2strip` (see [tasks.md](./tasks.md)), on a fresh
-  `feature/enemy-types` branched from `main` at `2bc4469`
-- **Stopped at:** task 8 done: full verify 8/8, code review, design.md trimmed. Enemies now
-  idle between swings until the cooldown is ready (`Attacker.Ready`); hit timing and the
-  idle pause haven't been looked at in a running game yet
-- **Traps:** `TestBlueprintsValid` needs speeds > 0, so the static training dummy (task 20)
+- **Current task:** 10. Goblin mapping, bake, check every clip by eye with a contact sheet
+  (see [tasks.md](./tasks.md)). The contact-sheet output doesn't exist yet: add it to the tool there
+- **Stopped at:** task 9 done: `tools/battler2strip/` with 7 tests, depguard `tools` rule. A
+  test gnoll bake (208×120 frames, 3 clips, 124 KB) looked right; its cell picks were guesses
+- **Traps:** the tool keeps its own copy of the clip names (it can't import the game); keep it in sync with `enemy_clips.go`. `TestBlueprintsValid` needs speeds > 0, so the static training dummy (task 20)
   will need it relaxed for a `static` mover. The mushroom art faces left (`FacesLeft`). No ledge probe yet (task 12).
   A new Attacker must implement `Ready` (a ranged one: its fire timer)
 - **Open questions / blockers:** task 11: where the raw battler sheets live once baked
@@ -21,6 +20,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-23: task 9, battler2strip
+
+- Changed: new `tools/battler2strip/` (`bake.go`, `main.go`, `bake_test.go`); `.golangci.yml` (`tools` stdlib-only); `architecture-overview.md` (layers + modules rows)
+- Verified: `verify.mjs --full` 8/8; `go test ./tools/...` 7/7; mutations (truncated cell edges, game import in tools) fail; code-reviewer: no blocking findings (design.md mapping example was stale, fixed)
+- Docs touched: design (baking section), tasks (9 ticked), state, architecture
 
 ### 2026-10-23: task 8, close increment 1
 
@@ -45,9 +50,3 @@
 - Changed: new `enemy_move.go`; `enemy_ai.go` steers the Mover; `enemy.go` (`Mover` field), `enemy_types.go`
 - Verified: `verify.mjs --full` 8/8; enemy tests 19/19 with no test file changed; code-reviewer: no blocking findings
 - Docs touched: design (Mover done, Steer/Move split), tasks (5, 17, 18 ticked), state
-
-### 2026-10-23: skeleton + mushroom pulled ahead (tasks 17, 18)
-
-- Changed: `enemy_types.go` (skeleton builder, mushroom), `enemy.go` (kinds, `FacesLeft`), `enemy_anim.go` (`drawFlipX`), `level_1.json`, assets `Skeleton_*/`, `Mushroom/`
-- Verified: `verify.mjs --full` 8/8 after each; new `TestSkeletonVariantsShareBlueprint`, `TestLeftFacingArtMirrorsTheOtherWay`; `TestEnemiesHaveAtLeastTwoWholeBars` caught 30 HP
-- Docs touched: tasks (4 ticked, notes on 17/18), spec (roster checked), state
