@@ -25,13 +25,13 @@ away and a diver attacks from above.
 
 ## Parts (Go interfaces, implemented as small structs holding their tuning)
 
-```go
-// Mover turns the brain's intent into movement and resolves collisions.
-type Mover interface {
-	Move(e *EnemyRuntime, in moveIntent, qt *DynamicQuadtree)
-	Grounded(e *EnemyRuntime) bool // ground wave and landing logic ask this
-}
+**Mover: done (task 5),** `internal/core/enemy_move.go`. It differs from the first plan: it has
+`Steer` (intent → velocity, called by the brain as it decides) and `Move` (integrate + collide)
+instead of a single `Move(e, intent, qt)`. That way the brain's tests can still check
+velocity right after `decideBehavior`, and a dead enemy just steers to `moveHold` and keeps
+falling.
 
+```go
 // Attacker decides when the enemy can strike and what a strike does.
 type Attacker interface {
 	InRange(e *EnemyRuntime, target AABB) bool
@@ -42,7 +42,7 @@ type Attacker interface {
 
 | Part | Today's code it comes from | Notes |
 |---|---|---|
-| `groundMover` | `applyGravity`, `resolveHorizontal/Vertical`, `patrol` | adds a ledge probe |
+| `groundMover` | done (task 5) | ledge probe still to add (task 12) |
 | `flyingMover` | new | no gravity, `HoverHeight`, `Leash` (tiles), steers in X and Y, bobbing optional |
 | `waterMover` | later | like flying but clamped to water tiles |
 | `meleeAttack` | `attack`, `attackBoxFacing` | `HitFrame` lands damage on a clip frame instead of on entry |

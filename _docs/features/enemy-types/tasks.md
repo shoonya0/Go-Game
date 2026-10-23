@@ -18,8 +18,8 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [x] 4. Per-frame `Hold` timing + draw-time motion (bob, lean, hit shake) → check:
       `TestClipHoldTiming`, manual look at the succubus. The user dropped the succubus look
       (its art is weak); the look moved to the skeleton and mushroom (17, 18), pulled ahead
-- [ ] 5. Extract `Mover` + `groundMover` from `enemy_ai.go`; succubus uses it → check:
-      enemy tests unchanged and green
+- [x] 5. Extract `Mover` + `groundMover` from `enemy_ai.go`; succubus uses it → check:
+      enemy tests unchanged and green (19/19, no test file touched)
 - [ ] 6. Extract `Attacker` + `meleeAttack` (damage on a `HitFrame`, `Box` for F3, random
       `attack_1`/`attack_2`) → check: `TestEnemyDetectsChasesAndAttacks` green, new
       `TestMeleeHitLandsOnHitFrame`
@@ -48,11 +48,10 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [ ] 15. Goblin (first baked enemy, melee ×2 + guard) → check: manual look, F3 boxes
 - [ ] 16. Rename `White_Golem/Golem_1_*` → `WhiteGolem_*` (D4), add White Golem → check:
       new `TestAssetBaseNamesUnique`
-- [ ] 17. Skeleton White + Yellow strips as one blueprint with colour variants → check:
-      `TestSkeletonVariantsShareBlueprint`, manual look. Code done early (`@`, `#` in level 1);
-      waiting for the look. `attack_2` plays once task 6 picks attacks
-- [ ] 18. Mushroom (no stun yet) → check: manual look. Code done early (`&` in level 1,
-      `FacesLeft`); waiting for the look
+- [x] 17. Skeleton White + Yellow strips as one blueprint with colour variants → check:
+      `TestSkeletonVariantsShareBlueprint`, manual look (user: "working"). Done early (`@`, `#` in level 1). `attack_2` plays once task 6 picks attacks
+- [x] 18. Mushroom (no stun yet) → check: manual look (user: "working"). Done early (`&` in
+      level 1, `FacesLeft`)
 - [ ] 19. Bake + add the other ground battlers, a few per session: kobold, gnoll, skeleton,
       zombies, troll, werewolf, wolf, German shepherd, rat, crab, sahuagin, slime, turnip →
       check: `TestBlueprintsValid`, manual look at each

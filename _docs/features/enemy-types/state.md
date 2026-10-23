@@ -1,15 +1,14 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23 at `91fd78b`)
+## Now (updated 2026-10-23 at `ff36581`)
 
 - **Status:** 🟡 in progress
-- **Current task:** 17 + 18 waiting for a look in a running game, then 5. Extract `Mover` +
-  `groundMover` (see [tasks.md](./tasks.md))
-- **Stopped at:** task 4 done. The user skipped the succubus look, so the skeleton (White `@`,
-  Yellow `#`) and mushroom (`&`) were added early and placed in level 1 to judge hold timing and
-  draw-time motion on real strip art. Tuning lives on the clip lines in `enemy_types.go`
-- **Traps:** the mushroom art faces left (`FacesLeft`). No ledge probe yet (task 12): patrols are
-  kept at 2.5 tiles so they stop short of pits, but a chase can still run off a ledge
+- **Current task:** 6. Extract `Attacker` + `meleeAttack` (see [tasks.md](./tasks.md))
+- **Stopped at:** task 5 done: `Mover` (`Steer` + `Move` + `Grounded`) and `groundMover` in
+  `internal/core/enemy_move.go`; every blueprint sets `Mover: groundMover{}`. Skeleton and
+  mushroom (17, 18) confirmed working in game
+- **Traps:** a blueprint without a `Mover` panics on its first tick (task 7's validation test
+  should catch it). The mushroom art faces left (`FacesLeft`). No ledge probe yet (task 12)
 - **Open questions / blockers:** task 11: where the raw battler sheets live once baked
   (the user decides; they must leave the embed)
 - **Don't forget:** assets changed on 2026-10-23. Removed: the desert set, `Bat with VFX/`,
@@ -20,6 +19,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-23: task 5, Mover + groundMover
+
+- Changed: new `enemy_move.go`; `enemy_ai.go` steers the Mover; `enemy.go` (`Mover` field), `enemy_types.go`
+- Verified: `verify.mjs --full` 8/8; enemy tests 19/19 with no test file changed; code-reviewer: no blocking findings
+- Docs touched: design (Mover done, Steer/Move split), tasks (5, 17, 18 ticked), state
 
 ### 2026-10-23: skeleton + mushroom pulled ahead (tasks 17, 18)
 
@@ -44,9 +49,3 @@
 - Changed: `enemy.go`, `enemy_anim.go`, `enemy_types.go`, new `enemy_clips_test.go`; test call sites renamed
 - Verified: `verify.mjs --full` 8/8; `TestEnemyClipsFitTheirSheets` failed on the 8-frame walk, passes at 7
 - Docs touched: tasks (2 ticked), design (EnemyClip done), state
-
-### 2026-10-23: task 1, succubus characterisation tests
-
-- Changed: `internal/core/enemy_behavior_test.go` (7 tests)
-- Verified: `node scripts/verify.mjs` pass; mutation (one-shot → idle) fails `TestEnemyOneShotClipsReturnToPatrol`
-- Docs touched: tasks (1 ticked, patrol-frame note on 2), state
