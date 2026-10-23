@@ -44,6 +44,7 @@ var succubusBlueprint = EnemyBlueprint{
 	BodyWidth:  46,
 	BodyHeight: 100,
 	Scale:      0.3, // 360px cell -> ~108px tall on screen
+	Mover:      groundMover{},
 	Stats: EnemyStats{
 		MaxHealth:      40,
 		Damage:         8,
@@ -97,6 +98,7 @@ func skeletonBlueprint(colour, marker string) *EnemyBlueprint {
 		BodyWidth:  30,
 		BodyHeight: 88,
 		Scale:      2, // 46px of art -> ~92px on screen
+		Mover:      groundMover{},
 		Stats: EnemyStats{
 			MaxHealth:      40,
 			Damage:         10,
@@ -135,6 +137,7 @@ var mushroomBlueprint = EnemyBlueprint{
 	BodyHeight: 64,
 	Scale:      2, // 33px of art -> ~66px on screen
 	FacesLeft:  true,
+	Mover:      groundMover{},
 	Stats: EnemyStats{
 		MaxHealth:      40,
 		Damage:         8,

@@ -58,6 +58,7 @@ type EnemyBlueprint struct {
 	BodyHeight float64
 	Scale      float64 // render scale of the sprite
 	FacesLeft  bool    // the art faces left, so drawing mirrors it the other way
+	Mover      Mover   // how it gets around (enemy_move.go)
 	Stats      EnemyStats
 	Clips      map[ClipName]EnemyClip // must hold requiredClips; others fall back (enemy_clips.go)
 }
