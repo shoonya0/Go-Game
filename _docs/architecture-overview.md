@@ -10,11 +10,11 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 
 ```text
  cmd/main.go (Game: ebiten.Game)
-   │  Update(): system.HandleInput → core.UpdatePlayer → anim/camera → updateEnemies
-   │  Draw():   parallax bg → level tiles → enemies → player → water → HUD
+   │  Update(): system.HandleInput + HandleTouch → core.UpdatePlayer → anim/camera → updateEnemies
+   │  Draw():   parallax bg → level tiles → enemies → player → water → HUD → touch buttons
    ▼
  internal/system ──► internal/core ──► assets (go:embed FS)
-   (keyboard → InputState)   (simulation + rendering)
+   (keyboard + touch → InputState)   (simulation + rendering)
 
  server/main.go  — standalone static file server for ./web (no game imports)
  web/index.html  — boots game.wasm via wasm_exec.js
@@ -25,16 +25,17 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 | Module | Path | Responsibility | Owns state? |
 |---|---|---|---|
 | Entry / game loop | `cmd/main.go` | Wires subsystems; implements `ebiten.Game` (Update/Draw/Layout) | `Game` struct: player, enemies, level, quadtree |
-| Input | `internal/system/Input.go` | Polls Ebitengine keyboard → `core.InputState` | no (writes caller's struct) |
-| Player | `internal/core/player.go`, `player_runtime.go`, `playerState.go`, `player_attack.go`, `ground_wave.go` | Movement, gravity/jump, AABB collision resolution, state enum; `HitEnemies` damages enemies inside the attack's damage box; `UpdateGroundWaves` runs U's ground wave along the floor | `PlayerRuntime` |
+| Input | `internal/system/Input.go`, `touch.go`, `touch_js.go` / `touch_other.go` | Polls keyboard and touch points → `core.InputState`; `IsTouchDevice` asks the browser (`navigator.maxTouchPoints`), false on desktop builds | no (writes caller's struct) |
+| Touch controls | `internal/core/touch_controls.go`, `touch_icons.go` | On-screen buttons for touch screens: layout, hit-testing, merging into `InputState`, drawing (sprites from `UIButtons.png`, symbols drawn with `ebiten/vector`) | `Game.touch` |
+| Player | `internal/core/player.go`, `player_runtime.go`, `playerState.go`, `player_attack.go`, `player_hurt.go`, `ground_wave.go` | Movement, gravity/jump, AABB collision resolution, state enum; `HitEnemies` damages enemies inside the attack's damage box, once per hit window; `player_hurt.go` handles heavy-hit knockback, the out-of-stamina kneel and the two deaths; `UpdateGroundWaves` runs U's ground wave along the floor; `attack_step.go` moves the player during some attacks (table `attackSteps`) | `PlayerRuntime` |
 | Combat | `internal/core/combat.go`, `skills.go` | Damage, power regen, hazards (water/larva), fall damage, checkpoints, respawn | inside `PlayerRuntime` |
-| Enemies | `internal/core/enemy*.go` | Blueprint registry, AI (patrol/chase/attack), animation, damage; `AttackBox()` is the area that hits the player | `EnemyRuntime` |
+| Enemies | `internal/core/enemy*.go` | Blueprint registry, AI (patrol/chase/attack), animation, damage; `AttackBox()` is the area that hits the player; `enemy_health.go` regenerates health and draws the health bars above the sprite | `EnemyRuntime` |
 | Animation | `internal/core/animation.go`, `enemy_anim.go` | Sprite-sheet frame tables, frame advance, drawing with camera | per-runtime |
 | World / level | `internal/core/world.go`, `level_enemies.go` | Loads embedded `level_1.json`, builds platforms/tiles/checkpoints and enemy spawns (bare grid markers like `!` = `EnemyBlueprint.Marker`), draws level & water | `Level`, `SpawnEnemies` |
 | Spatial index | `internal/core/quadtree.go`, `aabb.go` | `DynamicQuadtree` for collision broad-phase; `Collider` interface | quadtree |
 | HUD | `internal/core/hud.go` | Health hearts / stamina (power) bars, 10 sprite segments each | no |
 | Debug overlay | `internal/core/debug_draw.go` | F3 toggles outlines of body (green) and attack (red) boxes for any `HitboxProvider` (enemies and the player) | `Game.showHitboxes` |
-| Assets | `assets/embed.go`, `internal/core/image.go` | `go:embed` FS; `readAsset` resolves by **base file name** (subfolders searched) | embedded, read-only |
+| Assets | `assets/embed.go`, `internal/core/image.go` | `go:embed` FS; `readAsset` resolves by **base file name** (subfolders searched); files live in `player/`, `enemy/`, `UI/`, `levels/`, and each folder must be on the `//go:embed` line | embedded, read-only |
 | Time | `internal/core/time.go` | `deltaTime()` = 1/TPS, shared by physics and animation | no |
 | Web server | `server/main.go` | Serves `$WEB_ROOT` on `$PORT`, `.wasm` MIME, no-cache for HTML | no |
 
@@ -63,7 +64,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 ## Data and state
 
 - All runtime state is in memory, owned by `Game` in `cmd/main.go`. No persistence, no save files.
-- Level data: `assets/level_1.json` (embedded). Assets are addressed by base file name only, so
+- Level data: `assets/levels/deepForest/level_1.json` (embedded). Assets are addressed by base file name only, so
   **two assets with the same file name in different folders collide** (`internal/core/image.go:20`).
 - Single-threaded: no goroutines/channels in the current code.
 
