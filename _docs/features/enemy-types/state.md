@@ -1,14 +1,14 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23 at `489b9db`)
+## Now (updated 2026-10-23 at `e75496d`)
 
 - **Status:** 🟡 in progress
-- **Current task:** 7. Registry validation test `TestBlueprintsValid` (see [tasks.md](./tasks.md))
-- **Stopped at:** task 6 done: `Attacker` + `meleeAttack` in `internal/core/enemy_attack.go`;
-  hits land on the clip's `HitFrame` (skeleton 5 / 4, mushroom 5, succubus 0), random
-  `attack_1`/`attack_2`. Not yet looked at in game
-- **Traps:** a blueprint without a `Mover` or `Attacker` panics on its first tick (task 7's validation test
-  should catch it). The mushroom art faces left (`FacesLeft`). No ledge probe yet (task 12)
+- **Current task:** 8. Close increment 1: `verify.mjs --full`, `code-reviewer`, trim design.md
+  (see [tasks.md](./tasks.md))
+- **Stopped at:** task 7 done: `TestBlueprintsValid` in `internal/core/enemy_test.go`. The hit
+  timing from task 6 hasn't been looked at in a running game yet
+- **Traps:** `TestBlueprintsValid` needs speeds > 0, so the static training dummy (task 20)
+  will need it relaxed for a `static` mover. The mushroom art faces left (`FacesLeft`). No ledge probe yet (task 12)
 - **Open questions / blockers:** task 11: where the raw battler sheets live once baked
   (the user decides; they must leave the embed)
 - **Don't forget:** assets changed on 2026-10-23. Removed: the desert set, `Bat with VFX/`,
@@ -19,6 +19,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-23: task 7, blueprint validation
+
+- Changed: `internal/core/enemy_test.go` (`TestBlueprintsValid`)
+- Verified: `verify.mjs --full` 8/8; mutation (mushroom without Attacker) fails it
+- Docs touched: tasks (7 ticked), state
 
 ### 2026-10-23: task 6, Attacker + meleeAttack
 
@@ -43,9 +49,3 @@
 - Changed: `enemy.go` (Hold, Motion, clipTime), `enemy_anim.go`, `enemy_clips.go`, new `enemy_motion.go`, `animation.go` (`drawSpriteFramePosed`), succubus tuning
 - Verified: `verify.mjs --full` 8/8; new `TestClipHoldTiming`, `TestMotionPose`, `TestEnemyClipTimeRestarts`, `TestClipDurationCountsHolds`
 - Docs touched: design (clips section trimmed), state
-
-### 2026-10-23: task 3, standard clip names + fallbacks
-
-- Changed: new `enemy_clips.go`; `enemy.go`, `enemy_anim.go`, `enemy_health.go`, `enemy_types.go` use clip names; tests switched to `animFor`
-- Verified: `verify.mjs --full` 8/8; new `TestEnemyMissingClipFallsBack`, `TestSuccubusChasesWithAlertClip`, `TestEveryEnemyStateHasAClip`
-- Docs touched: spec (fallback chain), tasks (3 ticked), state

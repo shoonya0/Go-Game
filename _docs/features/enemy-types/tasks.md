@@ -23,8 +23,9 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [x] 6. Extract `Attacker` + `meleeAttack` (damage on a `HitFrame`, `Box` for F3, random
       `attack_1`/`attack_2`) → check: `TestEnemyDetectsChasesAndAttacks` green, new
       `TestMeleeHitLandsOnHitFrame` (mutation: ignoring HitFrame fails all 3 cases)
-- [ ] 7. Registry validation test: unique markers, required clips present, speeds > 0,
-      Mover/Attacker set → check: `TestBlueprintsValid`
+- [x] 7. Registry validation test: unique markers, required clips present, speeds > 0,
+      Mover/Attacker set → check: `TestBlueprintsValid` (markers stay in
+      `TestEnemyMarkersUniqueSingleChar`; mutation: no Attacker on the mushroom fails it)
 - [ ] 8. `node scripts/verify.mjs --full`, `code-reviewer` agent, update docs (state.md,
       design.md trimmed to what the code doesn't show)
 
