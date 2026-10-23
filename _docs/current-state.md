@@ -11,9 +11,9 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none yet (set by `/feature-docs start`)
-- **Branch:** `feature/mobile-settings`, PR #16 (14 commits, `main` merged in after #15): on-screen touch controls (`internal/core/touch_controls.go`): arrows (WASD) bottom-left, attack symbols bottom-right (U wave, I two thick slashes = heavy, O sparkle / J thin slash = weak, K crossed slashes, L burst; drawn in `touch_icons.go` at 70% of the button) with a bigger (104 px) sprint button (Left Shift) above the right column, menu button top-left from `assets/UIButtons.png`; HUD moves right of it (`DrawHUDAt`). Buttons are 80 px, 50% see-through until pressed, and stay out of the middle third of the screen. Shown when `navigator.maxTouchPoints > 0` (web, `internal/system/touch_js.go`) or after the first touch. W also jumps (Space has no button); K, L, O and menu act once per press. Merged before it: PR #15 (O two-press combo with 1 + 2 segment stamina, O hit boxes, attack steps in `attack_step.go`, jump + I hitting 60 px behind; fixes #14)
-- **Next step:** CI green on #16, try it on a real phone/tablet, then ask before merging (deploys to Render). Open: the menu button only toggles `InputState.Menu` (nothing draws a menu yet); `UIButtons.png` is 3.2 MB in the wasm (crop it to the used sprites?); no buttons for Space/F/R/Q; the full knockdown (`KnockedOut`) still draws from row 17
-- **Updated:** 2026-10-22
+- **Branch:** `refactor/asset-folders` (local, 3 commits): assets grouped into `assets/player/`, `enemy/`, `UI/`, `levels/`; `assets/embed.go` lists the folders, so **a new asset folder must be added to its `//go:embed` line** (`TestAssetPathsAreEmbedded` in `internal/core/asset_paths_test.go` fails otherwise). PR #15 and #16 are merged into `main`
+- **Next step:** push and open a PR for `refactor/asset-folders`; `assets/levels/portal.png` is untracked (no code uses it yet). Then try the touch controls on a real phone/tablet
+- **Updated:** 2026-10-23
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2

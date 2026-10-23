@@ -34,7 +34,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 | Spatial index | `internal/core/quadtree.go`, `aabb.go` | `DynamicQuadtree` for collision broad-phase; `Collider` interface | quadtree |
 | HUD | `internal/core/hud.go` | Health hearts / stamina (power) bars, 10 sprite segments each | no |
 | Debug overlay | `internal/core/debug_draw.go` | F3 toggles outlines of body (green) and attack (red) boxes for any `HitboxProvider` (enemies and the player) | `Game.showHitboxes` |
-| Assets | `assets/embed.go`, `internal/core/image.go` | `go:embed` FS; `readAsset` resolves by **base file name** (subfolders searched) | embedded, read-only |
+| Assets | `assets/embed.go`, `internal/core/image.go` | `go:embed` FS; `readAsset` resolves by **base file name** (subfolders searched); files live in `player/`, `enemy/`, `UI/`, `levels/`, and each folder must be on the `//go:embed` line | embedded, read-only |
 | Time | `internal/core/time.go` | `deltaTime()` = 1/TPS, shared by physics and animation | no |
 | Web server | `server/main.go` | Serves `$WEB_ROOT` on `$PORT`, `.wasm` MIME, no-cache for HTML | no |
 
@@ -63,7 +63,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 ## Data and state
 
 - All runtime state is in memory, owned by `Game` in `cmd/main.go`. No persistence, no save files.
-- Level data: `assets/level_1.json` (embedded). Assets are addressed by base file name only, so
+- Level data: `assets/levels/level_1.json` (embedded). Assets are addressed by base file name only, so
   **two assets with the same file name in different folders collide** (`internal/core/image.go:20`).
 - Single-threaded: no goroutines/channels in the current code.
 
