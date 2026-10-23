@@ -45,6 +45,7 @@ var succubusBlueprint = EnemyBlueprint{
 	BodyHeight: 100,
 	Scale:      0.3, // 360px cell -> ~108px tall on screen
 	Mover:      groundMover{},
+	Attacker:   meleeAttack{},
 	Stats: EnemyStats{
 		MaxHealth:      40,
 		Damage:         8,
@@ -59,7 +60,7 @@ var succubusBlueprint = EnemyBlueprint{
 		ClipIdle:    succubusClip(0, 0, 4, 6, true),
 		ClipWalk:    succubusClip(1, 1, 7, 10, true),                                                 // column 0 is a front-facing stand, not a step
 		ClipAlert:   succubusClip(2, 0, 3, 8, true).moving(motionFX{BobPx: 3, BobHz: 3, LeanDeg: 5}), // chase: a standing pose, so lean in
-		ClipAttack1: succubusClip(3, 0, 6, 12, false).held(1, 1, 1, 2),                               // frame 3 is the big slash
+		ClipAttack1: succubusClip(3, 0, 6, 12, false).held(1, 1, 1, 2),                               // frame 3 is the big slash; damage still lands on frame 0
 		ClipHurt:    succubusClip(4, 0, 2, 8, false).moving(motionFX{HitShakePx: 4}),
 		ClipDeath:   succubusClip(5, 0, 6, 8, false),
 	},
@@ -99,6 +100,7 @@ func skeletonBlueprint(colour, marker string) *EnemyBlueprint {
 		BodyHeight: 88,
 		Scale:      2, // 46px of art -> ~92px on screen
 		Mover:      groundMover{},
+		Attacker:   meleeAttack{},
 		Stats: EnemyStats{
 			MaxHealth:      40,
 			Damage:         10,
@@ -112,8 +114,8 @@ func skeletonBlueprint(colour, marker string) *EnemyBlueprint {
 		Clips: map[ClipName]EnemyClip{ // no run clip: chasing walks faster
 			ClipIdle:    clip("Idle", 8, 8, true),
 			ClipWalk:    clip("Walk", 10, 12, true),
-			ClipAttack1: clip("Attack1", 10, 14, false).held(1, 1, 1, 1, 1, 2, 1.5), // frames 5-6: thrust at full reach
-			ClipAttack2: clip("Attack2", 9, 14, false).held(1, 1, 1, 1, 1.5, 2),     // frames 4-5: second thrust
+			ClipAttack1: clip("Attack1", 10, 14, false).held(1, 1, 1, 1, 1, 2, 1.5).hitsOn(5), // frames 5-6: thrust at full reach
+			ClipAttack2: clip("Attack2", 9, 14, false).held(1, 1, 1, 1, 1.5, 2).hitsOn(4),     // frames 4-5: second thrust
 			ClipHurt:    clip("Hurt", 5, 12, false).moving(motionFX{HitShakePx: 3}),
 			ClipDeath:   clip("Die", 13, 12, false),
 		},
@@ -138,6 +140,7 @@ var mushroomBlueprint = EnemyBlueprint{
 	Scale:      2, // 33px of art -> ~66px on screen
 	FacesLeft:  true,
 	Mover:      groundMover{},
+	Attacker:   meleeAttack{},
 	Stats: EnemyStats{
 		MaxHealth:      40,
 		Damage:         8,
@@ -152,7 +155,7 @@ var mushroomBlueprint = EnemyBlueprint{
 		ClipIdle:    mushroomClip("Idle", 7, 8, true),
 		ClipWalk:    mushroomClip("Run", 8, 8, true),
 		ClipRun:     mushroomClip("Run", 8, 14, true).moving(motionFX{LeanDeg: 4}),
-		ClipAttack1: mushroomClip("Attack", 10, 14, false).held(1, 1, 1, 1, 1, 2.5), // frame 5: the slam lands
+		ClipAttack1: mushroomClip("Attack", 10, 14, false).held(1, 1, 1, 1, 1, 2.5).hitsOn(5), // frame 5: the slam lands
 		ClipHurt:    mushroomClip("Hit", 5, 12, false).moving(motionFX{HitShakePx: 3}),
 		ClipDeath:   mushroomClip("Die", 15, 12, false),
 	},

@@ -65,9 +65,14 @@ func (bp *EnemyBlueprint) resolveClip(name ClipName) (_ ClipName, ok bool) {
 	}
 }
 
-// clipFor is the clip the enemy plays in state s.
+// clipFor is the clip the enemy plays in state s. An attack plays the clip its
+// swing picked.
 func (e *EnemyRuntime) clipFor(s EnemyState) ClipName {
-	name, _ := e.bp.resolveClip(stateClips[s])
+	name := stateClips[s]
+	if s == EnemyAttack && e.swing.second {
+		name = ClipAttack2
+	}
+	name, _ = e.bp.resolveClip(name)
 	return name
 }
 
@@ -108,5 +113,11 @@ func (c EnemyClip) held(hold ...float64) EnemyClip {
 // moving returns the clip with draw-time motion m.
 func (c EnemyClip) moving(m motionFX) EnemyClip {
 	c.Motion = m
+	return c
+}
+
+// hitsOn returns the attack clip with its strike landing on frame f.
+func (c EnemyClip) hitsOn(f int) EnemyClip {
+	c.HitFrame = f
 	return c
 }

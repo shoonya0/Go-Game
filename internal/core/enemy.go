@@ -43,8 +43,9 @@ type EnemyClip struct {
 	// Hold stretches single frames: frame i of the clip shows for Hold[i] times
 	// as long as the others, so a strike or impact frame stays up. Missing or
 	// non-positive entries mean 1.
-	Hold   []float64
-	Motion motionFX // movement added at draw time (enemy_motion.go)
+	Hold     []float64
+	Motion   motionFX // movement added at draw time (enemy_motion.go)
+	HitFrame int      // attack clips: the frame (from 0) on which the strike lands
 }
 
 // EnemyBlueprint is the immutable description of an enemy species: its clips,
@@ -56,9 +57,10 @@ type EnemyBlueprint struct {
 	Marker     string // one-character level-grid code that spawns this kind (e.g. !)
 	BodyWidth  float64
 	BodyHeight float64
-	Scale      float64 // render scale of the sprite
-	FacesLeft  bool    // the art faces left, so drawing mirrors it the other way
-	Mover      Mover   // how it gets around (enemy_move.go)
+	Scale      float64  // render scale of the sprite
+	FacesLeft  bool     // the art faces left, so drawing mirrors it the other way
+	Mover      Mover    // how it gets around (enemy_move.go)
+	Attacker   Attacker // how it fights (enemy_attack.go)
 	Stats      EnemyStats
 	Clips      map[ClipName]EnemyClip // must hold requiredClips; others fall back (enemy_clips.go)
 }
@@ -105,12 +107,13 @@ type EnemyRuntime struct {
 	Health int
 
 	// AI / per-tick bookkeeping (not for external use).
-	spawnX      float64 // patrol anchor (X at spawn)
-	patrolDir   float64 // current patrol direction: -1 or +1
-	attackTimer float64 // seconds until the next hit may land
-	regenAccum  float64 // sub-point health regenerated but not yet added
-	onGround    bool    // whether the enemy rested on ground last tick
-	deathDone   bool    // whether the death animation has finished
+	spawnX      float64    // patrol anchor (X at spawn)
+	patrolDir   float64    // current patrol direction: -1 or +1
+	attackTimer float64    // seconds until the next hit may land
+	swing       swingState // the attack in progress
+	regenAccum  float64    // sub-point health regenerated but not yet added
+	onGround    bool       // whether the enemy rested on ground last tick
+	deathDone   bool       // whether the death animation has finished
 }
 
 // enemySheets caches one GPU image per sheet path, so spawning many enemies of
@@ -155,24 +158,9 @@ func (e *EnemyRuntime) GetBounds() AABB {
 	return AABB{X: e.Pos.X, Y: e.Pos.Y, Width: e.bp.BodyWidth, Height: e.bp.BodyHeight}
 }
 
-// AttackBox returns the area the enemy's strike covers: from the body's centre
-// out AttackRange px in the direction it faces, at body height. The player is
-// hit only while their body overlaps it.
-func (e *EnemyRuntime) AttackBox() AABB {
-	return e.attackBoxFacing(e.FlipX)
-}
-
-// attackBoxFacing is AttackBox for an explicit facing (left = true), so the AI
-// can test a strike toward the player before turning to face them.
-func (e *EnemyRuntime) attackBoxFacing(left bool) AABB {
-	b := e.GetBounds()
-	reach := e.bp.Stats.AttackRange
-	x := centerX(b)
-	if left {
-		x -= reach
-	}
-	return AABB{X: x, Y: b.Y, Width: reach, Height: b.Height}
-}
+// AttackBox returns the area the enemy's strike covers in the direction it
+// faces. The player is hit only while their body overlaps it.
+func (e *EnemyRuntime) AttackBox() AABB { return e.bp.Attacker.Box(e) }
 
 // Hitboxes reports the enemy's body and, while alive, its attack box to the
 // debug overlay (HitboxProvider).

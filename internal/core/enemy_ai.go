@@ -40,7 +40,7 @@ func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
 	dist := math.Abs(dx)
 
 	switch {
-	case e.attackBoxFacing(dx < 0).Intersects(target.GetBounds()):
+	case e.bp.Attacker.InRange(e, target.GetBounds()):
 		e.attack(target, dx)
 	case dist <= st.DetectRange:
 		e.chase(dx)
@@ -49,18 +49,16 @@ func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
 	}
 }
 
-// attack faces and strikes the player, standing still. Damage is gated by the
-// attack cooldown so contact deals one hit per AttackCooldown seconds rather than
-// once per frame.
+// attack faces the player and swings, standing still. A new swing starts each
+// time the enemy enters its attack state; the Attacker decides when it lands.
 func (e *EnemyRuntime) attack(target *PlayerRuntime, dx float64) {
 	e.faceToward(dx)
 	e.bp.Mover.Steer(e, moveIntent{mode: moveHold})
-	e.setState(EnemyAttack)
-
-	if e.attackTimer <= 0 {
-		target.ApplyDamageFrom(e.bp.Stats.Damage, centerX(e.GetBounds()))
-		e.attackTimer = e.bp.Stats.AttackCooldown
+	if e.State != EnemyAttack {
+		e.bp.Attacker.Start(e)
 	}
+	e.setState(EnemyAttack)
+	e.bp.Attacker.Update(e, target)
 }
 
 // chase moves the enemy toward the player at chase speed.
