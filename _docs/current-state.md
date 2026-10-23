@@ -1,6 +1,6 @@
-# Go-Game (Pirate Adventure): current state (snapshot 2026-10-22)
+# Go-Game (Pirate Adventure): current state (snapshot 2026-10-23)
 
-Snapshot at `a2c2e8e` on `main` (PR #16 merged). One page. Details live in each increment's entry in
+Snapshot at `68463d7` on `feature/enemy-types` (`main` is at `fda2323`, PR #17 merged). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -10,10 +10,10 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation)
-- **Branch:** `feature/enemy-types` (from `main` at `fda2323`; PR #17 asset-folders is merged). Planning only so far
-- **Next step:** task 1 in [tasks.md](./features/enemy-types/tasks.md): succubus characterisation tests, then split enemy behaviour into movers and attackers. Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
-- **Updated:** 2026-10-23
+- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation), tasks 1–2 of 8 done
+- **Branch:** `feature/enemy-types` (from `main` at `fda2323`), 5 local commits, not pushed: plan docs, succubus characterisation tests, `EnemyClip` (each animation names its own sheet), succubus walk-frame fix
+- **Next step:** task 3 in [tasks.md](./features/enemy-types/tasks.md): standard clip names (idle, walk, alert, run, attack_1, attack_2, guard, hurt, death) with fallbacks. Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Updated:** 2026-10-23 (after task 2)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -34,25 +34,26 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `a2c2e8e`, Windows, go1.26.7)
+## Test baseline (at `68463d7`, Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
-| `go test ./...` | ✅ 76/76 pass, all in `internal/core` | — |
+| `go test ./...` | ✅ 85/85 pass, all in `internal/core` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
-| GitHub CI | see the checks on PR #16 / `main` | — |
+| GitHub CI | not run: `feature/enemy-types` isn't pushed yet | — |
 
 Compare runs **by test name**: `go test ./internal/core -v | grep "^--- "` lists them. Added since the last
 baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAttackSteps`,
-`TestAirHeavyAttackHitsBothSides`, `TestAttackDamageInBars`, `TestComboAttacksHitTwicePerSwing` and the
-enemy health / level marker tests.
+`TestAirHeavyAttackHitsBothSides`, `TestAttackDamageInBars`, `TestComboAttacksHitTwicePerSwing`, the
+enemy health / level marker tests, and on `feature/enemy-types` the succubus characterisation tests
+(`internal/core/enemy_behavior_test.go`) and `TestEnemyClipsFitTheirSheets`.
 
 ## Known issues and risks
 
 1. `game.exe` is tracked in git although `.gitignore` has `*.exe`. VERIFIED (`git ls-files`)
 2. `go.mod` says `go 1.24.3` and CI uses 1.24; local toolchain is 1.26.7. Language features newer than 1.24 would pass locally and fail CI. VERIFIED
-3. `readAsset` resolves by base file name — same-named assets in different folders silently collide (`internal/core/image.go:20`). VERIFIED
+3. `readAsset` resolves by base file name — same-named assets in different folders silently collide (`internal/core/image.go:20`). Live case: `assets/enemy/White_Golem/` and `Orange_Golem/` both hold `Golem_1_*.png` (untracked; renaming is enemy-types task 16). VERIFIED
 4. Large files: `animation.go` 434 lines (`InitPlayerAnimations` is most of it), `player.go` 397, `world.go` 343. VERIFIED (`wc -l`)
 5. ~~`Layout` returns the outside window size, so the logical resolution changes with the window/browser size (`cmd/main.go:100`).~~ **FIXED** (`d6e602f`) — `Layout` now returns the fixed `screenWidth × screenHeight` constants; Ebitengine auto-scales to any device.
 6. No tests for player physics with collision, quadtree or the server; combat, stamina, attack steps (without a level), touch input and HUD math are covered. VERIFIED (test names)
@@ -61,13 +62,16 @@ enemy health / level marker tests.
 9. `assets/UI/UIButtons.png` is 3.1 MB and embedded in the WASM, though touch controls use only three of its sprites; cropping it would shrink the phone download. VERIFIED (`du`)
 10. The ground J sprite slashes behind the player, and J now steps back into it. Issue not filed. VERIFIED (sprite sheet)
 11. The full knockdown (`KnockedOut`) still draws from row 17 while the short one uses row 16. ASSUMED (not rechecked this session)
+12. `//go:embed enemy` embeds every file on disk, untracked ones included, so local builds already carry the 15 MB of raw `assets/enemy/Free Sprites/` sheets in the WASM. CI doesn't (they aren't committed). enemy-types D7 bakes them small and keeps the raw sheets out of the embed (task 11). VERIFIED (`du`, `go build`)
 
 ## Open decisions
 
 | # | Decision needed | Options | Owner | Blocking? |
 |---|---|---|---|---|
 | 1 | Untrack `game.exe` | `git rm --cached game.exe` / keep | user | no |
+| 2 | Where raw battler sheets live once baked (enemy-types task 11) | outside `assets/` (e.g. `art-src/`) / gitignored / deleted | user | blocks task 11 only |
 
 ## Next task
 
-- Not chosen yet. Candidates: draw a real menu for the menu button; crop `UIButtons.png`; touch buttons for jump (Space), F, R, Q; file the J sprite issue; untrack `game.exe`; tests for player physics with collision.
+- enemy-types task 3: standard clip names with fallbacks ([tasks.md](./features/enemy-types/tasks.md)).
+- Other candidates: draw a real menu for the menu button; crop `UIButtons.png`; touch buttons for jump (Space), F, R, Q; file the J sprite issue; untrack `game.exe`; tests for player physics with collision.

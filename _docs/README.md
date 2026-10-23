@@ -25,7 +25,7 @@ One row per feature that has its own docs folder. Status: ⏳ planned · 🟡 in
 
 | Feature | Docs index | Code | Status | One line |
 |---|---|---|---|---|
-| enemy-types | [index](./features/enemy-types/README.md) | `internal/core/enemy*.go`, `assets/enemy/` | ⏳ | Ground/flying enemies from `assets/enemy/`, built from movement + attack parts |
+| enemy-types | [index](./features/enemy-types/README.md) | `internal/core/enemy*.go`, `assets/enemy/` | 🟡 | Ground/flying enemies from `assets/enemy/`, built from movement + attack parts |
 
 <!-- Example row. Most features here live in the flat internal/core package, so their docs
 go in _docs/features/<feature>/ and the index lists the feature's files in "scope:".
