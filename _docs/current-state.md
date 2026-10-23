@@ -10,10 +10,10 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation), tasks 1–3 of 8 done
+- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation), tasks 1–4 of 8 done
 - **Branch:** `feature/enemy-types` (from `main` at `fda2323`), 9 local commits, not pushed: plan docs, succubus characterisation tests, `EnemyClip` (each animation names its own sheet), succubus walk-frame fix, standard clip names with fallbacks (`internal/core/enemy_clips.go`)
-- **Next step:** finish task 4 in [tasks.md](./features/enemy-types/tasks.md) (committed; needs a look at the succubus in a running game), then task 5 (`Mover` + `groundMover`). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
-- **Updated:** 2026-10-23 (task 4 implemented)
+- **Next step:** user looks at the skeleton and mushroom in level 1 (tasks 17, 18, pulled ahead), then task 5 (`Mover` + `groundMover`) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Updated:** 2026-10-23 (task 4 done; skeleton + mushroom added)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2

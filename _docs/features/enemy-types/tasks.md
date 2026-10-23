@@ -15,8 +15,9 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
       to 7 frames (column 0 of that row is a front-facing stand, not a step)
 - [x] 3. Standard clip names + fallbacks (`alert`/`run` → `walk`, `attack_2` → `attack_1`);
       chase plays `run` → check: `TestEnemyMissingClipFallsBack`
-- [ ] 4. Per-frame `Hold` timing + draw-time motion (bob, lean, hit shake) → check:
-      `TestClipHoldTiming`, manual look at the succubus
+- [x] 4. Per-frame `Hold` timing + draw-time motion (bob, lean, hit shake) → check:
+      `TestClipHoldTiming`, manual look at the succubus. The user dropped the succubus look
+      (its art is weak); the look moved to the skeleton and mushroom (17, 18), pulled ahead
 - [ ] 5. Extract `Mover` + `groundMover` from `enemy_ai.go`; succubus uses it → check:
       enemy tests unchanged and green
 - [ ] 6. Extract `Attacker` + `meleeAttack` (damage on a `HitFrame`, `Box` for F3, random
@@ -48,8 +49,10 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [ ] 16. Rename `White_Golem/Golem_1_*` → `WhiteGolem_*` (D4), add White Golem → check:
       new `TestAssetBaseNamesUnique`
 - [ ] 17. Skeleton White + Yellow strips as one blueprint with colour variants → check:
-      `TestSkeletonVariantsShareBlueprint`, manual look
-- [ ] 18. Mushroom (no stun yet) → check: manual look
+      `TestSkeletonVariantsShareBlueprint`, manual look. Code done early (`@`, `#` in level 1);
+      waiting for the look. `attack_2` plays once task 6 picks attacks
+- [ ] 18. Mushroom (no stun yet) → check: manual look. Code done early (`&` in level 1,
+      `FacesLeft`); waiting for the look
 - [ ] 19. Bake + add the other ground battlers, a few per session: kobold, gnoll, skeleton,
       zombies, troll, werewolf, wolf, German shepherd, rat, crab, sahuagin, slime, turnip →
       check: `TestBlueprintsValid`, manual look at each

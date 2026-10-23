@@ -1,13 +1,15 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23 at `a8077b3`)
+## Now (updated 2026-10-23 at `91fd78b`)
 
 - **Status:** 🟡 in progress
-- **Current task:** 4. Per-frame `Hold` timing + draw-time motion (see [tasks.md](./tasks.md))
-- **Stopped at:** task 4 code and tests done, `verify.mjs --full` 8/8, code-reviewer: no blocking findings,
-  committed in `a8077b3`. Not ticked: it still needs the user to look at the succubus in a running
-  game. Tuning to judge: chase lean 5° + bob 3px@3Hz, hurt shake 4px, attack frame 3 held ×2
-  (values in `enemy_types.go`)
+- **Current task:** 17 + 18 waiting for a look in a running game, then 5. Extract `Mover` +
+  `groundMover` (see [tasks.md](./tasks.md))
+- **Stopped at:** task 4 done. The user skipped the succubus look, so the skeleton (White `@`,
+  Yellow `#`) and mushroom (`&`) were added early and placed in level 1 to judge hold timing and
+  draw-time motion on real strip art. Tuning lives on the clip lines in `enemy_types.go`
+- **Traps:** the mushroom art faces left (`FacesLeft`). No ledge probe yet (task 12): patrols are
+  kept at 2.5 tiles so they stop short of pits, but a chase can still run off a ledge
 - **Open questions / blockers:** task 11: where the raw battler sheets live once baked
   (the user decides; they must leave the embed)
 - **Don't forget:** assets changed on 2026-10-23. Removed: the desert set, `Bat with VFX/`,
@@ -18,6 +20,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-23: skeleton + mushroom pulled ahead (tasks 17, 18)
+
+- Changed: `enemy_types.go` (skeleton builder, mushroom), `enemy.go` (kinds, `FacesLeft`), `enemy_anim.go` (`drawFlipX`), `level_1.json`, assets `Skeleton_*/`, `Mushroom/`
+- Verified: `verify.mjs --full` 8/8 after each; new `TestSkeletonVariantsShareBlueprint`, `TestLeftFacingArtMirrorsTheOtherWay`; `TestEnemiesHaveAtLeastTwoWholeBars` caught 30 HP
+- Docs touched: tasks (4 ticked, notes on 17/18), spec (roster checked), state
 
 ### 2026-10-23: task 4, Hold timing + draw-time motion
 
@@ -42,9 +50,3 @@
 - Changed: `internal/core/enemy_behavior_test.go` (7 tests)
 - Verified: `node scripts/verify.mjs` pass; mutation (one-shot → idle) fails `TestEnemyOneShotClipsReturnToPatrol`
 - Docs touched: tasks (1 ticked, patrol-frame note on 2), state
-
-### 2026-10-23: choose one sprite format + guard
-
-- Changed: docs only. Decided: battlers are baked into strips with chained motions (D7), guard trait (D8)
-- Verified: docs-check
-- Docs touched: spec (roster, standard clips), decisions D3/D6/D7/D8, design, tasks rewritten (nothing ticked yet)
