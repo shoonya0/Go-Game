@@ -6,17 +6,19 @@ import "github.com/hajimehoshi/ebiten/v2"
 // clip when the state changed this tick, loops looping clips, and resolves the
 // follow-up state when a one-shot clip finishes: attack/hurt return to patrol,
 // while death holds on its final frame and marks the enemy removable. It mirrors
-// PlayerRuntime.UpdateAnimation so both actors animate identically.
+// PlayerRuntime.UpdateAnimation, except that a clip may Hold single frames longer.
 func (e *EnemyRuntime) UpdateEnemyAnimation() {
-	anim := e.Animations[int(e.State)]
+	anim := e.currentAnim()
 	if anim == nil {
 		return
 	}
+	clip := e.currentClip()
 
 	// Restart the clip whenever the state changed this tick.
 	if e.PrevState != e.State {
 		e.CurrAnimFrame = anim.AnimStartFrame
 		anim.FrameTimer = 0
+		e.clipTime = 0
 	}
 
 	if anim.AnimationSpeed <= 0 {
@@ -24,9 +26,14 @@ func (e *EnemyRuntime) UpdateEnemyAnimation() {
 	}
 	timePerFrame := 1.0 / anim.AnimationSpeed
 	anim.FrameTimer += deltaTime()
+	e.clipTime += deltaTime()
 
-	for anim.FrameTimer >= timePerFrame {
-		anim.FrameTimer -= timePerFrame
+	for {
+		frameTime := timePerFrame * clip.hold(e.CurrAnimFrame-anim.AnimStartFrame)
+		if anim.FrameTimer < frameTime {
+			break
+		}
+		anim.FrameTimer -= frameTime
 		e.CurrAnimFrame++
 
 		if e.CurrAnimFrame < anim.AnimStartFrame+anim.TotalFrames {
@@ -46,17 +53,25 @@ func (e *EnemyRuntime) UpdateEnemyAnimation() {
 			return
 		}
 		e.setState(EnemyPatrol)
-		e.CurrAnimFrame = e.Animations[int(EnemyPatrol)].AnimStartFrame
+		e.CurrAnimFrame = e.animFor(EnemyPatrol).AnimStartFrame
+		e.clipTime = 0
 	}
 }
 
 // DrawEnemyAnimation draws the current frame through the shared sprite path,
-// positioned relative to the supplied camera (the player owns the only camera).
+// moved by the clip's draw-time motion and positioned relative to the supplied
+// camera (the player owns the only camera).
 func (e *EnemyRuntime) DrawEnemyAnimation(screen *ebiten.Image, cam Camera) {
-	anim := e.Animations[int(e.State)]
+	anim := e.currentAnim()
 	if anim == nil {
 		return
 	}
-	drawSpriteFrame(screen, e.img, anim, e.CurrAnimFrame, e.GetBounds(),
-		e.FlipX, e.Scale, cam.Pos, e.bp.OriginHeight, ebiten.ColorScale{})
+	clip := e.currentClip()
+	drawSpriteFramePosed(screen, enemySheet(clip.Sheet), anim, e.CurrAnimFrame, e.GetBounds(),
+		e.drawFlipX(), e.Scale, cam.Pos, anim.FrameHeight, ebiten.ColorScale{}, clip.Motion.pose(e.clipTime, e.FlipX))
 }
+
+// drawFlipX reports whether the sprite must be mirrored to face the way the
+// enemy faces: FlipX means facing left, and art that already faces left is
+// mirrored only when facing right.
+func (e *EnemyRuntime) drawFlipX() bool { return e.FlipX != e.bp.FacesLeft }

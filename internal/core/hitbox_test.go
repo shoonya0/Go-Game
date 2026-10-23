@@ -165,13 +165,13 @@ var (
 // TakeDamage itself, including when the enemy is already hurt.
 func TestEnemyHitRestartsHurtClip(t *testing.T) {
 	e := newTestEnemy(Position{})
-	e.Animations = e.bp.NewAnimations()
+	e.Animations = e.bp.newAnimations()
 	e.TakeDamage(1)
 	e.CurrAnimFrame = 1 // part-way through the hurt clip
 	e.PrevState = e.State
 
 	e.TakeDamage(1)
-	if want := e.Animations[int(EnemyHurt)].AnimStartFrame; e.CurrAnimFrame != want {
+	if want := e.animFor(EnemyHurt).AnimStartFrame; e.CurrAnimFrame != want {
 		t.Errorf("hurt again: frame %d, want restart at %d", e.CurrAnimFrame, want)
 	}
 }

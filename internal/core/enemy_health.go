@@ -69,7 +69,7 @@ func (e *EnemyRuntime) regenerateHealth() {
 // DrawHealthBar draws the enemy's health bars side by side, centred above its
 // sprite. Dead enemies have none.
 func (e *EnemyRuntime) DrawHealthBar(screen *ebiten.Image, cam Camera) {
-	anim := e.Animations[int(e.State)]
+	anim := e.currentAnim()
 	if e.State.IsDead() || anim == nil {
 		return
 	}

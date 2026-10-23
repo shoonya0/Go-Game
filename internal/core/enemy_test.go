@@ -24,9 +24,9 @@ func TestBlueprintRegistered(t *testing.T) {
 	if bp == nil || bp.Name != "Succubus" {
 		t.Fatalf("blueprintFor(KindSuccubus) = %+v, want a Succubus blueprint", bp)
 	}
-	anims := bp.NewAnimations()
+	e := newAnimatedTestEnemy(Position{})
 	for _, st := range []EnemyState{EnemyIdle, EnemyPatrol, EnemyAlert, EnemyAttack, EnemyHurt, EnemyDead} {
-		if anims[int(st)] == nil {
+		if e.animFor(st) == nil {
 			t.Errorf("succubus blueprint missing animation for state %d", st)
 		}
 	}
@@ -104,5 +104,51 @@ func TestEnemyDetectsChasesAndAttacks(t *testing.T) {
 	e.decideBehavior(near)
 	if near.Combat.Health != 100-st.Damage {
 		t.Errorf("player took damage during cooldown: health = %d", near.Combat.Health)
+	}
+}
+
+// TestBlueprintsValid checks every registered species is complete, so a new
+// enemy fails here instead of panicking or vanishing mid-game. Markers, sheet
+// bounds and health bars have their own tests.
+func TestBlueprintsValid(t *testing.T) {
+	names := map[string]EnemyKind{}
+	for kind, bp := range enemyBlueprints {
+		if bp.Name == "" {
+			t.Errorf("kind %d: empty Name", kind)
+		}
+		if other, dup := names[bp.Name]; dup {
+			t.Errorf("name %q used by kinds %d and %d", bp.Name, other, kind)
+		}
+		names[bp.Name] = kind
+
+		for _, name := range requiredClips {
+			if _, ok := bp.Clips[name]; !ok {
+				t.Errorf("%s: no %v clip, which every enemy needs", bp.Name, name)
+			}
+		}
+		for st := range stateClips {
+			if _, ok := bp.resolveClip(stateClips[st]); !ok {
+				t.Errorf("%s: nothing to play in state %d", bp.Name, st)
+			}
+		}
+		if bp.Mover == nil || bp.Attacker == nil {
+			t.Errorf("%s: Mover=%v Attacker=%v, want both set", bp.Name, bp.Mover, bp.Attacker)
+		}
+		if bp.BodyWidth <= 0 || bp.BodyHeight <= 0 || bp.Scale <= 0 {
+			t.Errorf("%s: body %vx%v scale %v, want all positive", bp.Name, bp.BodyWidth, bp.BodyHeight, bp.Scale)
+		}
+		st := bp.Stats
+		for stat, v := range map[string]float64{
+			"Damage": float64(st.Damage), "WalkSpeed": st.WalkSpeed, "ChaseSpeed": st.ChaseSpeed,
+			"DetectRange": st.DetectRange, "AttackRange": st.AttackRange,
+			"AttackCooldown": st.AttackCooldown, "PatrolTiles": st.PatrolTiles,
+		} {
+			if v <= 0 {
+				t.Errorf("%s: %s = %v, want > 0", bp.Name, stat, v)
+			}
+		}
+		if st.AttackRange >= st.DetectRange {
+			t.Errorf("%s: AttackRange %v >= DetectRange %v, so it would never chase", bp.Name, st.AttackRange, st.DetectRange)
+		}
 	}
 }

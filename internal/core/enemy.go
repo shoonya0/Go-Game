@@ -10,6 +10,9 @@ type EnemyKind int
 
 const (
 	KindSuccubus EnemyKind = iota
+	KindSkeletonWhite
+	KindSkeletonYellow
+	KindMushroom
 )
 
 // EnemyStats are the tunable gameplay numbers for an enemy species. They live in
@@ -26,42 +29,73 @@ type EnemyStats struct {
 	PatrolTiles    float64 // half-width (in tiles) of the patrol path around spawn
 }
 
-// EnemyBlueprint is the immutable description of an enemy species: which sprite
-// sheet to use, how its frames are laid out, its collision box, and its stats.
-// This is the "different sprites take on the general enemy" part — every field
-// that varies per species is data here, while behaviour is shared code.
-//
-// Sprite sheets differ in frame size and layout, so each blueprint carries its
-// own OriginHeight (the sprite-sheet row unit) and its own Animations table; the
-// shared drawing code (drawSpriteFrame) is parameterised on both.
-type EnemyBlueprint struct {
-	Name         string
-	Marker       string // one-character level-grid code that spawns this kind (e.g. !)
-	SpritePath   string
-	OriginHeight int     // sprite-sheet row height used to locate a frame's Y origin
-	BodyWidth    float64 // collision box width
-	BodyHeight   float64 // collision box height
-	Scale        float64 // render scale of the sprite
-	Stats        EnemyStats
+// EnemyClip describes one animation of a species: which sprite sheet holds it
+// and where its frames sit. Each clip names its own sheet, so a species whose art
+// ships as one PNG strip per animation and a species packed into one grid are
+// described the same way.
+type EnemyClip struct {
+	Sheet          string  // asset path of the sheet holding this clip
+	Row            int     // sheet row, in FrameH units (0 for a one-row strip)
+	Start, Frames  int     // first column and number of frames
+	FrameW, FrameH int     // size of one frame cell
+	FPS            float64 // frames shown per second
+	Loop           bool
+	// Hold stretches single frames: frame i of the clip shows for Hold[i] times
+	// as long as the others, so a strike or impact frame stays up. Missing or
+	// non-positive entries mean 1.
+	Hold     []float64
+	Motion   motionFX // movement added at draw time (enemy_motion.go)
+	HitFrame int      // attack clips: the frame (from 0) on which the strike lands
+}
 
-	// NewAnimations builds a fresh animation table for one instance. It is a
-	// factory (not a shared map) because Animation carries a mutable FrameTimer;
-	// sharing one map across instances would couple their playback.
-	NewAnimations func() map[int]*Animation
+// EnemyBlueprint is the immutable description of an enemy species: its clips,
+// its collision box, and its stats. This is the "different sprites take on the
+// general enemy" part — every field that varies per species is data here, while
+// behaviour is shared code.
+type EnemyBlueprint struct {
+	Name       string
+	Marker     string // one-character level-grid code that spawns this kind (e.g. !)
+	BodyWidth  float64
+	BodyHeight float64
+	Scale      float64  // render scale of the sprite
+	FacesLeft  bool     // the art faces left, so drawing mirrors it the other way
+	Mover      Mover    // how it gets around (enemy_move.go)
+	Attacker   Attacker // how it fights (enemy_attack.go)
+	Stats      EnemyStats
+	Clips      map[ClipName]EnemyClip // must hold requiredClips; others fall back (enemy_clips.go)
+}
+
+// newAnimations builds a fresh animation table for one instance. Each instance
+// needs its own because Animation carries a mutable FrameTimer; sharing one table
+// would couple the playback of every enemy of the kind.
+func (bp *EnemyBlueprint) newAnimations() map[ClipName]*Animation {
+	anims := make(map[ClipName]*Animation, len(bp.Clips))
+	for name, c := range bp.Clips {
+		anims[name] = &Animation{
+			SpriteSheetYPosition: c.Row,
+			AnimStartFrame:       c.Start,
+			TotalFrames:          c.Frames,
+			FrameWidth:           c.FrameW,
+			FrameHeight:          c.FrameH,
+			AnimationSpeed:       c.FPS,
+			Looping:              c.Loop,
+		}
+	}
+	return anims
 }
 
 // EnemyRuntime is the complete, mutable state of one enemy instance. It mirrors
 // the shape of PlayerRuntime (sprite + spatial + combat + per-tick bookkeeping)
 // but only carries what an AI-driven enemy needs.
 type EnemyRuntime struct {
-	img *ebiten.Image
-	bp  *EnemyBlueprint // the species blueprint (shared, read-only)
+	bp *EnemyBlueprint // the species blueprint (shared, read-only)
 
 	// State and animation.
 	State         EnemyState
 	PrevState     EnemyState
-	Animations    map[int]*Animation
+	Animations    map[ClipName]*Animation
 	CurrAnimFrame int
+	clipTime      float64 // seconds since the current clip (re)started; drives Motion
 
 	// Spatial state.
 	FlipX      bool // true when the enemy faces left
@@ -73,39 +107,43 @@ type EnemyRuntime struct {
 	Health int
 
 	// AI / per-tick bookkeeping (not for external use).
-	spawnX      float64 // patrol anchor (X at spawn)
-	patrolDir   float64 // current patrol direction: -1 or +1
-	attackTimer float64 // seconds until the next hit may land
-	regenAccum  float64 // sub-point health regenerated but not yet added
-	onGround    bool    // whether the enemy rested on ground last tick
-	deathDone   bool    // whether the death animation has finished
+	spawnX      float64    // patrol anchor (X at spawn)
+	patrolDir   float64    // current patrol direction: -1 or +1
+	attackTimer float64    // seconds until the next hit may land
+	swing       swingState // the attack in progress
+	regenAccum  float64    // sub-point health regenerated but not yet added
+	onGround    bool       // whether the enemy rested on ground last tick
+	deathDone   bool       // whether the death animation has finished
 }
 
-// enemyImages caches one GPU image per species so spawning many enemies of the
-// same kind does not re-upload the sheet. The game loop is single-threaded, so
-// no synchronisation is required.
-var enemyImages = map[EnemyKind]*ebiten.Image{}
+// enemySheets caches one GPU image per sheet path, so spawning many enemies of
+// the same kind (or clips sharing a sheet) does not re-upload it. The game loop
+// is single-threaded, so no synchronisation is required.
+var enemySheets = map[string]*ebiten.Image{}
 
-// enemyImage returns the (cached) sprite sheet for a species.
-func enemyImage(kind EnemyKind, path string) *ebiten.Image {
-	if img, ok := enemyImages[kind]; ok {
+// enemySheet returns the (cached) image for a sheet path.
+func enemySheet(path string) *ebiten.Image {
+	if img, ok := enemySheets[path]; ok {
 		return img
 	}
 	img := LoadImage(path)
-	enemyImages[kind] = img
+	enemySheets[path] = img
 	return img
 }
 
 // NewEnemy builds a ready-to-run enemy of the given kind at pos, wiring its
-// blueprint, sprite sheet, animations and starting stats.
+// blueprint, animations and starting stats. It loads every clip's sheet now, so
+// a missing asset fails at spawn rather than mid-fight.
 func NewEnemy(kind EnemyKind, pos Position) *EnemyRuntime {
 	bp := blueprintFor(kind)
+	for _, c := range bp.Clips {
+		enemySheet(c.Sheet)
+	}
 	return &EnemyRuntime{
-		img:        enemyImage(kind, bp.SpritePath),
 		bp:         bp,
 		State:      EnemyPatrol,
 		PrevState:  EnemyPatrol,
-		Animations: bp.NewAnimations(),
+		Animations: bp.newAnimations(),
 		Scale:      bp.Scale,
 		Pos:        pos,
 		Health:     bp.Stats.MaxHealth,
@@ -120,24 +158,9 @@ func (e *EnemyRuntime) GetBounds() AABB {
 	return AABB{X: e.Pos.X, Y: e.Pos.Y, Width: e.bp.BodyWidth, Height: e.bp.BodyHeight}
 }
 
-// AttackBox returns the area the enemy's strike covers: from the body's centre
-// out AttackRange px in the direction it faces, at body height. The player is
-// hit only while their body overlaps it.
-func (e *EnemyRuntime) AttackBox() AABB {
-	return e.attackBoxFacing(e.FlipX)
-}
-
-// attackBoxFacing is AttackBox for an explicit facing (left = true), so the AI
-// can test a strike toward the player before turning to face them.
-func (e *EnemyRuntime) attackBoxFacing(left bool) AABB {
-	b := e.GetBounds()
-	reach := e.bp.Stats.AttackRange
-	x := centerX(b)
-	if left {
-		x -= reach
-	}
-	return AABB{X: x, Y: b.Y, Width: reach, Height: b.Height}
-}
+// AttackBox returns the area the enemy's strike covers in the direction it
+// faces. The player is hit only while their body overlaps it.
+func (e *EnemyRuntime) AttackBox() AABB { return e.bp.Attacker.Box(e) }
 
 // Hitboxes reports the enemy's body and, while alive, its attack box to the
 // debug overlay (HitboxProvider).
@@ -183,8 +206,9 @@ func (e *EnemyRuntime) TakeDamage(dmg int) {
 
 // restartAnimation rewinds the current state's clip to its first frame.
 func (e *EnemyRuntime) restartAnimation() {
-	if anim := e.Animations[int(e.State)]; anim != nil {
+	if anim := e.currentAnim(); anim != nil {
 		e.CurrAnimFrame = anim.AnimStartFrame
 		anim.FrameTimer = 0
 	}
+	e.clipTime = 0
 }

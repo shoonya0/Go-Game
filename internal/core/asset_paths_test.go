@@ -18,7 +18,9 @@ func TestAssetPathsAreEmbedded(t *testing.T) {
 		"../assets/player/GideonGraves.png", // cmd/main.go playerSpriteSheetPath
 	}
 	for _, bp := range enemyBlueprints {
-		paths = append(paths, bp.SpritePath)
+		for _, c := range bp.Clips {
+			paths = append(paths, c.Sheet)
+		}
 	}
 
 	embedded := map[string]bool{}

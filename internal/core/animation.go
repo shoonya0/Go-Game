@@ -397,6 +397,12 @@ func (player *PlayerRuntime) UpdateAnimation() {
 // the shared draw path for the player and every enemy — each actor supplies its own sheet, animation, scale and row-origin height, so
 // sprites with different frame sizes and layouts all render through one function.
 func drawSpriteFrame(screen, img *ebiten.Image, anim *Animation, frame int, box AABB, flipX bool, scale float64, camPos Position, originHeight int, tint ebiten.ColorScale) {
+	drawSpriteFramePosed(screen, img, anim, frame, box, flipX, scale, camPos, originHeight, tint, spritePose{})
+}
+
+// drawSpriteFramePosed is drawSpriteFrame with the sprite moved by pose: rotated
+// about its bottom centre, then offset. The box itself is not moved.
+func drawSpriteFramePosed(screen, img *ebiten.Image, anim *Animation, frame int, box AABB, flipX bool, scale float64, camPos Position, originHeight int, tint ebiten.ColorScale, pose spritePose) {
 	width, height := anim.FrameWidth, anim.FrameHeight
 
 	frameX := frame * width
@@ -412,10 +418,16 @@ func drawSpriteFrame(screen, img *ebiten.Image, anim *Animation, frame int, box 
 	} else {
 		op.GeoM.Scale(scale, scale)
 	}
+	if pose.Rot != 0 {
+		w, h := float64(width)*scale, float64(height)*scale
+		op.GeoM.Translate(-w/2, -h)
+		op.GeoM.Rotate(pose.Rot)
+		op.GeoM.Translate(w/2, h)
+	}
 
 	// Center the sprite horizontally on the box, align its bottom, then apply camera.
-	drawX := box.X + (box.Width-float64(width)*scale)/2 - camPos.X
-	drawY := box.Y + (box.Height - float64(height)*scale) - camPos.Y
+	drawX := box.X + (box.Width-float64(width)*scale)/2 - camPos.X + pose.DX
+	drawY := box.Y + (box.Height - float64(height)*scale) - camPos.Y + pose.DY
 	op.GeoM.Translate(drawX, drawY)
 
 	screen.DrawImage(subImage, op)
