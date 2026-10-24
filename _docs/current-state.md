@@ -12,8 +12,8 @@ and /feature-docs update. -->
 
 - **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation) done, tasks 1–8; next increment 2 (battler baking)
 - **Branch:** `feature/enemy-types`, fresh from `main` at `2bc4469` (increment 1 merged as PR #18: modular enemy foundation, skeleton + mushroom)
-- **Next step:** task 11 (where raw battler sheets live: the user decides) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
-- **Updated:** 2026-10-24 (task 10: goblin baked)
+- **Next step:** task 12 (ledge probe in `groundMover`) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Updated:** 2026-10-24 (task 11: raw sheets moved to `art-src/battlers/`)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -63,7 +63,7 @@ enemy health / level marker tests, and on `feature/enemy-types` the succubus cha
 9. `assets/UI/UIButtons.png` is 3.1 MB and embedded in the WASM, though touch controls use only three of its sprites; cropping it would shrink the phone download. VERIFIED (`du`)
 10. The ground J sprite slashes behind the player, and J now steps back into it. Issue not filed. VERIFIED (sprite sheet)
 11. The full knockdown (`KnockedOut`) still draws from row 17 while the short one uses row 16. ASSUMED (not rechecked this session)
-12. `//go:embed enemy` embeds every file on disk, untracked ones included, so local builds already carry the 15 MB of raw `assets/enemy/Free Sprites/` sheets in the WASM. CI doesn't (they aren't committed). enemy-types D7 bakes them small and keeps the raw sheets out of the embed (task 11). VERIFIED (`du`, `go build`)
+12. `//go:embed enemy` embeds every file on disk, untracked ones included, so local builds carry untracked enemy art that CI and Render don't. ~~The 15 MB of raw battler sheets~~ **FIXED**: moved to `art-src/battlers/` (not embedded, enemy-types task 11); local WASM 51.2 → 36.2 MB. VERIFIED (`go build`)
 13. The Stop hook (`.claude/hooks/stop-state.mjs`) and docs-check's "stale state" warning fire while untracked files sit under a feature's `scope:` (`assets/enemy/*`), even right after state.md was committed. Noise until those assets are committed or the check ignores untracked files. VERIFIED (this session)
 14. Enemies have no ledge probe yet (enemy-types task 12): patrols are kept short of pits, but a chasing enemy can run off a ledge. VERIFIED (code read)
 
