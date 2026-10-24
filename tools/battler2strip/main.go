@@ -55,16 +55,23 @@ func run(mappingPath, outDir, contactFile string) error {
 	}
 
 	var strips []*image.RGBA
-	var total int
+	var names []string
 	for _, n := range clipNames {
-		name := n.name
-		if _, ok := m.Clips[name]; !ok {
+		if _, ok := m.Clips[n.name]; !ok {
 			continue
 		}
-		strip, err := bakeClip(sheet, m, m.Clips[name])
+		strip, err := bakeClip(sheet, m, m.Clips[n.name])
 		if err != nil {
-			return fmt.Errorf("clip %q: %w", name, err)
+			return fmt.Errorf("clip %q: %w", n.name, err)
 		}
+		strips = append(strips, strip)
+		names = append(names, n.name)
+	}
+	fmt.Fprintf(os.Stderr, "moved all frames down %d px to put the feet on the bottom row\n", floorStrips(strips))
+
+	var total int
+	for i, strip := range strips {
+		name := names[i]
 		var buf bytes.Buffer
 		if err := png.Encode(&buf, strip); err != nil {
 			return err
@@ -74,7 +81,6 @@ func run(mappingPath, outDir, contactFile string) error {
 			return err
 		}
 		total += buf.Len()
-		strips = append(strips, strip)
 		fmt.Fprintf(os.Stderr, "wrote %s (%d frames, %d KB)\n", file, len(m.Clips[name].Frames), buf.Len()/1024)
 	}
 	fmt.Fprintf(os.Stderr, "%d strips, %d KB in all\n", len(strips), total/1024)

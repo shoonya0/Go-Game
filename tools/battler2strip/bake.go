@@ -185,6 +185,52 @@ func mirror(img *image.RGBA) {
 	}
 }
 
+// footAlpha is the least opacity that counts as art when finding the feet;
+// fainter pixels are anti-aliasing and shadow fringe.
+const footAlpha = 40
+
+// floorStrips moves every strip down by the same number of pixels so the
+// lowest opaque pixel of all of them sits on the bottom row, and returns that
+// number. Battler cells leave a margin under the feet, but the game draws a
+// frame's bottom edge on the ground. One shift for all clips keeps their poses
+// lined up with each other.
+func floorStrips(strips []*image.RGBA) int {
+	lowest := -1 // lowest row with art, counted from each strip's top
+	for _, s := range strips {
+		b := s.Bounds()
+		for y := b.Max.Y - 1; y >= b.Min.Y; y-- {
+			if rowHasArt(s, y) {
+				lowest = max(lowest, y-b.Min.Y)
+				break
+			}
+		}
+	}
+	if lowest < 0 {
+		return 0 // no art at all
+	}
+	shift := strips[0].Bounds().Dy() - 1 - lowest
+	if shift == 0 {
+		return 0
+	}
+	for _, s := range strips {
+		b := s.Bounds()
+		moved := image.NewRGBA(b)
+		draw.Draw(moved, b.Add(image.Pt(0, shift)), s, b.Min, draw.Src)
+		copy(s.Pix, moved.Pix)
+	}
+	return shift
+}
+
+// rowHasArt reports whether row y of img has a pixel at least footAlpha opaque.
+func rowHasArt(img *image.RGBA, y int) bool {
+	for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
+		if img.RGBAAt(x, y).A >= footAlpha {
+			return true
+		}
+	}
+	return false
+}
+
 // stripName is the output file name of a clip's strip.
 func stripName(m Mapping, clip string) string { return m.Name + "_" + clip + ".png" }
 
