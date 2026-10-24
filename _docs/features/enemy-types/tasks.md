@@ -89,7 +89,7 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 
 - [ ] 25. `EnemyEffects` + `Projectile` (owned by `Game`, like ground waves); a ranged enemy
       (needs a strip pack with a shooting clip: none yet, D9) → check: `TestProjectileHitsPlayer`, `TestProjectileStopsAtTile`
-- [ ] 26. `diveAttack` (start → loop → end); Smasher (Enemy3) → check: `TestDiveAttackPhases`, manual look
+- [x] 26. `diveAttack` (start → loop → end); Smasher (Enemy3) → check: `TestDiveAttackPhases`, manual look
 - [ ] 27. `verify.mjs --full`, web smoke check, `/code-review`, docs update, PR (ask before merge)
 
 ## Later (not planned yet)

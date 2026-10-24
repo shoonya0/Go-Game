@@ -4,7 +4,7 @@
 
 - **Status:** 🟡 in progress; increments 1-3 merged (PR #18 `2bc4469`, PR #19 `9124414`,
   PR #20 `c2c3b87`); increment 4 started on `feature/enemy-types` (local, not pushed)
-- **Current task:** task 26 (dive + Smasher) in [tasks.md](./tasks.md): built, waiting for the user's look in game (F3)
+- **Current task:** task 27 (PR for increments 4-5) in [tasks.md](./tasks.md); task 25 stays open, blocked on ranged art
 - **Stopped at:** tasks 22-23 done; Flying Demon `^` added (row 25, col 14 of level 1, over the first floor).
   The user checked the demon in game (increment 4 done). Smasher `*` added (row 25, col 38): body 56×80,
   `HoverHeight` 160, `FallSpeed` 700 are first guesses. Task 25 waits for ranged art. Task 27 partly done:
@@ -30,7 +30,7 @@
 
 - Changed: flyer wall-pin fix in `flyingMover.Move` + `TestStrandedFlyerPatrolsWhereItIs` (review note)
 - Verified: new test failed first (pinned at the wall); web build loads, no console errors, demon + F3 boxes draw; `code-reviewer`: no blockers; `verify.mjs` 5/5
-- Next: user's look at the Smasher; then PR (ask before merge). Review gaps, not bugs: no test for hurt mid-dive
+- Next: PR (ask before merge); the user confirmed "Smasher working". Review gaps, not bugs: no test for hurt mid-dive
 
 ### 2026-10-24: task 26, dive attack + Smasher built
 
