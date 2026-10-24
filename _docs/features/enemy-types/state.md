@@ -1,16 +1,23 @@
 # Enemy types: state
 
-## Now (updated 2026-10-24 at `10115c1`)
+## Now (updated 2026-10-24 at `f8a986e`)
 
-- **Status:** 🟡 in progress; increment 1 merged (PR #18, `2bc4469`); increment 2 (battler baking, tasks 9-11) merged (PR #19, `9124414`)
-- **Current task:** 14. Guard trait (D8) (see [tasks.md](./tasks.md)); increment 3
+- **Status:** 🟡 in progress; increments 1-2 merged (PR #18 `2bc4469`, PR #19 `9124414`);
+  increment 3 (ground roster + guard): tasks 12-14 done, committed locally, not pushed
+- **Current task:** 15. Goblin, the first baked enemy (melee ×2 + guard) (see [tasks.md](./tasks.md)),
   on `feature/enemy-types` from `main` at `9124414`
-- **Stopped at:** task 13 done (`10115c1`): markers may be 1-2 punctuation characters
-  (`[0,!@,0]`); task 12 (`f12857c`): patrolling ground enemies turn at ledges and at water. Goblin strips in `assets/enemy/Goblin/` stay untracked until task 15
-- **Traps:** the tool keeps its own copy of the clip names (it can't import the game); keep it in sync with `enemy_clips.go`. `TestBlueprintsValid` needs speeds > 0, so the static training dummy (task 20)
-  will need it relaxed for a `static` mover. The mushroom art faces left (`FacesLeft`). The ledge probe acts only in `EnemyPatrol`: chasing enemies still run off edges after the player.
-  A new Attacker must implement `Ready` (a ranged one: its fire timer)
-- **Open questions / blockers:** none for task 14. Hook noise: `docs-check.mjs:292` counts untracked assets as changed code (issue proposed, not filed)
+- **Stopped at:** task 14 done (`81f5731` state + stat, `f8a986e` blocking): no blueprint has a
+  guard clip yet, so nothing guards in-game until the goblin sets `GuardChance`
+- **Traps:** player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
+  `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
+  `GuardChance` in [0,1] with a guard clip. The tool keeps its own copy of the clip names; keep
+  it in sync with `enemy_clips.go`. `TestBlueprintsValid` needs speeds > 0, so the static
+  training dummy (task 20) will need it relaxed for a `static` mover. The mushroom art faces
+  left (`FacesLeft`). The ledge probe acts only in `EnemyPatrol`: chasing enemies still run off
+  edges. A new Attacker must implement `Ready` (a ranged one: its fire timer)
+- **Open questions / blockers:** my call, not in D8: an enemy mid-swing can't guard (user not
+  asked yet). Hook noise: `docs-check.mjs:292` counts untracked assets as changed code (issue
+  proposed, not filed)
 - **Don't forget:** assets changed on 2026-10-23. Removed: the desert set, `Bat with VFX/`,
   `slime/`. Skeleton is split into `Skeleton_White/` and `Skeleton_Yellow/`. Added:
   17 RPG Maker MV side-view battlers (now in `art-src/battlers/`; 9×6 grid, 3 frames per motion, no walk
@@ -19,6 +26,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-24: task 14, guard trait
+
+- Changed: new `enemy_guard.go` (`TakeHitFrom`, `rollGuard`) + tests; `EnemyGuard`, `GuardChance`; swings and the ground wave call `TakeHitFrom`
+- Verified: `verify.mjs --full` 8/8; mutations (front check, each caller's side) fail the tests; code-reviewer: no blocking findings (2 suggestions applied)
+- Docs touched: design (guard notes), tasks (14 ticked), state, current-state
 
 ### 2026-10-24: task 13, two-character markers
 
@@ -43,10 +56,4 @@
 - Changed: `tools/battler2strip` (`-contact`, clip-order baking, `TestContactSheetStacksStrips`); new `mappings/goblin.json`
 - Verified: `verify.mjs --full` 8/8; goblin contact sheet checked row by row (9 clips)
 - Docs touched: tasks (10 ticked), state, current-state
-
-### 2026-10-23: task 9, battler2strip
-
-- Changed: new `tools/battler2strip/` (`bake.go`, `main.go`, `bake_test.go`); `.golangci.yml` (`tools` stdlib-only); `architecture-overview.md` (layers + modules rows)
-- Verified: `verify.mjs --full` 8/8; `go test ./tools/...` 7/7; mutations (truncated cell edges, game import in tools) fail; code-reviewer: no blocking findings (design.md mapping example was stale, fixed)
-- Docs touched: design (baking section), tasks (9 ticked), state, architecture
 

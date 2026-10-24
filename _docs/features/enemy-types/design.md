@@ -65,8 +65,10 @@ This is the only `cmd/main.go` change the feature needs.
 
 ## New states
 
-- `EnemyGuard` (D8): a one-shot entered from `TakeDamage` when the blow comes from the
+- `EnemyGuard` (D8): a one-shot entered from `TakeHitFrom` when the blow comes from the
   facing side and a `GuardChance` roll passes. It deals no damage and hands back like hurt.
-  The roll goes through a seeded `rand.Rand` held by the enemy, so tests are deterministic.
+  The roll is a swappable func var (`rollGuard`), like the attack pick. An enemy mid-swing
+  can't guard, so attacking leaves it open. The ground wave reports its side from its
+  travel direction, not its position: an enemy overlapping the player would read it reversed.
 - `EnemyRun` is not a state: chase plays `run` and patrol plays `walk`.
 - `EnemySleep` / `EnemyWake` only if a sleeping enemy is added (none in the current roster).
