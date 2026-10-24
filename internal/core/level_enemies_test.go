@@ -88,3 +88,38 @@ func TestLevelFileSpawnsEnemies(t *testing.T) {
 		t.Fatal("level_1.json has no enemy markers")
 	}
 }
+
+// TestLevelEnemiesKeepTheirGround spawns level 1 as the game does and lets every
+// enemy patrol for 20 seconds with the player far away: each registered kind
+// must be in the level, and each enemy must still stand on the ground it
+// spawned on, not fall off a platform or through the floor.
+func TestLevelEnemiesKeepTheirGround(t *testing.T) {
+	WorldInit()
+	level := LoadLevel(LevelFile, DefaultLevelName)
+	qt := NewDynamicQuadtree(AABB{Width: float64(Level_1_Width), Height: float64(Level_1_Height)})
+	for i := range level.Platforms {
+		qt.Insert(&level.Platforms[i])
+	}
+
+	placed := map[EnemyKind]bool{}
+	for _, s := range level.Enemies {
+		placed[s.Kind] = true
+	}
+	for kind, bp := range enemyBlueprints {
+		if !placed[kind] {
+			t.Errorf("%s (marker %q) is not placed in level_1.json", bp.Name, bp.Marker)
+		}
+	}
+
+	for i, e := range SpawnEnemies(level.Enemies) {
+		start := level.Enemies[i].Pos
+		p := farPlayer(e)
+		for range int(20 * tps()) { // the first ticks drop it onto its ground
+			UpdateEnemy(e, p, qt)
+		}
+		if !e.onGround || e.Pos.Y > start.Y+LevelTileHeight {
+			t.Errorf("%s from (%v, %v): after 20 s at (%v, %v) onGround=%v, want still on the ground it spawned on",
+				e.bp.Name, start.X, start.Y, e.Pos.X, e.Pos.Y, e.onGround)
+		}
+	}
+}
