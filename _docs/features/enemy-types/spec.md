@@ -32,7 +32,7 @@ plays `walk` and chasing plays `run`. Names, fallbacks and the state → clip ta
 ## Two sprite formats, one game format (D3, D7)
 
 - **Strip packs**: one PNG per clip, used as shipped (renamed when names collide, D4).
-- **RPG Maker MV side-view battlers** (raw sheets in `art-src/battlers/`, not embedded): 9×6 grid, 18 motions × 3 frames
+- **RPG Maker MV side-view battlers** (raw sheets deleted 2026-10-24, user's call: no smooth walk or run, 3 frames per motion; in git history before `art-src/battlers/` was removed): 9×6 grid, 18 motions × 3 frames
   (layout: `art-src/battlers/imagePattern.png`). An offline tool bakes each sheet into standard
   strips, chaining motions into longer clips:
 

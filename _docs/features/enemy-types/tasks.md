@@ -53,19 +53,19 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [x] 13. Two-character level markers (D6) → check: `TestQuoteBareMarkers` extended, level loads
 - [x] 14. Guard trait (D8): `EnemyGuard`, `GuardChance`, front-only block → check:
       `TestGuardBlocksFrontHit`, `TestGuardIgnoresBackHit`
-- [ ] 15. Goblin (first baked enemy, melee ×2 + guard) → check: manual look, F3 boxes.
+- [ ] ~~15. Goblin (first baked enemy, melee ×2 + guard) → check: manual look, F3 boxes.
       On hold: built (`849b30e`), then reverted (`12de28a`, `3b98b41`) because the sheet
-      has no walk cycle and the user turned the sliding walk down. Enemy plan to be discussed
+      has no walk cycle and the user turned the sliding walk down~~ Dropped: battler sheets deleted (decisions)
 - [ ] 16. Rename `White_Golem/Golem_1_*` → `WhiteGolem_*` (D4), add White Golem → check:
       new `TestAssetBaseNamesUnique`
 - [x] 17. Skeleton White + Yellow strips as one blueprint with colour variants → check:
       `TestSkeletonVariantsShareBlueprint`, manual look (user: "working"). Done early (`@`, `#` in level 1). `attack_2` plays once task 6 picks attacks
 - [x] 18. Mushroom (no stun yet) → check: manual look (user: "working"). Done early (`&` in
       level 1, `FacesLeft`)
-- [ ] 19. Bake + add the other ground battlers, a few per session: kobold, gnoll, skeleton,
+- [ ] ~~19. Bake + add the other ground battlers, a few per session: kobold, gnoll, skeleton,
       zombies, troll, werewolf, wolf, German shepherd, rat, crab, sahuagin, slime, turnip →
-      check: `TestBlueprintsValid`, manual look at each
-- [ ] 20. Training dummy (`static` mover, no attack) → check: `TestStaticEnemyNeverMoves`
+      check: `TestBlueprintsValid`, manual look at each~~ Dropped: battler sheets deleted
+- [ ] ~~20. Training dummy (`static` mover, no attack) → check: `TestStaticEnemyNeverMoves`~~ Dropped: its sheet was a battler
 - [ ] 21. Place one of each in `level_1.json` (or a test level), web smoke check,
       `verify.mjs --full`, docs update
 
@@ -75,7 +75,7 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
       tile collision → check: `TestFlyingEnemyIgnoresGravity`, `TestFlyingEnemyLeash`
 - [ ] 23. Ground wave skips enemies that aren't grounded (`Mover.Grounded`) → check:
       `TestGroundWaveMissesFlyers`
-- [ ] 24. Flying Demon (strips) and Bat (battler) → check: manual look, F3 boxes
+- [ ] 24. Flying Demon (strips) ~~and Bat (battler)~~ → check: manual look, F3 boxes
 
 ## Increment 5: more attack styles
 

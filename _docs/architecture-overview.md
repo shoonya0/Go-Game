@@ -35,7 +35,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 | Spatial index | `internal/core/quadtree.go`, `aabb.go` | `DynamicQuadtree` for collision broad-phase; `Collider` interface | quadtree |
 | HUD | `internal/core/hud.go` | Health hearts / stamina (power) bars, 10 sprite segments each | no |
 | Debug overlay | `internal/core/debug_draw.go` | F3 toggles outlines of body (green) and attack (red) boxes for any `HitboxProvider` (enemies and the player) | `Game.showHitboxes` |
-| Assets | `assets/embed.go`, `internal/core/image.go` | `go:embed` FS; `readAsset` resolves by **base file name** (subfolders searched); files live in `player/`, `enemy/`, `UI/`, `levels/`, and each folder must be on the `//go:embed` line. Raw source art that is baked offline (battler sheets) lives in `art-src/`, outside the embed | embedded, read-only |
+| Assets | `assets/embed.go`, `internal/core/image.go` | `go:embed` FS; `readAsset` resolves by **base file name** (subfolders searched); files live in `player/`, `enemy/`, `UI/`, `levels/`, and each folder must be on the `//go:embed` line. Raw source art that is baked offline goes in `art-src/`, outside the embed (empty now: the battler sheets were deleted) | embedded, read-only |
 | Time | `internal/core/time.go` | `deltaTime()` = 1/TPS, shared by physics and animation | no |
 | Web server | `server/main.go` | Serves `$WEB_ROOT` on `$PORT`, `.wasm` MIME, no-cache for HTML | no |
 | Battler baker | `tools/battler2strip/` | Offline, not in the game build: bakes an RPG Maker battler sheet + mapping JSON into right-facing strips and prints a blueprint snippet | no |

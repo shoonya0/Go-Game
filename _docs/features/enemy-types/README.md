@@ -1,6 +1,6 @@
 ---
 kind: feature
-scope: [internal/core/enemy*.go, internal/core/level_enemies*.go, assets/enemy, tools/battler2strip, art-src/battlers]
+scope: [internal/core/enemy*.go, internal/core/level_enemies*.go, assets/enemy, tools/battler2strip]
 status: active
 ---
 # Enemy types: docs index
@@ -9,7 +9,7 @@ Adds the enemy sprites in `assets/enemy/` as playable enemies, grouped by how th
 (ground, flying, later water) and how they attack (melee, ranged, dive), so new enemies are
 mostly data. Bosses (`Striker/`, `Orange_Golem/`) are out of scope for now.
 Up: [project docs index](../../README.md) · Code: `internal/core/enemy*.go`, `internal/core/level_enemies.go`,
-`tools/battler2strip/` (offline baking) · Raw battler art: `art-src/battlers/`
+`tools/battler2strip/` (offline baking)
 
 ## Read in this order (stop when you have enough)
 

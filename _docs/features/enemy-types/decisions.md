@@ -71,6 +71,10 @@
 - **Where the raw sheets live (task 11, 2026-10-24, user's choice):** `art-src/battlers/`,
   committed, outside `assets/` and the embed, so any machine can re-bake; `.dockerignore`
   keeps them out of the Render build context. Local WASM 51.2 → 36.2 MB.
+- **Battler sheets deleted (2026-10-24, user's call):** none has a smooth walk or run
+  (3 frames per motion, legs static), so the goblin slid. All 18 sheets removed from
+  `art-src/battlers/`; restore one from git history if needed. Tasks 15, 19, 20 and the bat
+  in 24 are dropped; `tools/battler2strip` stays until the enemy plan is redone.
 
 ## D8. Guard is an optional trait driven by a `guard` clip (2026-10-23)
 
