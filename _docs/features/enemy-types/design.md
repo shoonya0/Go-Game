@@ -23,7 +23,7 @@ and a diver from above without a change to the brain.
   `HitFrame`. `AttackCooldown` can outlast a whole attack clip, so `Ready` holds a new swing
   back (the enemy idles, facing the player) until the cooldown ends by the hit frame;
   otherwise the skeleton whiffed every other swing (`TestMeleeEverySwingLands`). The
-  succubus keeps `HitFrame` 0. `EnemyEffects` joins `Update` with projectiles (task 25).
+  test-only enemy (`testEnemyBlueprint`) keeps `HitFrame` 0. `EnemyEffects` joins `Update` with projectiles (task 25).
 - **Clips** (`enemy_clips.go`, `enemy_motion.go`): draw-time motion is in screen pixels and
   moves only the sprite; the collision box stays put (D7).
 
@@ -31,7 +31,6 @@ and a diver from above without a change to the brain.
 
 | Part | Notes |
 |---|---|
-| ledge probe in `groundMover` | task 12 |
 | `flyingMover` | no gravity, `HoverHeight`, `Leash` (tiles), steers in X and Y, bobbing optional |
 | `waterMover` | later; like flying but clamped to water tiles |
 | `rangedAttack` | spawns a `Projectile` on `FireFrame`; `KeepDistance` |
@@ -54,7 +53,9 @@ Built (task 9). Usage and the mapping fields are in `tools/battler2strip/main.go
 
 Each frame is `[motion block 0-2, row 0-5, frame 0-2]` (layout `art-src/battlers/imagePattern.png`).
 Clip timing goes in the mapping only so the printed snippet is complete, which keeps
-re-baking a single command. Cell edges are rounded from the exact fractional grid, so a
+re-baking a single command. Battler cells leave a margin under the feet, so after cutting
+the tool moves all of an enemy's strips down by one shared amount until the lowest foot of
+any clip is on the bottom row (the game draws a frame's bottom edge on the ground). Cell edges are rounded from the exact fractional grid, so a
 sheet whose size doesn't divide by 9 or 6 still tiles; each cell is then box-filtered to
 one fixed frame size (a cell 1 px larger than its neighbour scales by < 0.5 %).
 
@@ -66,8 +67,10 @@ This is the only `cmd/main.go` change the feature needs.
 
 ## New states
 
-- `EnemyGuard` (D8): a one-shot entered from `TakeDamage` when the blow comes from the
+- `EnemyGuard` (D8): a one-shot entered from `TakeHitFrom` when the blow comes from the
   facing side and a `GuardChance` roll passes. It deals no damage and hands back like hurt.
-  The roll goes through a seeded `rand.Rand` held by the enemy, so tests are deterministic.
+  The roll is a swappable func var (`rollGuard`), like the attack pick. An enemy mid-swing
+  can't guard, so attacking leaves it open. The ground wave reports its side from its
+  travel direction, not its position: an enemy overlapping the player would read it reversed.
 - `EnemyRun` is not a state: chase plays `run` and patrol plays `walk`.
 - `EnemySleep` / `EnemyWake` only if a sleeping enemy is added (none in the current roster).

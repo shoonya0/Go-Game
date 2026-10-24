@@ -103,7 +103,7 @@ func (w *GroundWave) update(qt *DynamicQuadtree, enemies []*EnemyRuntime) {
 		if e.State.IsDead() || slices.Contains(w.struck, e) || !box.Intersects(e.GetBounds()) {
 			continue
 		}
-		e.TakeDamage(GroundWaveDamage)
+		e.TakeHitFrom(GroundWaveDamage, centerX(e.GetBounds())-w.dir) // from behind the wave, the side it came from
 		w.struck = append(w.struck, e)
 	}
 }

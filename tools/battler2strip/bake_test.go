@@ -184,3 +184,28 @@ func TestContactSheetStacksStrips(t *testing.T) {
 		t.Errorf("second strip's frame shows %v, want its blue", c)
 	}
 }
+
+// TestFloorStripsMovesFeetToBottom checks every strip moves down by the same
+// amount, so the lowest opaque pixel of all clips lands on the bottom row and
+// the clips stay lined up with each other.
+func TestFloorStripsMovesFeetToBottom(t *testing.T) {
+	opaque := color.RGBA{0, 0, 0, 255}
+	a := image.NewRGBA(image.Rect(0, 0, 2, 6))
+	b := image.NewRGBA(image.Rect(0, 0, 2, 6))
+	a.SetRGBA(0, 2, opaque)
+	b.SetRGBA(1, 4, opaque)
+	b.SetRGBA(0, 4, color.RGBA{0, 0, 0, footAlpha - 1}) // too faint to count as a foot
+
+	if got := floorStrips([]*image.RGBA{a, b}); got != 1 {
+		t.Errorf("shift = %d, want 1 (lowest foot at y=4 of 6)", got)
+	}
+	if a.RGBAAt(0, 3) != opaque || a.RGBAAt(0, 2).A != 0 || b.RGBAAt(1, 5) != opaque || b.RGBAAt(1, 0).A != 0 {
+		t.Errorf("after floorStrips: a(0,3)=%v a(0,2)=%v b(1,5)=%v b(1,0)=%v, want both moved down 1 px, top row clear",
+			a.RGBAAt(0, 3), a.RGBAAt(0, 2), b.RGBAAt(1, 5), b.RGBAAt(1, 0))
+	}
+
+	empty := image.NewRGBA(image.Rect(0, 0, 2, 6))
+	if got := floorStrips([]*image.RGBA{empty}); got != 0 {
+		t.Errorf("shift of an empty strip = %d, want 0", got)
+	}
+}

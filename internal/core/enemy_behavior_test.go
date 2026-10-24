@@ -2,8 +2,9 @@ package core
 
 import "testing"
 
-// These tests pin down how the succubus behaves today, so the enemy-types
-// refactor (movers, attackers, clip tables) can't change it unnoticed.
+// These tests pin down how the first enemy, the succubus, behaved (now the
+// test-only testEnemyBlueprint), so the enemy-types refactor (movers,
+// attackers, clip tables) can't change it unnoticed.
 
 // newAnimatedTestEnemy is newTestEnemy plus its animation table, for tests that
 // tick UpdateEnemyAnimation. It still loads no sprite sheet.
@@ -47,7 +48,7 @@ func TestEnemyLandsOnGround(t *testing.T) {
 func TestEnemyPatrolBouncesOffWall(t *testing.T) {
 	wall := AABB{X: 400, Y: waveGroundY - 2*LevelTileHeight, Width: LevelTileWidth, Height: 2 * LevelTileHeight}
 	qt := waveWorld(0, 1200, wall)
-	e := newTestEnemy(Position{X: 300, Y: waveGroundY - blueprintFor(KindSuccubus).BodyHeight})
+	e := newTestEnemy(Position{X: 300, Y: waveGroundY - testEnemyBlueprint.BodyHeight})
 	p := farPlayer(e)
 
 	for i := 0; i < 2*int(tps()); i++ {
@@ -58,6 +59,45 @@ func TestEnemyPatrolBouncesOffWall(t *testing.T) {
 	}
 	if e.patrolDir != -1 || !e.FlipX {
 		t.Errorf("after reaching the wall: patrolDir=%v flipX=%v, want -1 and facing left", e.patrolDir, e.FlipX)
+	}
+}
+
+func TestGroundEnemyTurnsAtLedge(t *testing.T) {
+	const floorEnd = 12 * LevelTileWidth // 720, on a tile edge
+	qt := waveWorld(0, floorEnd)
+	e := newTestEnemy(Position{X: 640, Y: waveGroundY - testEnemyBlueprint.BodyHeight})
+	p := farPlayer(e) // patrol path reaches past the edge: 640 + 4 tiles
+
+	for i := 0; i < 4*int(tps()); i++ {
+		UpdateEnemy(e, p, qt)
+		if right := e.Pos.X + e.bp.BodyWidth; right > floorEnd || !e.onGround {
+			t.Fatalf("tick %d: right edge %v onGround=%v, want to stay on the floor ending at %v", i, right, e.onGround, floorEnd)
+		}
+	}
+	if e.patrolDir != -1 || !e.FlipX || e.Pos.X >= 640 {
+		t.Errorf("after reaching the ledge: x=%v patrolDir=%v flipX=%v, want walking back left of 640", e.Pos.X, e.patrolDir, e.FlipX)
+	}
+}
+
+// TestStrandedEnemyPatrolsWhereItIs covers an enemy that chased the player
+// down to another platform and lost them: its patrol path points back to its
+// spawn, past a ledge. It must not freeze at the ledge, turning back toward
+// the spawn every tick; it patrols where it is instead.
+func TestStrandedEnemyPatrolsWhereItIs(t *testing.T) {
+	const floorEnd = 12 * LevelTileWidth // 720, on a tile edge
+	qt := waveWorld(0, floorEnd)
+	e := newTestEnemy(Position{X: 640, Y: waveGroundY - testEnemyBlueprint.BodyHeight})
+	e.spawnX = 2000 // spawn is far to the right, past the edge
+	p := farPlayer(e)
+
+	for i := 0; i < 4*int(tps()); i++ {
+		UpdateEnemy(e, p, qt)
+		if right := e.Pos.X + e.bp.BodyWidth; right > floorEnd || !e.onGround {
+			t.Fatalf("tick %d: right edge %v onGround=%v, want to stay on the floor ending at %v", i, right, e.onGround, floorEnd)
+		}
+	}
+	if e.Pos.X > 600 {
+		t.Errorf("after 4 s: x=%v, want it to have walked back from the ledge (frozen there)", e.Pos.X)
 	}
 }
 

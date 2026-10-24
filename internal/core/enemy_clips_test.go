@@ -2,18 +2,22 @@ package core
 
 import (
 	"bytes"
+	"fmt"
 	"image"
+	"maps"
 	"reflect"
+	"slices"
+	"strings"
 	"testing"
 )
 
 // TestEnemyMissingClipFallsBack covers a species with only the required clips:
 // optional clips play a related one, and guard is simply unavailable.
 func TestEnemyMissingClipFallsBack(t *testing.T) {
-	bp := succubusBlueprint // copy; its Clips map is replaced below, not shared
+	bp := testEnemyBlueprint // copy; its Clips map is replaced below, not shared
 	bp.Clips = map[ClipName]EnemyClip{}
 	for _, name := range requiredClips {
-		bp.Clips[name] = succubusBlueprint.Clips[name]
+		bp.Clips[name] = testEnemyBlueprint.Clips[name]
 	}
 
 	for name, want := range map[ClipName]ClipName{
@@ -33,12 +37,63 @@ func TestEnemyMissingClipFallsBack(t *testing.T) {
 	}
 }
 
-// The succubus has no run clip, so it chases with its alert loop, as before
+// TestBlueprintHasOwnArtOnly checks Has counts only a species' own art: a
+// clip it can play through a fallback is not a capability.
+func TestBlueprintHasOwnArtOnly(t *testing.T) {
+	bp := testEnemyBlueprint // copy; its Clips map is replaced below, not shared
+	bp.Clips = map[ClipName]EnemyClip{}
+	for _, name := range requiredClips {
+		bp.Clips[name] = testEnemyBlueprint.Clips[name]
+	}
+
+	for _, name := range requiredClips {
+		if !bp.Has(name) {
+			t.Errorf("Has(%v) = false for a required clip it has", name)
+		}
+	}
+	for _, name := range []ClipName{ClipAlert, ClipRun, ClipAttack2, ClipGuard} {
+		if bp.Has(name) {
+			t.Errorf("Has(%v) = true without its art", name)
+		}
+	}
+
+	want := []string{"idle", "walk", "(walk)", "(walk)", "attack_1", "(attack_1)", "-", "hurt", "death"}
+	if got := bp.capabilities(); !reflect.DeepEqual(got, want) {
+		t.Errorf("capabilities() = %q\nwant %q", got, want)
+	}
+}
+
+// TestEnemyCapabilities prints what every registered enemy can do, one row per
+// species: run it with -v to see the table.
+//
+//	go test ./internal/core -run TestEnemyCapabilities -v
+func TestEnemyCapabilities(t *testing.T) {
+	var b strings.Builder
+	fmt.Fprintf(&b, "%-16s", "enemy")
+	for _, name := range clipNames {
+		fmt.Fprintf(&b, " %-12s", name)
+	}
+	kinds := slices.Sorted(maps.Keys(enemyBlueprints))
+	for _, kind := range kinds {
+		bp := enemyBlueprints[kind]
+		cells := bp.capabilities()
+		if len(cells) != len(clipNames) {
+			t.Fatalf("%s: %d cells, want one per clip (%d)", bp.Name, len(cells), len(clipNames))
+		}
+		fmt.Fprintf(&b, "\n%-16s", bp.Name)
+		for _, c := range cells {
+			fmt.Fprintf(&b, " %-12s", c)
+		}
+	}
+	t.Log("\n" + b.String())
+}
+
+// The test enemy has no run clip, so it chases with its alert loop, as before
 // clips had standard names.
-func TestSuccubusChasesWithAlertClip(t *testing.T) {
+func TestChasesWithAlertClipWithoutRun(t *testing.T) {
 	e := newAnimatedTestEnemy(Position{})
 	if got := e.clipFor(EnemyAlert); got != ClipAlert {
-		t.Errorf("succubus chase clip = %v, want alert", got)
+		t.Errorf("test enemy chase clip = %v, want alert", got)
 	}
 }
 
@@ -52,7 +107,7 @@ func TestEveryEnemyStateHasAClip(t *testing.T) {
 
 // TestEnemyClipsFitTheirSheets checks every clip's frames lie inside its sheet.
 // A frame past the edge draws nothing, so the enemy blinks out for that frame:
-// the succubus patrol clip once ran one column past its 8-column row.
+// the succubus (since removed) patrol clip once ran one column past its 8-column row.
 func TestEnemyClipsFitTheirSheets(t *testing.T) {
 	for _, bp := range enemyBlueprints {
 		for name, c := range bp.Clips {

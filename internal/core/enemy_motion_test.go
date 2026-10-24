@@ -8,12 +8,12 @@ import (
 // TestClipHoldTiming checks a held frame stays up Hold times as long as the
 // others, and that frames past the end of Hold keep the base duration.
 func TestClipHoldTiming(t *testing.T) {
-	bp := succubusBlueprint // copy; its Clips map is replaced below, not shared
+	bp := testEnemyBlueprint // copy; its Clips map is replaced below, not shared
 	bp.Clips = map[ClipName]EnemyClip{}
-	for name, c := range succubusBlueprint.Clips {
+	for name, c := range testEnemyBlueprint.Clips {
 		bp.Clips[name] = c
 	}
-	bp.Clips[ClipWalk] = succubusClip(1, 1, 3, 6, true).held(1, 3) // frame 2 has no entry
+	bp.Clips[ClipWalk] = testEnemyClip(1, 1, 3, 6, true).held(1, 3) // frame 2 has no entry
 	start := bp.Clips[ClipWalk].Start
 	e := &EnemyRuntime{bp: &bp, Animations: bp.newAnimations(), State: EnemyPatrol, PrevState: EnemyPatrol, CurrAnimFrame: start}
 

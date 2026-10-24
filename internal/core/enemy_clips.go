@@ -30,8 +30,8 @@ func (c ClipName) String() string {
 var requiredClips = []ClipName{ClipIdle, ClipWalk, ClipAttack1, ClipHurt, ClipDeath}
 
 // clipFallback is the clip to try when a species has no art for a clip. Run
-// falls back through alert, so a species with only an alert loop (the
-// succubus) chases with it. Guard has no fallback: without its art the enemy
+// falls back through alert, so a species with only an alert loop chases with
+// it. Guard has no fallback: without its art the enemy
 // doesn't guard.
 var clipFallback = map[ClipName]ClipName{
 	ClipRun:     ClipAlert,
@@ -47,14 +47,41 @@ var stateClips = map[EnemyState]ClipName{
 	EnemyAlert:  ClipRun,
 	EnemyAttack: ClipAttack1,
 	EnemyHurt:   ClipHurt,
+	EnemyGuard:  ClipGuard, // optional: only species with guard art enter it
 	EnemyDead:   ClipDeath,
+}
+
+// Has reports whether the species has its own art for clip c. The art is the
+// capability: a species with a guard clip can guard, one with attack_2
+// alternates two attacks. A clip it only plays through a fallback doesn't count.
+func (bp *EnemyBlueprint) Has(c ClipName) bool {
+	_, ok := bp.Clips[c]
+	return ok
+}
+
+// capabilities describes what the species can do, one cell per standard clip
+// in clip order: the clip's name when it has the art, "(other)" when it plays
+// another clip instead, "-" when it can't do it at all.
+func (bp *EnemyBlueprint) capabilities() []string {
+	cells := make([]string, len(clipNames))
+	for c := range ClipName(len(clipNames)) {
+		switch got, ok := bp.resolveClip(c); {
+		case !ok:
+			cells[c] = "-"
+		case got == c:
+			cells[c] = c.String()
+		default:
+			cells[c] = "(" + got.String() + ")"
+		}
+	}
+	return cells
 }
 
 // resolveClip returns the clip the species has art for in place of name,
 // following fallbacks. ok is false when neither name nor any fallback exists.
 func (bp *EnemyBlueprint) resolveClip(name ClipName) (_ ClipName, ok bool) {
 	for {
-		if _, ok := bp.Clips[name]; ok {
+		if bp.Has(name) {
 			return name, true
 		}
 		next, ok := clipFallback[name]

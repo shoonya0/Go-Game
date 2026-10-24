@@ -7,7 +7,7 @@ import (
 
 func TestSplitGridEnemyMarkers(t *testing.T) {
 	var cells [][]levelCell
-	if err := json.Unmarshal([]byte(`[[0,"!",9],[2,2,2]]`), &cells); err != nil {
+	if err := json.Unmarshal([]byte(`[[0,"@",9],[2,2,2]]`), &cells); err != nil {
 		t.Fatal(err)
 	}
 	grid, spawns, err := splitGrid(cells)
@@ -18,11 +18,11 @@ func TestSplitGridEnemyMarkers(t *testing.T) {
 	if grid[0][1] != 0 || grid[0][2] != CheckpointCode || grid[1][0] != 2 {
 		t.Errorf("tile grid = %v, want marker cell empty and other codes kept", grid)
 	}
-	if len(spawns) != 1 || spawns[0].Kind != KindSuccubus {
-		t.Fatalf("spawns = %+v, want one succubus", spawns)
+	if len(spawns) != 1 || spawns[0].Kind != KindSkeletonWhite {
+		t.Fatalf("spawns = %+v, want one white skeleton", spawns)
 	}
 
-	bp := blueprintFor(KindSuccubus)
+	bp := blueprintFor(KindSkeletonWhite)
 	pos := spawns[0].Pos
 	if feet := pos.Y + bp.BodyHeight; feet != LevelTileHeight {
 		t.Errorf("enemy feet at y=%v, want on top of the row below (y=%v)", feet, float64(LevelTileHeight))
@@ -43,18 +43,34 @@ func TestSplitGridUnknownMarker(t *testing.T) {
 }
 
 func TestQuoteBareMarkers(t *testing.T) {
-	in := `{"lvl!": {"grid": [[0,!,@],[9,"#",-1]]}}`
-	want := `{"lvl!": {"grid": [[0,"!","@"],[9,"#",-1]]}}`
+	in := `{"lvl!": {"grid": [[0,!,@],[9,"#",-1],[!@, $$ ,2]]}}`
+	want := `{"lvl!": {"grid": [[0,"!","@"],[9,"#",-1],["!@", "$$" ,2]]}}`
 	if got := string(quoteBareMarkers([]byte(in))); got != want {
 		t.Fatalf("quoteBareMarkers:\n got %s\nwant %s", got, want)
 	}
 }
 
-func TestEnemyMarkersUniqueSingleChar(t *testing.T) {
+// TestTwoCharMarkerIsOneCell checks a bare two-character marker reaches the
+// grid as one marker cell, not two cells or a parse error.
+func TestTwoCharMarkerIsOneCell(t *testing.T) {
+	var cells [][]levelCell
+	if err := json.Unmarshal(quoteBareMarkers([]byte(`[[0,!@,0]]`)), &cells); err != nil {
+		t.Fatal(err)
+	}
+	if len(cells[0]) != 3 || cells[0][1].marker != "!@" {
+		t.Fatalf("cells = %+v, want 3 cells with marker \"!@\" in the middle", cells)
+	}
+}
+
+func TestEnemyMarkersUniqueAndBare(t *testing.T) {
 	seen := map[string]EnemyKind{}
 	for kind, bp := range enemyBlueprints {
-		if len(bp.Marker) != 1 || !isMarkerChar(bp.Marker[0]) {
-			t.Errorf("%s: marker %q must be one ASCII punctuation character usable bare in the level", bp.Name, bp.Marker)
+		bare := len(bp.Marker) >= 1 && len(bp.Marker) <= maxMarkerLen
+		for i := 0; i < len(bp.Marker); i++ {
+			bare = bare && isMarkerChar(bp.Marker[i])
+		}
+		if !bare {
+			t.Errorf("%s: marker %q must be 1-%d ASCII punctuation characters usable bare in the level", bp.Name, bp.Marker, maxMarkerLen)
 		}
 		if other, dup := seen[bp.Marker]; dup {
 			t.Errorf("marker %q used by kinds %d and %d", bp.Marker, other, kind)
@@ -70,5 +86,40 @@ func TestLevelFileSpawnsEnemies(t *testing.T) {
 	level := LoadLevel(LevelFile, DefaultLevelName)
 	if len(level.Enemies) == 0 {
 		t.Fatal("level_1.json has no enemy markers")
+	}
+}
+
+// TestLevelEnemiesKeepTheirGround spawns level 1 as the game does and lets every
+// enemy patrol for 20 seconds with the player far away: each registered kind
+// must be in the level, and each enemy must still stand on the ground it
+// spawned on, not fall off a platform or through the floor.
+func TestLevelEnemiesKeepTheirGround(t *testing.T) {
+	WorldInit()
+	level := LoadLevel(LevelFile, DefaultLevelName)
+	qt := NewDynamicQuadtree(AABB{Width: float64(Level_1_Width), Height: float64(Level_1_Height)})
+	for i := range level.Platforms {
+		qt.Insert(&level.Platforms[i])
+	}
+
+	placed := map[EnemyKind]bool{}
+	for _, s := range level.Enemies {
+		placed[s.Kind] = true
+	}
+	for kind, bp := range enemyBlueprints {
+		if !placed[kind] {
+			t.Errorf("%s (marker %q) is not placed in level_1.json", bp.Name, bp.Marker)
+		}
+	}
+
+	for i, e := range SpawnEnemies(level.Enemies) {
+		start := level.Enemies[i].Pos
+		p := farPlayer(e)
+		for range int(20 * tps()) { // the first ticks drop it onto its ground
+			UpdateEnemy(e, p, qt)
+		}
+		if !e.onGround || e.Pos.Y > start.Y+LevelTileHeight {
+			t.Errorf("%s from (%v, %v): after 20 s at (%v, %v) onGround=%v, want still on the ground it spawned on",
+				e.bp.Name, start.X, start.Y, e.Pos.X, e.Pos.Y, e.onGround)
+		}
 	}
 }

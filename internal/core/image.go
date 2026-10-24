@@ -14,7 +14,7 @@ import (
 )
 
 // readAsset returns the raw bytes of an embedded asset. The caller may pass a
-// full path (e.g. "../assets/player/GideonGraves.png" or "../assets/enemy/succubus.png");
+// full path (e.g. "../assets/player/GideonGraves.png" or "../assets/enemy/Mushroom/Mushroom-Idle.png");
 // only the base file name is used, so the same call works on native and
 // WebAssembly builds and regardless of which asset subfolder holds the file.
 func readAsset(p string) []byte {

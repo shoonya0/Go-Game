@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-// quoteBareMarkers lets level files write enemy markers unquoted ([0,!,0])
-// by wrapping every bare marker character outside a JSON string in quotes,
-// turning the file into valid JSON for encoding/json.
+// quoteBareMarkers lets level files write enemy markers unquoted ([0,!,0] or
+// [0,!@,0]) by wrapping each run of bare marker characters outside a JSON
+// string in quotes, turning the file into valid JSON for encoding/json.
 func quoteBareMarkers(data []byte) []byte {
 	out := make([]byte, 0, len(data)+64)
 	inString := false
@@ -27,13 +27,24 @@ func quoteBareMarkers(data []byte) []byte {
 			inString = true
 			out = append(out, c)
 		case isMarkerChar(c):
-			out = append(out, '"', c, '"')
+			end := i + 1
+			for end < len(data) && isMarkerChar(data[end]) {
+				end++
+			}
+			out = append(out, '"')
+			out = append(out, data[i:end]...)
+			out = append(out, '"')
+			i = end - 1
 		default:
 			out = append(out, c)
 		}
 	}
 	return out
 }
+
+// maxMarkerLen is the longest enemy marker a blueprint may register: one
+// punctuation character each is too few for the roster (D6).
+const maxMarkerLen = 2
 
 // isMarkerChar reports whether c may be used as a bare enemy marker: printable
 // ASCII punctuation that has no meaning in JSON. Letters are excluded because
@@ -50,7 +61,7 @@ func isMarkerChar(c byte) bool {
 
 // levelCell is one cell of a JSON level grid. A number is a tile code (see
 // tileTypeFromCode and CheckpointCode); a string is an enemy marker, the
-// one-character code an EnemyBlueprint registers as its Marker (e.g. !).
+// code an EnemyBlueprint registers as its Marker (e.g. ! or !@).
 type levelCell struct {
 	tile   int
 	marker string

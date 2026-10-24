@@ -9,10 +9,10 @@ import "github.com/hajimehoshi/ebiten/v2"
 type EnemyKind int
 
 const (
-	KindSuccubus EnemyKind = iota
-	KindSkeletonWhite
+	KindSkeletonWhite EnemyKind = iota
 	KindSkeletonYellow
 	KindMushroom
+	KindWhiteGolem
 )
 
 // EnemyStats are the tunable gameplay numbers for an enemy species. They live in
@@ -27,6 +27,7 @@ type EnemyStats struct {
 	AttackRange    float64 // horizontal distance at which the enemy can strike
 	AttackCooldown float64 // minimum seconds between landed hits
 	PatrolTiles    float64 // half-width (in tiles) of the patrol path around spawn
+	GuardChance    float64 // chance (0-1) to block a hit from the front; needs a guard clip (D8)
 }
 
 // EnemyClip describes one animation of a species: which sprite sheet holds it
@@ -54,7 +55,7 @@ type EnemyClip struct {
 // behaviour is shared code.
 type EnemyBlueprint struct {
 	Name       string
-	Marker     string // one-character level-grid code that spawns this kind (e.g. !)
+	Marker     string // 1-2 character level-grid code that spawns this kind (e.g. @ or @%)
 	BodyWidth  float64
 	BodyHeight float64
 	Scale      float64  // render scale of the sprite

@@ -65,10 +65,10 @@ func TestMeleeHitLandsOnHitFrame(t *testing.T) {
 // A species without attack_2 art always swings with attack_1, whatever the roll.
 func TestSecondAttackFallsBackWithoutArt(t *testing.T) {
 	setSecondAttack(t, true)
-	e := newAnimatedTestEnemy(Position{}) // succubus: no attack_2
+	e := newAnimatedTestEnemy(Position{}) // test enemy: no attack_2
 	e.bp.Attacker.Start(e)
 	if e.swing.second || e.clipFor(EnemyAttack) != ClipAttack1 {
-		t.Errorf("succubus swing second=%v clip=%v, want attack_1", e.swing.second, e.clipFor(EnemyAttack))
+		t.Errorf("test enemy swing second=%v clip=%v, want attack_1", e.swing.second, e.clipFor(EnemyAttack))
 	}
 }
 
@@ -78,7 +78,7 @@ func TestMeleeSwingHitsOnce(t *testing.T) {
 	e := newAnimatedTestEnemy(Position{})
 	near := &PlayerRuntime{Pos: Position{X: 30}, Combat: Combat{Health: 100, MaxHealth: 100}}
 
-	e.decideBehavior(near) // swing starts; the succubus hits on frame 0
+	e.decideBehavior(near) // swing starts; the test enemy hits on frame 0
 	e.PrevState = e.State
 	e.attackTimer = 0
 	for range 5 {
@@ -117,18 +117,19 @@ func TestMeleeSwingLandsAfterCooldown(t *testing.T) {
 func TestMeleeEverySwingLands(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
-		kind   EnemyKind
+		bp     *EnemyBlueprint
 		second bool
 	}{
-		{"skeleton attack_1", KindSkeletonWhite, false},
-		{"skeleton attack_2", KindSkeletonWhite, true},
-		{"mushroom", KindMushroom, false},
-		{"succubus", KindSuccubus, false},
+		{"skeleton attack_1", blueprintFor(KindSkeletonWhite), false},
+		{"skeleton attack_2", blueprintFor(KindSkeletonWhite), true},
+		{"mushroom", blueprintFor(KindMushroom), false},
+		{"white golem", blueprintFor(KindWhiteGolem), false},
+		{"test enemy, hit on frame 0", &testEnemyBlueprint, false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			setSecondAttack(t, tc.second)
 			qt := waveWorld(0, 1200)
-			bp := blueprintFor(tc.kind)
+			bp := tc.bp
 			e := newTestEnemy(Position{X: 300, Y: waveGroundY - bp.BodyHeight})
 			e.bp, e.Scale, e.Health = bp, bp.Scale, bp.Stats.MaxHealth
 			e.Animations = bp.newAnimations()

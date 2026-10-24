@@ -13,7 +13,7 @@ func TestEnemiesHaveAtLeastTwoWholeBars(t *testing.T) {
 		}
 	}
 	if got := newTestEnemy(Position{}).healthBars(); got != 2 {
-		t.Errorf("succubus shows %d bars, want 2", got)
+		t.Errorf("test enemy shows %d bars, want 2", got)
 	}
 }
 

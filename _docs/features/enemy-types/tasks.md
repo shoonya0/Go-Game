@@ -25,7 +25,7 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
       `TestMeleeHitLandsOnHitFrame` (mutation: ignoring HitFrame fails all 3 cases)
 - [x] 7. Registry validation test: unique markers, required clips present, speeds > 0,
       Mover/Attacker set → check: `TestBlueprintsValid` (markers stay in
-      `TestEnemyMarkersUniqueSingleChar`; mutation: no Attacker on the mushroom fails it)
+      `TestEnemyMarkersUniqueSingleChar`, now `TestEnemyMarkersUniqueAndBare`; mutation: no Attacker on the mushroom fails it)
 - [x] 8. `node scripts/verify.mjs --full`, `code-reviewer` agent, update docs (state.md,
       design.md trimmed to what the code doesn't show). The reviewer found swings whiffing
       when the cooldown outlasts the clip; fixed test-first (`TestMeleeEverySwingLands`, `6c45e04`)
@@ -48,24 +48,34 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 
 ## Increment 3: ground roster (melee) + guard
 
-- [ ] 12. Ledge probe in `groundMover`: patrol turns at platform edges → check:
+- [x] 12. Ledge probe in `groundMover`: patrol turns at platform edges → check:
       `TestGroundEnemyTurnsAtLedge`
-- [ ] 13. Two-character level markers (D6) → check: `TestQuoteBareMarkers` extended, level loads
-- [ ] 14. Guard trait (D8): `EnemyGuard`, `GuardChance`, front-only block → check:
+- [x] 13. Two-character level markers (D6) → check: `TestQuoteBareMarkers` extended, level loads
+- [x] 14. Guard trait (D8): `EnemyGuard`, `GuardChance`, front-only block → check:
       `TestGuardBlocksFrontHit`, `TestGuardIgnoresBackHit`
-- [ ] 15. Goblin (first baked enemy, melee ×2 + guard) → check: manual look, F3 boxes
-- [ ] 16. Rename `White_Golem/Golem_1_*` → `WhiteGolem_*` (D4), add White Golem → check:
-      new `TestAssetBaseNamesUnique`
+- [ ] ~~15. Goblin (first baked enemy, melee ×2 + guard) → check: manual look, F3 boxes.
+      On hold: built (`849b30e`), then reverted (`12de28a`, `3b98b41`) because the sheet
+      has no walk cycle and the user turned the sliding walk down~~ Dropped: battler sheets deleted (decisions)
+- [x] 16. Rename `White_Golem/Golem_1_*` → `WhiteGolem_*` (D4), add White Golem → check:
+      new `TestAssetBaseNamesUnique` (failed first on the 5 golem names). `%` on the platform at
+      columns 44-49; `TestLevelEnemiesKeepTheirGround` added (`7dededa`..`d21c103`). User's native look: "working"
 - [x] 17. Skeleton White + Yellow strips as one blueprint with colour variants → check:
       `TestSkeletonVariantsShareBlueprint`, manual look (user: "working"). Done early (`@`, `#` in level 1). `attack_2` plays once task 6 picks attacks
 - [x] 18. Mushroom (no stun yet) → check: manual look (user: "working"). Done early (`&` in
       level 1, `FacesLeft`)
-- [ ] 19. Bake + add the other ground battlers, a few per session: kobold, gnoll, skeleton,
+- [ ] ~~19. Bake + add the other ground battlers, a few per session: kobold, gnoll, skeleton,
       zombies, troll, werewolf, wolf, German shepherd, rat, crab, sahuagin, slime, turnip →
-      check: `TestBlueprintsValid`, manual look at each
-- [ ] 20. Training dummy (`static` mover, no attack) → check: `TestStaticEnemyNeverMoves`
-- [ ] 21. Place one of each in `level_1.json` (or a test level), web smoke check,
-      `verify.mjs --full`, docs update
+      check: `TestBlueprintsValid`, manual look at each~~ Dropped: battler sheets deleted
+- [ ] ~~20. Training dummy (`static` mover, no attack) → check: `TestStaticEnemyNeverMoves`~~ Dropped: its sheet was a battler
+- [x] 21a. Capability check (user request): `bp.Has(clip)` + a capability table → check:
+      `TestBlueprintHasOwnArtOnly` (failed first, catches a `Has` that counts fallbacks), `TestEnemyCapabilities` (`1cbad37`, `9296da3`)
+- [x] 21b. Remove the succubus (user: animation not good) → check: same 119 tests pass, each
+      commit tested alone; tests moved to the test-only `testEnemyBlueprint` (`4917db1`..`477ca01`)
+- [x] 21. Place one of each in `level_1.json` (or a test level), web smoke check,
+      `verify.mjs --full`, docs update. Every kind placed (enforced by
+      `TestLevelEnemiesKeepTheirGround`); web build loads, no console errors, F3 boxes; 8/8.
+      `code-reviewer`: one blocking bug, an enemy frozen at a ledge outside its patrol path,
+      fixed with `TestStrandedEnemyPatrolsWhereItIs` (`3edfa17`)
 
 ## Increment 4: flying movement
 
@@ -73,18 +83,19 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
       tile collision → check: `TestFlyingEnemyIgnoresGravity`, `TestFlyingEnemyLeash`
 - [ ] 23. Ground wave skips enemies that aren't grounded (`Mover.Grounded`) → check:
       `TestGroundWaveMissesFlyers`
-- [ ] 24. Flying Demon (strips) and Bat (battler) → check: manual look, F3 boxes
+- [ ] 24. Flying Demon (strips) ~~and Bat (battler)~~ → check: manual look, F3 boxes
 
 ## Increment 5: more attack styles
 
 - [ ] 25. `EnemyEffects` + `Projectile` (owned by `Game`, like ground waves); a ranged enemy
-      (kobold or gnoll `shoot` clip) → check: `TestProjectileHitsPlayer`, `TestProjectileStopsAtTile`
+      (needs a strip pack with a shooting clip: none yet, D9) → check: `TestProjectileHitsPlayer`, `TestProjectileStopsAtTile`
 - [ ] 26. `diveAttack` (start → loop → end); Smasher (Enemy3) → check: `TestDiveAttackPhases`, manual look
 - [ ] 27. `verify.mjs --full`, web smoke check, `/code-review`, docs update, PR (ask before merge)
 
 ## Later (not planned yet)
 
-- [ ] Bosses: Striker (`Striker/`, 128×96, dash/jump), Orange Golem (rename files first, D4)
+- [ ] Bosses: Striker (`Striker/`, 96×96, attack 128×96, dash/jump), Orange Golem (rename files first, D4)
 - [ ] Mushroom stun attack (`Mushroom-AttackWithStun`, `Mushroom-Stun`): needs a player stun state
-- [ ] `waterMover` (Sahuagin, crab, water slime are candidates)
+- [ ] `waterMover` (no candidate since the battlers were dropped, D9)
+- [ ] Delete `tools/battler2strip` or keep it (D9, user to decide)
 - [ ] `readAsset` by full path instead of base name (project known issue #3)
