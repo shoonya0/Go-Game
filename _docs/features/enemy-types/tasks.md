@@ -81,7 +81,7 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 
 - [x] 22. `flyingMover`: no gravity, hover height, leash, 2D chase, return to spawn,
       tile collision → check: `TestFlyingEnemyIgnoresGravity`, `TestFlyingEnemyLeash`
-- [ ] 23. Ground wave skips enemies that aren't grounded (`Mover.Grounded`) → check:
+- [x] 23. Ground wave skips enemies that aren't grounded (`Mover.Grounded`) → check:
       `TestGroundWaveMissesFlyers`
 - [ ] 24. Flying Demon (strips) ~~and Bat (battler)~~ → check: manual look, F3 boxes
 
