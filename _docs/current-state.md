@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-24)
 
-Snapshot at `f7b861a` (`feature/enemy-types`, local; `main` at `9124414`, PR #19 merged). One page. Details live in each increment's entry in
+Snapshot at `c2c3b87` (`main`, PR #20 merged). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -10,10 +10,10 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increments 1–2 merged (tasks 1–11); increment 3 (ground roster) done, PR next: tasks 12-14, 16, 21 done, 15/19/20 dropped (strip packs only, D9)
-- **Branch:** `feature/enemy-types`, fresh from `main` at `9124414` (merged: increment 1 as PR #18, increment 2 battler baking as PR #19)
-- **Next step:** push and open the increment 3 PR (ask before merge), then increment 4 (flying enemies). Succubus removed (`0f42350`) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
-- **Updated:** 2026-10-24 (strip packs only: battler sheets deleted, enemy art checked)
+- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increments 1–3 merged (PR #18, #19, #20; tasks 1–21, 15/19/20 dropped); next: increment 4 (flying enemies)
+- **Branch:** `feature/enemy-types`, fresh from `main` at `c2c3b87` (PR #20 merged by the user)
+- **Next step:** task 22 (`flyingMover`) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Updated:** 2026-10-24 (increment 3 merged, PR #20)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -42,7 +42,7 @@ and /feature-docs update. -->
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
 | `go test ./...` | ✅ 120/120 top-level tests pass: 111 in `internal/core`, 9 in `tools/battler2strip` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
-| GitHub CI | PR #19: still pending when merged (user watches it) | — |
+| GitHub CI | PR #20 and `main` at `c2c3b87`: green (build, verify ubuntu + windows) | — |
 
 Compare runs **by test name**: `go test ./internal/core -v | grep "^--- "` lists them. Added since the last
 baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAttackSteps`,
@@ -79,5 +79,5 @@ enemy health / level marker tests, and on `feature/enemy-types` the characterisa
 
 ## Next task
 
-- enemy-types task 16: White Golem ([tasks.md](./features/enemy-types/tasks.md)), then 21 to close increment 3 and open a PR.
+- enemy-types task 22: `flyingMover` ([tasks.md](./features/enemy-types/tasks.md)), start of increment 4.
 - Other candidates: draw a real menu for the menu button; crop `UIButtons.png`; touch buttons for jump (Space), F, R, Q; file the J sprite issue; untrack `game.exe`; tests for player physics with collision.

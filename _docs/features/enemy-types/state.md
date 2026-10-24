@@ -1,14 +1,12 @@
 # Enemy types: state
 
-## Now (updated 2026-10-24 at `3edfa17`)
+## Now (updated 2026-10-24 at `c2c3b87`)
 
-- **Status:** 🟡 in progress; increments 1-2 merged (PR #18 `2bc4469`, PR #19 `9124414`);
-  increment 3 (ground roster + guard) done: tasks 12-14, 16, 21 done, 15/19/20 dropped; committed locally, not pushed
-- **Current task:** close increment 3: push `feature/enemy-types`, open the PR, ask the user before merging;
-  then increment 4 (task 22, `flyingMover`) in [tasks.md](./tasks.md)
-- **Stopped at:** task 21 done: web smoke check clean (32.6 MB WASM, no console errors),
-  `verify.mjs --full` 8/8, 120 tests. `code-reviewer` found an enemy frozen at a ledge
-  outside its patrol path (task 12 bug); fixed with a test (`3edfa17`)
+- **Status:** 🟡 in progress; increments 1-3 merged (PR #18 `2bc4469`, PR #19 `9124414`,
+  PR #20 `c2c3b87`, merged by the user; CI on `main` green, deploys to Render)
+- **Current task:** increment 4, task 22 (`flyingMover`) in [tasks.md](./tasks.md),
+  on a fresh `feature/enemy-types` from `main` at `c2c3b87`
+- **Stopped at:** increment 3 closed and merged. Nothing started on increment 4 yet
 - **Traps:** behaviour tests use `testEnemyBlueprint` (enemy_test.go), not a game enemy: change the roster freely. ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
   `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
   `GuardChance` in [0,1] with a guard clip. No strip pack has a `guard` clip. The mushroom
@@ -25,6 +23,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-24: increment 3 merged
+
+- Changed: PR #20 merged by the user (`c2c3b87`); old branch deleted, `feature/enemy-types` restarted from `main`
+- Verified: CI on PR #20 and on `main` green (build, verify ubuntu + windows); merged tree = branch tip `5671d66`
+- Next: increment 4, task 22
 
 ### 2026-10-24: task 21, increment 3 closed
 
@@ -48,11 +52,5 @@
 
 - Changed: `Has` + `capabilities` in `enemy_clips.go`; guard, second attack and `TestBlueprintsValid` use `Has`
 - Verified: new tests failed first (build), mutation (fallback counted) caught; `verify.mjs` 5/5; 117 tests pass
-- Next: task 16, White Golem
-
-### 2026-10-24: strip packs only (D9)
-
-- Changed: checked every strip pack (whole frames, steady feet, nothing cut off); Striker size fixed; spec, decisions (D9), tasks, current-state updated
-- Verified: frame scan of `assets/enemy/`; `go test ./...` 115 pass; docs-check clean
 - Next: task 16, White Golem
 
