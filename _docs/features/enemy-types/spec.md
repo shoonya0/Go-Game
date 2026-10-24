@@ -32,8 +32,8 @@ plays `walk` and chasing plays `run`. Names, fallbacks and the state → clip ta
 ## Two sprite formats, one game format (D3, D7)
 
 - **Strip packs**: one PNG per clip, used as shipped (renamed when names collide, D4).
-- **RPG Maker MV side-view battlers** (`Free Sprites/`): 9×6 grid, 18 motions × 3 frames
-  (layout: `Free Sprites/imagePattern.png`). An offline tool bakes each sheet into standard
+- **RPG Maker MV side-view battlers** (raw sheets in `art-src/battlers/`, not embedded): 9×6 grid, 18 motions × 3 frames
+  (layout: `art-src/battlers/imagePattern.png`). An offline tool bakes each sheet into standard
   strips, chaining motions into longer clips:
 
 | Clip | Battler motions chained | Frames |
@@ -65,7 +65,7 @@ enemy's task). Battler movement/attack choices are proposals (ASSUMED).
 | Mushroom | `Mushroom/` | strips 80×64 | ground | melee | idle 7, run 8, attack 10, hit 5, die 15 (checked); art faces left; stun clips later |
 | Flying Demon | `flying_Demon/` | strips 81×71 | flying | melee | idle 4, flying 4, attack 8, hurt 4, death 7 |
 | Smasher (Enemy3) | `Enemy3-Movement-In-Animation/` | strips 64×64 | flying | dive | idle 8, fly 8, smashStart 12, smashLoop 3, smashEnd 8, hit 4, die 17 |
-| Goblin | `Free Sprites/goblin sheet.png` | battler | ground | melee ×2, guard | |
+| Goblin | `goblin sheet.png` | battler | ground | melee ×2, guard | |
 | Kobold | `kobold_0000_red.png` | battler | ground | melee, guard | |
 | Gnoll | `gnoll sheet.png` | battler | ground | melee ×2, guard | |
 | Skeleton (battler) | `skelleton sheet.png` | battler | ground | melee ×2, guard | |
@@ -102,7 +102,7 @@ enemy's task). Battler movement/attack choices are proposals (ASSUMED).
 8. Adding a species needs no edits to `enemy_ai.go`, `enemy_anim.go`, `level_enemies.go` or
    `cmd/main.go` unless it needs a new movement or attack part.
 9. Baked battler strips are scaled to draw size: the enemy assets add well under the 15 MB
-   the raw `Free Sprites/` sheets would add to the WASM download.
+   the raw sheets (15 MB, now in `art-src/battlers/`) would add to the WASM download.
 
 ## Out of scope
 

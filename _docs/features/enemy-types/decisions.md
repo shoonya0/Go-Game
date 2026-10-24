@@ -66,6 +66,9 @@
   (bob, lean, squash, hit shake) is applied in the game, not baked, so strip enemies get
   it too. New frames are not drawn: walk/run stay 3–4 frames.
 - **Rejected:** reading battler sheets at runtime. Two formats in the game, raw sheets embedded.
+- **Where the raw sheets live (task 11, 2026-10-24, user's choice):** `art-src/battlers/`,
+  committed, outside `assets/` and the embed, so any machine can re-bake; `.dockerignore`
+  keeps them out of the Render build context. Local WASM 51.2 → 36.2 MB.
 
 ## D8. Guard is an optional trait driven by a `guard` clip (2026-10-23)
 

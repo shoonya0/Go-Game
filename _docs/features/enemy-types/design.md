@@ -43,11 +43,20 @@ zero value means "idle".
 
 ## Battler baking (offline, `tools/battler2strip`)
 
-Input: a sheet plus a mapping file per enemy (JSON next to the tool, not embedded):
-`{"cellCols":9,"cellRows":6,"facesLeft":true,"drawHeight":120,"clips":{"attack_1":[[1,0,0],[1,0,1],…]}}`
-where each entry is `[motionBlock, row, frame]`. Output: `assets/enemy/<Enemy>/<Enemy>_<clip>.png`
-plus a printed Go snippet with frame sizes and counts, to paste into the blueprint. Cell
-size = sheet size ÷ 9 and ÷ 6 as floats, each cell's rect rounded, so non-integer heights work.
+Built (task 9). Usage and the mapping fields are in `tools/battler2strip/main.go` and
+`bake.go` (`Mapping`, `ClipMapping`). A mapping per enemy lives next to the tool, not in the embed:
+
+```json
+{"name": "Goblin", "sheet": "art-src/battlers/goblin sheet.png",
+ "facesLeft": true, "drawHeight": 120,
+ "clips": {"attack_1": {"frames": [[0,1,0], [1,0,0], [1,0,1], [1,0,2]], "fps": 12, "hold": [1,1,2], "hitFrame": 2}}}
+```
+
+Each frame is `[motion block 0-2, row 0-5, frame 0-2]` (layout `art-src/battlers/imagePattern.png`).
+Clip timing goes in the mapping only so the printed snippet is complete, which keeps
+re-baking a single command. Cell edges are rounded from the exact fractional grid, so a
+sheet whose size doesn't divide by 9 or 6 still tiles; each cell is then box-filtered to
+one fixed frame size (a cell 1 px larger than its neighbour scales by < 0.5 %).
 
 ## Projectiles
 

@@ -32,13 +32,19 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 
 ## Increment 2: battler baking tool
 
-- [ ] 9. `tools/battler2strip` (stdlib Go): sheet + mapping JSON → right-facing strips,
+- [x] 9. `tools/battler2strip` (stdlib Go): sheet + mapping JSON → right-facing strips,
       scaled to draw height, plus a printed blueprint snippet → check: `go test ./tools/...`
-      (a cell-rect test with a non-integer cell height, e.g. 1298/6), depguard/layers still pass
-- [ ] 10. Mapping for the goblin; bake; check every clip by eye (contact-sheet output) →
+      (a cell-rect test with a non-integer cell height, e.g. 1298/6), depguard/layers still pass.
+      7 tests; depguard `tools` rule (stdlib only); mutations caught; test bake of the gnoll looked right
+- [x] 10. Mapping for the goblin; bake; check every clip by eye (contact-sheet output) →
       check: baked strips look right, size printed
-- [ ] 11. Decide what stays in `assets/`: keep raw sheets out of the `//go:embed` (move to
+      `tools/battler2strip/mappings/goblin.json`; `-contact` added to the tool. 9 clips, 240×120
+      frames, 423 KB; both attacks hit on frame 4. Strips in `assets/enemy/Goblin/` stay
+      untracked until task 15 loads them. Hurt's flinch is subtle (hit shake covers it)
+- [x] 11. Decide what stays in `assets/`: keep raw sheets out of the `//go:embed` (move to
       `art-src/` or similar, ask the user) → check: WASM size before/after in `verify.mjs --full`
+      User chose `art-src/battlers/`, committed (D7). Local WASM 51.2 → 36.2 MB; re-bake from
+      the new path is byte-identical; `art-src/` added to `.dockerignore`
 
 ## Increment 3: ground roster (melee) + guard
 
