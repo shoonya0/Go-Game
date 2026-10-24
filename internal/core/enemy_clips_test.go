@@ -14,10 +14,10 @@ import (
 // TestEnemyMissingClipFallsBack covers a species with only the required clips:
 // optional clips play a related one, and guard is simply unavailable.
 func TestEnemyMissingClipFallsBack(t *testing.T) {
-	bp := succubusBlueprint // copy; its Clips map is replaced below, not shared
+	bp := testEnemyBlueprint // copy; its Clips map is replaced below, not shared
 	bp.Clips = map[ClipName]EnemyClip{}
 	for _, name := range requiredClips {
-		bp.Clips[name] = succubusBlueprint.Clips[name]
+		bp.Clips[name] = testEnemyBlueprint.Clips[name]
 	}
 
 	for name, want := range map[ClipName]ClipName{
@@ -40,10 +40,10 @@ func TestEnemyMissingClipFallsBack(t *testing.T) {
 // TestBlueprintHasOwnArtOnly checks Has counts only a species' own art: a
 // clip it can play through a fallback is not a capability.
 func TestBlueprintHasOwnArtOnly(t *testing.T) {
-	bp := succubusBlueprint // copy; its Clips map is replaced below, not shared
+	bp := testEnemyBlueprint // copy; its Clips map is replaced below, not shared
 	bp.Clips = map[ClipName]EnemyClip{}
 	for _, name := range requiredClips {
-		bp.Clips[name] = succubusBlueprint.Clips[name]
+		bp.Clips[name] = testEnemyBlueprint.Clips[name]
 	}
 
 	for _, name := range requiredClips {
@@ -88,12 +88,12 @@ func TestEnemyCapabilities(t *testing.T) {
 	t.Log("\n" + b.String())
 }
 
-// The succubus has no run clip, so it chases with its alert loop, as before
+// The test enemy has no run clip, so it chases with its alert loop, as before
 // clips had standard names.
-func TestSuccubusChasesWithAlertClip(t *testing.T) {
+func TestChasesWithAlertClipWithoutRun(t *testing.T) {
 	e := newAnimatedTestEnemy(Position{})
 	if got := e.clipFor(EnemyAlert); got != ClipAlert {
-		t.Errorf("succubus chase clip = %v, want alert", got)
+		t.Errorf("test enemy chase clip = %v, want alert", got)
 	}
 }
 
@@ -107,7 +107,7 @@ func TestEveryEnemyStateHasAClip(t *testing.T) {
 
 // TestEnemyClipsFitTheirSheets checks every clip's frames lie inside its sheet.
 // A frame past the edge draws nothing, so the enemy blinks out for that frame:
-// the succubus patrol clip once ran one column past its 8-column row.
+// the succubus (since removed) patrol clip once ran one column past its 8-column row.
 func TestEnemyClipsFitTheirSheets(t *testing.T) {
 	for _, bp := range enemyBlueprints {
 		for name, c := range bp.Clips {

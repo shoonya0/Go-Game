@@ -7,7 +7,7 @@ import (
 
 func TestSplitGridEnemyMarkers(t *testing.T) {
 	var cells [][]levelCell
-	if err := json.Unmarshal([]byte(`[[0,"!",9],[2,2,2]]`), &cells); err != nil {
+	if err := json.Unmarshal([]byte(`[[0,"@",9],[2,2,2]]`), &cells); err != nil {
 		t.Fatal(err)
 	}
 	grid, spawns, err := splitGrid(cells)
@@ -18,11 +18,11 @@ func TestSplitGridEnemyMarkers(t *testing.T) {
 	if grid[0][1] != 0 || grid[0][2] != CheckpointCode || grid[1][0] != 2 {
 		t.Errorf("tile grid = %v, want marker cell empty and other codes kept", grid)
 	}
-	if len(spawns) != 1 || spawns[0].Kind != KindSuccubus {
-		t.Fatalf("spawns = %+v, want one succubus", spawns)
+	if len(spawns) != 1 || spawns[0].Kind != KindSkeletonWhite {
+		t.Fatalf("spawns = %+v, want one white skeleton", spawns)
 	}
 
-	bp := blueprintFor(KindSuccubus)
+	bp := blueprintFor(KindSkeletonWhite)
 	pos := spawns[0].Pos
 	if feet := pos.Y + bp.BodyHeight; feet != LevelTileHeight {
 		t.Errorf("enemy feet at y=%v, want on top of the row below (y=%v)", feet, float64(LevelTileHeight))
