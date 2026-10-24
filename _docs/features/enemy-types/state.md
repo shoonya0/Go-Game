@@ -4,7 +4,7 @@
 
 - **Status:** 🟡 in progress; increments 1-5 merged except task 25 (PR #18 `2bc4469`, #19 `9124414`,
   #20 `c2c3b87`, #21 `f6a311a`, merged by the user); fresh `feature/enemy-types` from `main`
-- **Current task:** none ready: task 25 (projectiles, ranged enemy) is blocked on art with a shooting clip; or the "Later" list in [tasks.md](./tasks.md)
+- **Current task:** paused, low priority (the user, 2026-10-24: portals first). None ready: task 25 (projectiles, ranged enemy) is blocked on art with a shooting clip; or the "Later" list in [tasks.md](./tasks.md)
 - **Stopped at:** tasks 22-23 done; Flying Demon `^` added (row 25, col 14 of level 1, over the first floor).
   The user checked the demon in game (increment 4 done). Smasher `*` added (row 25, col 38): body 56×80,
   `HoverHeight` 160, `FallSpeed` 700 are first guesses. Task 25 waits for ranged art. Task 27 partly done:

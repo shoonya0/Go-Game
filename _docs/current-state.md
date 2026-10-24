@@ -10,10 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increments 1–5 merged (PR #18–#21; tasks 1–27 except 25, 15/19/20 dropped)
-- **Branch:** `feature/enemy-types`, fresh from `main` at `f6a311a` (PR #21 merged by the user)
-- **Next step:** task 25 (projectiles) once a strip pack with a shooting clip exists; otherwise a "Later" item in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
-- **Updated:** 2026-10-24 (increment 3 merged, PR #20)
+- **Feature:** [portals](./features/portals/state.md) · started 2026-10-24, high priority; increment 1 (see, start at, save at a portal)
+- **Branch:** `feature/portals`, from `main` at `f6a311a` plus the enemy-types docs commit `f3cb97f`
+- **Next step:** task 1 (portal sprite at code-9 cells) in [tasks.md](./features/portals/tasks.md). Paused: enemy-types (low priority; increments 1–5 merged, task 25 waits for ranged art). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
