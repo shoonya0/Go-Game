@@ -10,6 +10,7 @@ var enemyBlueprints = map[EnemyKind]*EnemyBlueprint{
 	KindSkeletonYellow: skeletonBlueprint("Yellow", "#"),
 	KindMushroom:       &mushroomBlueprint,
 	KindWhiteGolem:     &whiteGolemBlueprint,
+	KindFlyingDemon:    &flyingDemonBlueprint,
 }
 
 // blueprintFor returns the blueprint for a kind, panicking on an unregistered
@@ -162,5 +163,54 @@ func whiteGolemClip(anim string, frames int, fps float64, loop bool) EnemyClip {
 	return EnemyClip{
 		Sheet:  "../assets/enemy/White_Golem/WhiteGolem_" + anim + ".png",
 		Frames: frames, FrameW: whiteGolemFrameWidth, FrameH: whiteGolemFrameHeight, FPS: fps, Loop: loop,
+	}
+}
+
+// ---------------- flying demon ----------------
+
+// The flying demon ships as one 81×71 strip per animation, facing left:
+// assets/enemy/flying_Demon/FlyingDemon_<anim>.png (renamed from IDLE.png etc.,
+// D4). It flies (flyingMover) and bites: the mouth opens on attack frame 3.
+// Its art has no walk, so patrol and chase play the wing-beat loop.
+const (
+	flyingDemonFrameWidth  = 81
+	flyingDemonFrameHeight = 71
+)
+
+var flyingDemonBlueprint = EnemyBlueprint{
+	Name:       "Flying Demon",
+	Marker:     "^",
+	BodyWidth:  60,
+	BodyHeight: 90,
+	Scale:      1.5, // 64px of art -> ~96px on screen
+	FacesLeft:  true,
+	// HoverHeight 20 keeps its feet off the floor while it bites a standing player.
+	Mover:    flyingMover{LeashTiles: 4, HoverHeight: 20},
+	Attacker: meleeAttack{},
+	Stats: EnemyStats{
+		MaxHealth:      40,
+		Damage:         8,
+		WalkSpeed:      50,
+		ChaseSpeed:     120,
+		DetectRange:    360,
+		AttackRange:    50,
+		AttackCooldown: 1.2,
+		PatrolTiles:    3,
+	},
+	Clips: map[ClipName]EnemyClip{
+		ClipIdle:    flyingDemonClip("idle", 4, 8, true).moving(motionFX{BobPx: 3, BobHz: 2}),
+		ClipWalk:    flyingDemonClip("fly", 4, 8, true).moving(motionFX{BobPx: 3, BobHz: 2}),
+		ClipRun:     flyingDemonClip("fly", 4, 12, true).moving(motionFX{BobPx: 2, BobHz: 3, LeanDeg: 4}),
+		ClipAttack1: flyingDemonClip("attack", 8, 12, false).held(1, 1, 1, 2).hitsOn(3), // frame 3: the bite
+		ClipHurt:    flyingDemonClip("hurt", 4, 10, false).moving(motionFX{HitShakePx: 2}),
+		ClipDeath:   flyingDemonClip("death", 6, 10, false), // the 7th frame is blank: end on the last scraps
+	},
+}
+
+// flyingDemonClip is one of the flying demon's strips.
+func flyingDemonClip(anim string, frames int, fps float64, loop bool) EnemyClip {
+	return EnemyClip{
+		Sheet:  "../assets/enemy/flying_Demon/FlyingDemon_" + anim + ".png",
+		Frames: frames, FrameW: flyingDemonFrameWidth, FrameH: flyingDemonFrameHeight, FPS: fps, Loop: loop,
 	}
 }
