@@ -2,11 +2,52 @@ package core
 
 import "testing"
 
+// testEnemyBlueprint is a species that exists only in tests, so the behaviour
+// tests don't change when the game's roster does. Its numbers and clips are
+// those of the succubus, the first enemy, which the tests were written against:
+// no run clip (it chases with alert), no attack_2, and a hit on frame 0. Its
+// sheet is never loaded.
+var testEnemyBlueprint = EnemyBlueprint{
+	Name:       "Test enemy",
+	Marker:     "~",
+	BodyWidth:  46,
+	BodyHeight: 100,
+	Scale:      0.3,
+	Mover:      groundMover{},
+	Attacker:   meleeAttack{},
+	Stats: EnemyStats{
+		MaxHealth:      40,
+		Damage:         8,
+		WalkSpeed:      60,
+		ChaseSpeed:     150,
+		DetectRange:    420,
+		AttackRange:    72,
+		AttackCooldown: 1.0,
+		PatrolTiles:    4,
+	},
+	Clips: map[ClipName]EnemyClip{
+		ClipIdle:    testEnemyClip(0, 0, 4, 6, true),
+		ClipWalk:    testEnemyClip(1, 1, 7, 10, true),
+		ClipAlert:   testEnemyClip(2, 0, 3, 8, true).moving(motionFX{BobPx: 3, BobHz: 3, LeanDeg: 5}),
+		ClipAttack1: testEnemyClip(3, 0, 6, 12, false).held(1, 1, 1, 2),
+		ClipHurt:    testEnemyClip(4, 0, 2, 8, false).moving(motionFX{HitShakePx: 4}),
+		ClipDeath:   testEnemyClip(5, 0, 6, 8, false),
+	},
+}
+
+// testEnemyClip is a clip on one row of the test enemy's (never loaded) grid.
+func testEnemyClip(row, start, frames int, fps float64, loop bool) EnemyClip {
+	return EnemyClip{
+		Sheet: "test-enemy.png", Row: row, Start: start, Frames: frames,
+		FrameW: 270, FrameH: 360, FPS: fps, Loop: loop,
+	}
+}
+
 // newTestEnemy builds an enemy without loading a sprite sheet, so the logic can be
 // tested without a graphics context. It wires only the fields the AI/combat code
 // touches.
 func newTestEnemy(pos Position) *EnemyRuntime {
-	bp := blueprintFor(KindSuccubus)
+	bp := &testEnemyBlueprint
 	return &EnemyRuntime{
 		bp:        bp,
 		State:     EnemyPatrol,
@@ -20,14 +61,14 @@ func newTestEnemy(pos Position) *EnemyRuntime {
 }
 
 func TestBlueprintRegistered(t *testing.T) {
-	bp := blueprintFor(KindSuccubus)
-	if bp == nil || bp.Name != "Succubus" {
-		t.Fatalf("blueprintFor(KindSuccubus) = %+v, want a Succubus blueprint", bp)
+	bp := blueprintFor(KindSkeletonWhite)
+	if bp == nil || bp.Name != "Skeleton White" {
+		t.Fatalf("blueprintFor(KindSkeletonWhite) = %+v, want a Skeleton White blueprint", bp)
 	}
 	e := newAnimatedTestEnemy(Position{})
 	for _, st := range []EnemyState{EnemyIdle, EnemyPatrol, EnemyAlert, EnemyAttack, EnemyHurt, EnemyDead} {
 		if e.animFor(st) == nil {
-			t.Errorf("succubus blueprint missing animation for state %d", st)
+			t.Errorf("test enemy missing animation for state %d", st)
 		}
 	}
 }

@@ -2,8 +2,9 @@ package core
 
 import "testing"
 
-// These tests pin down how the succubus behaves today, so the enemy-types
-// refactor (movers, attackers, clip tables) can't change it unnoticed.
+// These tests pin down how the first enemy, the succubus, behaved (now the
+// test-only testEnemyBlueprint), so the enemy-types refactor (movers,
+// attackers, clip tables) can't change it unnoticed.
 
 // newAnimatedTestEnemy is newTestEnemy plus its animation table, for tests that
 // tick UpdateEnemyAnimation. It still loads no sprite sheet.
@@ -47,7 +48,7 @@ func TestEnemyLandsOnGround(t *testing.T) {
 func TestEnemyPatrolBouncesOffWall(t *testing.T) {
 	wall := AABB{X: 400, Y: waveGroundY - 2*LevelTileHeight, Width: LevelTileWidth, Height: 2 * LevelTileHeight}
 	qt := waveWorld(0, 1200, wall)
-	e := newTestEnemy(Position{X: 300, Y: waveGroundY - blueprintFor(KindSuccubus).BodyHeight})
+	e := newTestEnemy(Position{X: 300, Y: waveGroundY - testEnemyBlueprint.BodyHeight})
 	p := farPlayer(e)
 
 	for i := 0; i < 2*int(tps()); i++ {
@@ -64,7 +65,7 @@ func TestEnemyPatrolBouncesOffWall(t *testing.T) {
 func TestGroundEnemyTurnsAtLedge(t *testing.T) {
 	const floorEnd = 12 * LevelTileWidth // 720, on a tile edge
 	qt := waveWorld(0, floorEnd)
-	e := newTestEnemy(Position{X: 640, Y: waveGroundY - blueprintFor(KindSuccubus).BodyHeight})
+	e := newTestEnemy(Position{X: 640, Y: waveGroundY - testEnemyBlueprint.BodyHeight})
 	p := farPlayer(e) // patrol path reaches past the edge: 640 + 4 tiles
 
 	for i := 0; i < 4*int(tps()); i++ {

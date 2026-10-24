@@ -15,9 +15,9 @@ func newGuardEnemy(t *testing.T, rollPasses bool) *EnemyRuntime {
 		return 1
 	}
 
-	bp := *blueprintFor(KindSuccubus) // copy; its Clips map is replaced below, not shared
+	bp := testEnemyBlueprint // copy; its Clips map is replaced below, not shared
 	bp.Clips = map[ClipName]EnemyClip{}
-	for name, c := range blueprintFor(KindSuccubus).Clips {
+	for name, c := range testEnemyBlueprint.Clips {
 		bp.Clips[name] = c
 	}
 	bp.Clips[ClipGuard] = bp.Clips[ClipHurt]
