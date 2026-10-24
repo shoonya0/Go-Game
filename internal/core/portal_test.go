@@ -57,3 +57,29 @@ func TestPortalStandsOnItsCell(t *testing.T) {
 			b, 3.5*LevelTileWidth, 6*LevelTileHeight, portalHeight)
 	}
 }
+
+// TestPlayerStartsAtFirstPortal: a new game puts the player standing in the
+// level's first portal in reading order (top row first), and saves it.
+func TestPlayerStartsAtFirstPortal(t *testing.T) {
+	WorldInit()
+	grid := [][]int{
+		{0, 0, 0, 9},
+		{9, 0, 0, 1},
+		{1, 1, 1, 1},
+	}
+	level := BuildLevel(grid)
+	p := InitPlayer(nil)
+	p.StartAt(level)
+
+	first := level.Portals[0]
+	if first.Pos != (Position{X: 3 * LevelTileWidth, Y: 0}) {
+		t.Fatalf("first portal at %v, want the top-row one", first.Pos)
+	}
+	body := p.GetBounds()
+	if centerX(body) != centerX(first.Bounds()) || body.Y+body.Height != first.Pos.Y+LevelTileHeight {
+		t.Errorf("player body %+v, want centered in portal %+v, feet on its floor", body, first.Bounds())
+	}
+	if p.RespawnPos != p.Pos {
+		t.Errorf("respawn %v, want the start position %v (start portal saved)", p.RespawnPos, p.Pos)
+	}
+}

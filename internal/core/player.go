@@ -67,6 +67,18 @@ func InitPlayer(img *ebiten.Image) *PlayerRuntime {
 	}
 }
 
+// StartAt places the player in the level's start portal, its first in reading
+// order (BuildLevel scans top row first), and saves it as the respawn point.
+// A level without portals keeps the default spawn.
+func (player *PlayerRuntime) StartAt(level Level) {
+	if len(level.Portals) == 0 {
+		return
+	}
+	player.Pos = level.Portals[0].StandPos()
+	player.RespawnPos = player.Pos
+	player.fallPeakY = player.Pos.Y
+}
+
 // Approach moves current toward target by at most maxDelta, without overshoot.
 func Approach(current, target, maxDelta float64) float64 {
 	if current < target {

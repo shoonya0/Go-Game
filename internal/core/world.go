@@ -81,6 +81,15 @@ func (c Portal) Bounds() AABB {
 	}
 }
 
+// StandPos returns the player position (body top-left) that stands the player
+// in the middle of the portal, feet on its cell's floor.
+func (c Portal) StandPos() Position {
+	return Position{
+		X: c.Pos.X + (LevelTileWidth-bodyWidth)/2,
+		Y: c.Pos.Y + LevelTileHeight - bodyHeight,
+	}
+}
+
 // Level is the built, ready-to-use result of loading a level: its solid
 // platforms, its portals and where its enemies spawn.
 type Level struct {

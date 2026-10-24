@@ -48,9 +48,12 @@ func NewGame() *Game {
 	touch := core.NewTouchControls(screenWidth, screenHeight)
 	touch.Enabled = system.IsTouchDevice()
 
+	player := core.InitPlayer(core.LoadImage(playerSpriteSheetPath))
+	player.StartAt(level)
+
 	return &Game{
 		state:      core.ModeMenu,
-		player:     core.InitPlayer(core.LoadImage(playerSpriteSheetPath)),
+		player:     player,
 		enemies:    core.SpawnEnemies(level.Enemies),
 		background: core.LoadImage(core.Background_1),
 		tileset:    core.LoadImage(core.Tileset),
