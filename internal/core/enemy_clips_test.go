@@ -2,8 +2,12 @@ package core
 
 import (
 	"bytes"
+	"fmt"
 	"image"
+	"maps"
 	"reflect"
+	"slices"
+	"strings"
 	"testing"
 )
 
@@ -31,6 +35,57 @@ func TestEnemyMissingClipFallsBack(t *testing.T) {
 	if e.clipFor(EnemyAlert) != ClipWalk || e.currentAnim() != e.Animations[ClipWalk] {
 		t.Errorf("chasing without run or alert art plays %v, want walk", e.clipFor(EnemyAlert))
 	}
+}
+
+// TestBlueprintHasOwnArtOnly checks Has counts only a species' own art: a
+// clip it can play through a fallback is not a capability.
+func TestBlueprintHasOwnArtOnly(t *testing.T) {
+	bp := succubusBlueprint // copy; its Clips map is replaced below, not shared
+	bp.Clips = map[ClipName]EnemyClip{}
+	for _, name := range requiredClips {
+		bp.Clips[name] = succubusBlueprint.Clips[name]
+	}
+
+	for _, name := range requiredClips {
+		if !bp.Has(name) {
+			t.Errorf("Has(%v) = false for a required clip it has", name)
+		}
+	}
+	for _, name := range []ClipName{ClipAlert, ClipRun, ClipAttack2, ClipGuard} {
+		if bp.Has(name) {
+			t.Errorf("Has(%v) = true without its art", name)
+		}
+	}
+
+	want := []string{"idle", "walk", "(walk)", "(walk)", "attack_1", "(attack_1)", "-", "hurt", "death"}
+	if got := bp.capabilities(); !reflect.DeepEqual(got, want) {
+		t.Errorf("capabilities() = %q\nwant %q", got, want)
+	}
+}
+
+// TestEnemyCapabilities prints what every registered enemy can do, one row per
+// species: run it with -v to see the table.
+//
+//	go test ./internal/core -run TestEnemyCapabilities -v
+func TestEnemyCapabilities(t *testing.T) {
+	var b strings.Builder
+	fmt.Fprintf(&b, "%-16s", "enemy")
+	for _, name := range clipNames {
+		fmt.Fprintf(&b, " %-12s", name)
+	}
+	kinds := slices.Sorted(maps.Keys(enemyBlueprints))
+	for _, kind := range kinds {
+		bp := enemyBlueprints[kind]
+		cells := bp.capabilities()
+		if len(cells) != len(clipNames) {
+			t.Fatalf("%s: %d cells, want one per clip (%d)", bp.Name, len(cells), len(clipNames))
+		}
+		fmt.Fprintf(&b, "\n%-16s", bp.Name)
+		for _, c := range cells {
+			fmt.Fprintf(&b, " %-12s", c)
+		}
+	}
+	t.Log("\n" + b.String())
 }
 
 // The succubus has no run clip, so it chases with its alert loop, as before
