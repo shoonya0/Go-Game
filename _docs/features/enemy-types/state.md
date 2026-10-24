@@ -1,22 +1,22 @@
 # Enemy types: state
 
-## Now (updated 2026-10-24 at `9296da3`)
+## Now (updated 2026-10-24 at `d21c103`)
 
 - **Status:** 🟡 in progress; increments 1-2 merged (PR #18 `2bc4469`, PR #19 `9124414`);
-  increment 3 (ground roster + guard): tasks 12-14 done, 15/19/20 dropped; committed locally, not pushed
-- **Current task:** next is 16 (White Golem: rename to `WhiteGolem_*`, add it) in [tasks.md](./tasks.md),
+  increment 3 (ground roster + guard): tasks 12-14, 16 done, 15/19/20 dropped; committed locally, not pushed
+- **Current task:** 21 (place one of each, web smoke check, close increment 3) in [tasks.md](./tasks.md),
   on `feature/enemy-types` from `main` at `9124414`
-- **Stopped at:** strip packs are now the only enemy format (D9, user's call): goblin
-  reverted (`12de28a`, `3b98b41`), battler sheets deleted (`b450bdd`). Every strip pack
-  checked frame by frame: all fine; Striker's frames are 96×96, attack 128×96 (`f7b861a`).
-  Then added `bp.Has(clip)` and the capability table (`1cbad37`, `9296da3`), user's request
+- **Stopped at:** task 16 done: White Golem strips renamed `WhiteGolem_*` and committed
+  (`7dededa`), `TestAssetBaseNamesUnique` (`ce20974`), blueprint + `%` on the platform at
+  columns 44-49 of level 1 (`36fc396`), `TestLevelEnemiesKeepTheirGround` (`d21c103`).
+  `verify.mjs --full` 8/8. Not looked at in a window yet (it spawns far from the player start)
 - **Traps:** ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
   `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
   `GuardChance` in [0,1] with a guard clip. No strip pack has a `guard` clip. The mushroom
   art faces left (`FacesLeft`). The ledge probe acts only in `EnemyPatrol`: chasing enemies
   still run off edges. A new Attacker must implement `Ready` (a ranged one: its fire timer).
   Death clips of both golems, Enemy3 and the demon end on a blank frame (the body vanishes)
-- **Open questions / blockers:** keep or delete `tools/battler2strip` (its goblin mapping
+- **Open questions / blockers:** user's native look at the White Golem (tuning is a first guess: 80 HP, 15 dmg, slow). Keep or delete `tools/battler2strip` (its goblin mapping
   points at a deleted sheet). No strip pack for a ranged enemy (task 25). My call, not in
   D8: an enemy mid-swing can't guard (user not asked yet). Hook noise: `docs-check.mjs:292`
   counts untracked assets as changed code (issue proposed, not filed)
@@ -27,6 +27,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-24: task 16, White Golem
+
+- Changed: strips renamed `WhiteGolem_*`; `whiteGolemBlueprint`, `KindWhiteGolem`, `%` in level 1; tests `TestAssetBaseNamesUnique`, `TestLevelEnemiesKeepTheirGround`
+- Verified: both tests failed first / on mutation (missing marker, spawn over the pit); `verify.mjs --full` 8/8; 119 tests pass
+- Next: task 21, then close increment 3
 
 ### 2026-10-24: capability check
 
@@ -51,10 +57,4 @@
 - Changed: reverted the goblin (`12de28a`, `3b98b41`); the user turned it down because it had no walk animation
 - Verified: `verify.mjs` 5/5 after the revert
 - Next: talk with the user about the enemy plan
-
-### 2026-10-24: task 15, goblin (built, look pending)
-
-- Changed: `battler2strip` (`floorStrips`, bake all clips before writing); goblin strips re-baked and committed; `goblinBlueprint`, `KindGoblin`, `$` in level 1
-- Verified: `TestFloorStripsMovesFeetToBottom` failed first; `verify.mjs --full` 8/8; feet measured at y=119/120; web screenshots with and without F3
-- Docs touched: design (feet shift), tasks (15 note), state, current-state
 

@@ -56,8 +56,9 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [ ] ~~15. Goblin (first baked enemy, melee ×2 + guard) → check: manual look, F3 boxes.
       On hold: built (`849b30e`), then reverted (`12de28a`, `3b98b41`) because the sheet
       has no walk cycle and the user turned the sliding walk down~~ Dropped: battler sheets deleted (decisions)
-- [ ] 16. Rename `White_Golem/Golem_1_*` → `WhiteGolem_*` (D4), add White Golem → check:
-      new `TestAssetBaseNamesUnique`
+- [x] 16. Rename `White_Golem/Golem_1_*` → `WhiteGolem_*` (D4), add White Golem → check:
+      new `TestAssetBaseNamesUnique` (failed first on the 5 golem names). `%` on the platform at
+      columns 44-49; `TestLevelEnemiesKeepTheirGround` added (`7dededa`..`d21c103`). User's native look pending
 - [x] 17. Skeleton White + Yellow strips as one blueprint with colour variants → check:
       `TestSkeletonVariantsShareBlueprint`, manual look (user: "working"). Done early (`@`, `#` in level 1). `attack_2` plays once task 6 picks attacks
 - [x] 18. Mushroom (no stun yet) → check: manual look (user: "working"). Done early (`&` in

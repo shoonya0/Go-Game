@@ -51,7 +51,7 @@ steady row (fliers bob on purpose), and no frame is cut off.
 |---|---|---|---|---|---|
 | Succubus (exists) | `succubus.png` | 270×360 grid | ground | melee | already wired |
 | Skeleton White / Yellow | `Skeleton_White/`, `Skeleton_Yellow/` | strips 96×64 | ground | melee ×2 | idle 8, walk 10, attack1 10, attack2 9, hurt 5, die 13 (checked) |
-| White Golem | `White_Golem/` | strips 90×64 | ground | melee, slow | idle 8, walk 10, attack 11, hurt 4, die 13; rename files (D4) |
+| White Golem | `White_Golem/` | strips 90×64 | ground | melee, slow | idle 8, walk 10, attack 11 (slam on 6), hurt 4, die 13 (13th blank); files renamed `WhiteGolem_*` (D4); marker `%` |
 | Mushroom | `Mushroom/` | strips 80×64 | ground | melee | idle 7, run 8, attack 10, hit 5, die 15 (checked); art faces left; stun clips later |
 | Flying Demon | `flying_Demon/` | strips 81×71 | flying | melee | idle 4, flying 4, attack 8, hurt 4, death 7 |
 | Smasher (Enemy3) | `Enemy3-Movement-In-Animation/` | strips 64×64 | flying | dive | idle 8, fly 8, smashStart 12, smashLoop 3, smashEnd 8, hit 4, die 17 |

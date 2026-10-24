@@ -31,7 +31,8 @@
 
 - **Decision:** rename colliding files when an enemy is wired up, e.g.
   `White_Golem/Golem_1_*.png` → `WhiteGolem_*.png`, and `Orange_Golem` → `OrangeGolem_*`
-  once the boss is added.
+  once the boss is added. **Done for the White Golem** (task 16); `TestAssetBaseNamesUnique`
+  now fails on any duplicate name among the embedded files.
 - **Why:** `readAsset` resolves by base name only (`internal/core/image.go`). Today both
   golem folders contain `Golem_1_*.png`, so one silently shadows the other. `Striker/` and
   `flying_Demon/` differ only by case (`idle.png` / `IDLE.png`). That works, since the embed
