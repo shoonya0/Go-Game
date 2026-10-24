@@ -25,7 +25,7 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
       `TestMeleeHitLandsOnHitFrame` (mutation: ignoring HitFrame fails all 3 cases)
 - [x] 7. Registry validation test: unique markers, required clips present, speeds > 0,
       Mover/Attacker set → check: `TestBlueprintsValid` (markers stay in
-      `TestEnemyMarkersUniqueSingleChar`; mutation: no Attacker on the mushroom fails it)
+      `TestEnemyMarkersUniqueSingleChar`, now `TestEnemyMarkersUniqueAndBare`; mutation: no Attacker on the mushroom fails it)
 - [x] 8. `node scripts/verify.mjs --full`, `code-reviewer` agent, update docs (state.md,
       design.md trimmed to what the code doesn't show). The reviewer found swings whiffing
       when the cooldown outlasts the clip; fixed test-first (`TestMeleeEverySwingLands`, `6c45e04`)
@@ -50,7 +50,7 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 
 - [x] 12. Ledge probe in `groundMover`: patrol turns at platform edges → check:
       `TestGroundEnemyTurnsAtLedge`
-- [ ] 13. Two-character level markers (D6) → check: `TestQuoteBareMarkers` extended, level loads
+- [x] 13. Two-character level markers (D6) → check: `TestQuoteBareMarkers` extended, level loads
 - [ ] 14. Guard trait (D8): `EnemyGuard`, `GuardChance`, front-only block → check:
       `TestGuardBlocksFrontHit`, `TestGuardIgnoresBackHit`
 - [ ] 15. Goblin (first baked enemy, melee ×2 + guard) → check: manual look, F3 boxes

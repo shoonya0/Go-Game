@@ -51,6 +51,8 @@
   roster has about 23 enemies plus variants, so they **will** run out. Do two-character markers
   (a change in `quoteBareMarkers`) before the battler roster lands (tasks.md), not letters,
   which clash with JSON literals.
+- **Done (task 13):** a run of bare punctuation is one marker, up to `maxMarkerLen` (2)
+  characters, so about 400 codes. Keep single characters for the existing enemies.
 
 ## D7. Bake battler sheets into strips with an offline tool (2026-10-23)
 
