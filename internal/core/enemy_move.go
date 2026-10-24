@@ -1,5 +1,7 @@
 package core
 
+import "math"
+
 // Mover is how a species gets around: it turns the brain's intent into
 // velocity, then moves the enemy and resolves collisions. Steering and moving
 // are separate calls so the brain sets this tick's velocity when it decides,
@@ -65,7 +67,10 @@ func (groundMover) Grounded(e *EnemyRuntime) bool { return e.onGround }
 
 // turnAtLedge stops a patrolling enemy whose next step would put its leading
 // edge past solid ground and reverses its patrol, so it paces its platform
-// instead of walking off. Chasing enemies still follow the player off edges.
+// instead of walking off. Chasing enemies still follow the player off edges;
+// one that lost the player outside its patrol path can't walk back to it past
+// the ledge, so it starts a new path where it stands rather than turn toward
+// its spawn and stop again every tick.
 func (groundMover) turnAtLedge(e *EnemyRuntime, qt *DynamicQuadtree) {
 	if qt == nil || !e.onGround || e.State != EnemyPatrol || e.VelX == 0 {
 		return
@@ -82,6 +87,9 @@ func (groundMover) turnAtLedge(e *EnemyRuntime, qt *DynamicQuadtree) {
 	}
 	e.VelX = 0
 	e.patrolDir = -e.patrolDir
+	if math.Abs(e.Pos.X-e.spawnX) > e.bp.Stats.PatrolTiles*LevelTileWidth {
+		e.spawnX = e.Pos.X
+	}
 }
 
 // applyGravity accelerates the enemy downward, capped at the shared fall speed.

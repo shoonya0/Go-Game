@@ -79,6 +79,28 @@ func TestGroundEnemyTurnsAtLedge(t *testing.T) {
 	}
 }
 
+// TestStrandedEnemyPatrolsWhereItIs covers an enemy that chased the player
+// down to another platform and lost them: its patrol path points back to its
+// spawn, past a ledge. It must not freeze at the ledge, turning back toward
+// the spawn every tick; it patrols where it is instead.
+func TestStrandedEnemyPatrolsWhereItIs(t *testing.T) {
+	const floorEnd = 12 * LevelTileWidth // 720, on a tile edge
+	qt := waveWorld(0, floorEnd)
+	e := newTestEnemy(Position{X: 640, Y: waveGroundY - testEnemyBlueprint.BodyHeight})
+	e.spawnX = 2000 // spawn is far to the right, past the edge
+	p := farPlayer(e)
+
+	for i := 0; i < 4*int(tps()); i++ {
+		UpdateEnemy(e, p, qt)
+		if right := e.Pos.X + e.bp.BodyWidth; right > floorEnd || !e.onGround {
+			t.Fatalf("tick %d: right edge %v onGround=%v, want to stay on the floor ending at %v", i, right, e.onGround, floorEnd)
+		}
+	}
+	if e.Pos.X > 600 {
+		t.Errorf("after 4 s: x=%v, want it to have walked back from the ledge (frozen there)", e.Pos.X)
+	}
+}
+
 func TestEnemyChasesLeft(t *testing.T) {
 	e := newTestEnemy(Position{X: 1000})
 	p := &PlayerRuntime{Pos: Position{X: 1000 - e.bp.Stats.DetectRange + 10}, Combat: Combat{Health: 100, MaxHealth: 100}}
