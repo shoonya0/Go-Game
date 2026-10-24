@@ -43,18 +43,34 @@ func TestSplitGridUnknownMarker(t *testing.T) {
 }
 
 func TestQuoteBareMarkers(t *testing.T) {
-	in := `{"lvl!": {"grid": [[0,!,@],[9,"#",-1]]}}`
-	want := `{"lvl!": {"grid": [[0,"!","@"],[9,"#",-1]]}}`
+	in := `{"lvl!": {"grid": [[0,!,@],[9,"#",-1],[!@, $$ ,2]]}}`
+	want := `{"lvl!": {"grid": [[0,"!","@"],[9,"#",-1],["!@", "$$" ,2]]}}`
 	if got := string(quoteBareMarkers([]byte(in))); got != want {
 		t.Fatalf("quoteBareMarkers:\n got %s\nwant %s", got, want)
 	}
 }
 
-func TestEnemyMarkersUniqueSingleChar(t *testing.T) {
+// TestTwoCharMarkerIsOneCell checks a bare two-character marker reaches the
+// grid as one marker cell, not two cells or a parse error.
+func TestTwoCharMarkerIsOneCell(t *testing.T) {
+	var cells [][]levelCell
+	if err := json.Unmarshal(quoteBareMarkers([]byte(`[[0,!@,0]]`)), &cells); err != nil {
+		t.Fatal(err)
+	}
+	if len(cells[0]) != 3 || cells[0][1].marker != "!@" {
+		t.Fatalf("cells = %+v, want 3 cells with marker \"!@\" in the middle", cells)
+	}
+}
+
+func TestEnemyMarkersUniqueAndBare(t *testing.T) {
 	seen := map[string]EnemyKind{}
 	for kind, bp := range enemyBlueprints {
-		if len(bp.Marker) != 1 || !isMarkerChar(bp.Marker[0]) {
-			t.Errorf("%s: marker %q must be one ASCII punctuation character usable bare in the level", bp.Name, bp.Marker)
+		bare := len(bp.Marker) >= 1 && len(bp.Marker) <= maxMarkerLen
+		for i := 0; i < len(bp.Marker); i++ {
+			bare = bare && isMarkerChar(bp.Marker[i])
+		}
+		if !bare {
+			t.Errorf("%s: marker %q must be 1-%d ASCII punctuation characters usable bare in the level", bp.Name, bp.Marker, maxMarkerLen)
 		}
 		if other, dup := seen[bp.Marker]; dup {
 			t.Errorf("marker %q used by kinds %d and %d", bp.Marker, other, kind)

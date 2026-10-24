@@ -54,7 +54,7 @@ type EnemyClip struct {
 // behaviour is shared code.
 type EnemyBlueprint struct {
 	Name       string
-	Marker     string // one-character level-grid code that spawns this kind (e.g. !)
+	Marker     string // 1-2 character level-grid code that spawns this kind (e.g. ! or !@)
 	BodyWidth  float64
 	BodyHeight float64
 	Scale      float64  // render scale of the sprite

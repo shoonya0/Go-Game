@@ -2,8 +2,8 @@ package core
 
 // enemyBlueprints is the registry of enemy species. To add an enemy: give it an
 // EnemyKind (enemy.go), drop its sprite sheets in assets/enemy/, and add one entry
-// here describing its box, stats, clips (each names its sheet) and level-grid Marker (a unique
-// ASCII punctuation character, written bare in assets/levels/deepForest/level_1.json). No other
+// here describing its box, stats, clips (each names its sheet) and level-grid Marker (1-2 unique
+// ASCII punctuation characters, written bare in assets/levels/deepForest/level_1.json). No other
 // code changes.
 var enemyBlueprints = map[EnemyKind]*EnemyBlueprint{
 	KindSuccubus:       &succubusBlueprint,
