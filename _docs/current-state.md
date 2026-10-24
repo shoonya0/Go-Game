@@ -34,12 +34,12 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `6c45e04`, Windows, go1.26.7)
+## Test baseline (at `9124414`, Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
-| `go test ./...` | ✅ 100/100 top-level tests pass, all in `internal/core` | — |
+| `go test ./...` | ✅ 108/108 top-level tests pass: 100 in `internal/core`, 8 in `tools/battler2strip` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
 | GitHub CI | PR #19: still pending when merged (user watches it) | — |
 
@@ -48,7 +48,8 @@ baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAtt
 `TestAirHeavyAttackHitsBothSides`, `TestAttackDamageInBars`, `TestComboAttacksHitTwicePerSwing`, the
 enemy health / level marker tests, and on `feature/enemy-types` the succubus characterisation tests
 (`internal/core/enemy_behavior_test.go`), the clip tests in `internal/core/enemy_clips_test.go`, hold/motion tests
-(`enemy_motion_test.go`), melee hit-frame tests (`enemy_attack_test.go`) and `TestBlueprintsValid`.
+(`enemy_motion_test.go`), melee hit-frame tests (`enemy_attack_test.go`), `TestBlueprintsValid`, and the baking tool's tests
+(`tools/battler2strip/bake_test.go`).
 
 ## Known issues and risks
 
