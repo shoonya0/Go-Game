@@ -1,6 +1,6 @@
 # Enemy types: state
 
-## Now (updated 2026-10-24 at `f7b861a`)
+## Now (updated 2026-10-24 at `9296da3`)
 
 - **Status:** 🟡 in progress; increments 1-2 merged (PR #18 `2bc4469`, PR #19 `9124414`);
   increment 3 (ground roster + guard): tasks 12-14 done, 15/19/20 dropped; committed locally, not pushed
@@ -8,8 +8,9 @@
   on `feature/enemy-types` from `main` at `9124414`
 - **Stopped at:** strip packs are now the only enemy format (D9, user's call): goblin
   reverted (`12de28a`, `3b98b41`), battler sheets deleted (`b450bdd`). Every strip pack
-  checked frame by frame: all fine; Striker's frames are 96×96, attack 128×96 (`f7b861a`)
-- **Traps:** player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
+  checked frame by frame: all fine; Striker's frames are 96×96, attack 128×96 (`f7b861a`).
+  Then added `bp.Has(clip)` and the capability table (`1cbad37`, `9296da3`), user's request
+- **Traps:** ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
   `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
   `GuardChance` in [0,1] with a guard clip. No strip pack has a `guard` clip. The mushroom
   art faces left (`FacesLeft`). The ledge probe acts only in `EnemyPatrol`: chasing enemies
@@ -26,6 +27,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-24: capability check
+
+- Changed: `Has` + `capabilities` in `enemy_clips.go`; guard, second attack and `TestBlueprintsValid` use `Has`
+- Verified: new tests failed first (build), mutation (fallback counted) caught; `verify.mjs` 5/5; 117 tests pass
+- Next: task 16, White Golem
 
 ### 2026-10-24: strip packs only (D9)
 
@@ -50,10 +57,4 @@
 - Changed: `battler2strip` (`floorStrips`, bake all clips before writing); goblin strips re-baked and committed; `goblinBlueprint`, `KindGoblin`, `$` in level 1
 - Verified: `TestFloorStripsMovesFeetToBottom` failed first; `verify.mjs --full` 8/8; feet measured at y=119/120; web screenshots with and without F3
 - Docs touched: design (feet shift), tasks (15 note), state, current-state
-
-### 2026-10-24: task 14, guard trait
-
-- Changed: new `enemy_guard.go` (`TakeHitFrom`, `rollGuard`) + tests; `EnemyGuard`, `GuardChance`; swings and the ground wave call `TakeHitFrom`
-- Verified: `verify.mjs --full` 8/8; mutations (front check, each caller's side) fail the tests; code-reviewer: no blocking findings (2 suggestions applied)
-- Docs touched: design (guard notes), tasks (14 ticked), state, current-state
 

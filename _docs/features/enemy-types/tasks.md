@@ -66,6 +66,8 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
       zombies, troll, werewolf, wolf, German shepherd, rat, crab, sahuagin, slime, turnip →
       check: `TestBlueprintsValid`, manual look at each~~ Dropped: battler sheets deleted
 - [ ] ~~20. Training dummy (`static` mover, no attack) → check: `TestStaticEnemyNeverMoves`~~ Dropped: its sheet was a battler
+- [x] 21a. Capability check (user request): `bp.Has(clip)` + a capability table → check:
+      `TestBlueprintHasOwnArtOnly` (failed first, catches a `Has` that counts fallbacks), `TestEnemyCapabilities` (`1cbad37`, `9296da3`)
 - [ ] 21. Place one of each in `level_1.json` (or a test level), web smoke check,
       `verify.mjs --full`, docs update
 

@@ -29,6 +29,10 @@ Required: `idle`, `walk`, `attack_1`, `hurt`, `death`. Optional, with a fallback
 plays `walk` and chasing plays `run`. Names, fallbacks and the state → clip table live in
 `internal/core/enemy_clips.go`.
 
+The clips a species has are what it can do: shared code asks `bp.Has(ClipGuard)`, never
+the species. There is no separate capability flag that could disagree with the art. To see
+every enemy's capabilities: `go test ./internal/core -run TestEnemyCapabilities -v`.
+
 ## One sprite format: strip packs (D3, D9)
 
 Every enemy is a strip pack: one PNG per clip, used as shipped (renamed when names collide,

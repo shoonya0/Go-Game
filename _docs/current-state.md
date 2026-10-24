@@ -24,7 +24,7 @@ and /feature-docs update. -->
 - Run a 2D side-scrolling platformer natively (Windows) or in the browser (WASM). VERIFIED (CI builds both)
 - Move (WASD), run (Shift; drains 5 stamina/s, exhausted at 0 until 20 regenerates), jump (costs 5 stamina; at 0 stamina the player kneels until 2 bars refill), attack (J/I cost 10 stamina; U 34; O 10, plus 20 for its second part); sprite HUD with 10 hearts + 10 stamina segments; water/larva hazards, fall damage, checkpoints, respawn. VERIFIED (code read, tests)
 - Fight three enemy types in level 1, each placed by a grid marker (one or two punctuation characters): the succubus (`!`), the skeleton in white (`@`) and yellow (`#`), and the mushroom (`&`). All patrol, chase and attack; while patrolling they turn at walls and platform edges (chasing ones can still run off); they hit only when your body is inside their attack box. The skeleton and mushroom deal damage on the frame the weapon connects and the skeleton alternates two attacks; the succubus still hits as its attack starts. Between swings an enemy stands idle until its cooldown is ready, so no swing misses. Each shows 2 health bars above its head and regenerates 0.1 bar/s; sprites bob, lean and shake when hit (draw-time motion). Skeleton/mushroom checked by the user in game; hit timing not yet. Your attacks hurt it (J/I 0.5 bar, jump + I 1.5 and its spin hits behind you too, K 0.5 + 1, L 1 + 2, O 1 + 2); K, L and O stop halfway unless pressed again (O after sprite 9); U sends a ground wave along the floor that hurts it too. Attacks move the player (`internal/core/attack_step.go`): J steps 45 px back, I and U 45 px forward, K's second part 15 px and O's 45 px forward; L doesn't move. Taking damage makes the player blink red for 1 s; a hit of 2+ hearts knocks them down 1.5 tiles back, 3+ hearts plays the full knockdown and 2 tiles; at 0 HP one of two death animations plays before respawn. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go`, tests pass)
-- Enemies are built from parts, not one Go type per species: a blueprint (stats, clips from one strip pack) plus a movement part (`groundMover`) and an attack part (`meleeAttack`). A guard trait exists (blocks hits from the front) but no current enemy has guard art. VERIFIED (`internal/core/enemy_types.go`, `enemy_guard.go`)
+- Enemies are built from parts, not one Go type per species: a blueprint (stats, clips from one strip pack) plus a movement part (`groundMover`) and an attack part (`meleeAttack`). What an enemy can do is the clips it has (`bp.Has`); `go test ./internal/core -run TestEnemyCapabilities -v` prints the table. A guard trait exists (blocks hits from the front) but no current enemy has guard art. VERIFIED (`internal/core/enemy_types.go`, `enemy_guard.go`)
 - On a touch screen, buttons for every key: arrows bottom-left, attack symbols and a bigger sprint button bottom-right, a menu button top-left (the HUD moves right of it). Idle buttons are half see-through and stay out of the middle third of the screen. VERIFIED (tests; web build with simulated touches; not on a real device)
 - `GameState` (menu/playing/game over) is declared and set to `ModeMenu`, but never read: there is no menu, so the touch menu button and Escape only toggle `InputState.Menu`. VERIFIED (`cmd/main.go`)
 
@@ -35,12 +35,12 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `f7b861a`, Windows, go1.26.7)
+## Test baseline (at `9296da3`, Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs` | ✅ pass, all 5 steps (`--full` last passed at `849b30e`) | — |
-| `go test ./...` | ✅ 115/115 top-level tests pass: 106 in `internal/core`, 9 in `tools/battler2strip` | — |
+| `go test ./...` | ✅ 117/117 top-level tests pass: 108 in `internal/core`, 9 in `tools/battler2strip` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
 | GitHub CI | PR #19: still pending when merged (user watches it) | — |
 
@@ -50,7 +50,7 @@ baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAtt
 enemy health / level marker tests, and on `feature/enemy-types` the succubus characterisation tests
 (`internal/core/enemy_behavior_test.go`), the clip tests in `internal/core/enemy_clips_test.go`, hold/motion tests
 (`enemy_motion_test.go`), melee hit-frame tests (`enemy_attack_test.go`), `TestBlueprintsValid`, and the baking tool's tests
-(`tools/battler2strip/bake_test.go`), the ledge, marker and guard tests (`TestGroundEnemyTurnsAtLedge`, `TestTwoCharMarkerIsOneCell`, `enemy_guard_test.go`).
+(`tools/battler2strip/bake_test.go`), the ledge, marker and guard tests (`TestGroundEnemyTurnsAtLedge`, `TestTwoCharMarkerIsOneCell`, `enemy_guard_test.go`), and the capability tests (`TestBlueprintHasOwnArtOnly`, `TestEnemyCapabilities`).
 
 ## Known issues and risks
 
