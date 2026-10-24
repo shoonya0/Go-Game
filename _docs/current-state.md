@@ -10,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increments 1–2 merged (tasks 1–11); increment 3 (ground roster) in progress, tasks 12-14 done
+- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increments 1–2 merged (tasks 1–11); increment 3 (ground roster) in progress, tasks 12-14 done, 15 built (native look pending)
 - **Branch:** `feature/enemy-types`, fresh from `main` at `9124414` (merged: increment 1 as PR #18, increment 2 battler baking as PR #19)
-- **Next step:** task 15 (Goblin, first baked enemy) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Next step:** user looks at the goblin (task 15), then task 16 (White Golem rename) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
 - **Updated:** 2026-10-24 (increment 2 merged, PR #19)
 
 <!-- Once a feature is active, the first line becomes, for example:

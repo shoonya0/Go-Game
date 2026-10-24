@@ -53,7 +53,9 @@ Built (task 9). Usage and the mapping fields are in `tools/battler2strip/main.go
 
 Each frame is `[motion block 0-2, row 0-5, frame 0-2]` (layout `art-src/battlers/imagePattern.png`).
 Clip timing goes in the mapping only so the printed snippet is complete, which keeps
-re-baking a single command. Cell edges are rounded from the exact fractional grid, so a
+re-baking a single command. Battler cells leave a margin under the feet, so after cutting
+the tool moves all of an enemy's strips down by one shared amount until the lowest foot of
+any clip is on the bottom row (the game draws a frame's bottom edge on the ground). Cell edges are rounded from the exact fractional grid, so a
 sheet whose size doesn't divide by 9 or 6 still tiles; each cell is then box-filtered to
 one fixed frame size (a cell 1 px larger than its neighbour scales by < 0.5 %).
 

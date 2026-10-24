@@ -53,7 +53,9 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [x] 13. Two-character level markers (D6) → check: `TestQuoteBareMarkers` extended, level loads
 - [x] 14. Guard trait (D8): `EnemyGuard`, `GuardChance`, front-only block → check:
       `TestGuardBlocksFrontHit`, `TestGuardIgnoresBackHit`
-- [ ] 15. Goblin (first baked enemy, melee ×2 + guard) → check: manual look, F3 boxes
+- [ ] 15. Goblin (first baked enemy, melee ×2 + guard) → check: manual look, F3 boxes.
+      Built (`849b30e`, `$` in level 1); web look + F3 checked by the agent; waiting on the
+      user's native look
 - [ ] 16. Rename `White_Golem/Golem_1_*` → `WhiteGolem_*` (D4), add White Golem → check:
       new `TestAssetBaseNamesUnique`
 - [x] 17. Skeleton White + Yellow strips as one blueprint with colour variants → check:
