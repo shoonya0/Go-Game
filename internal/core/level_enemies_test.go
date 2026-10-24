@@ -92,7 +92,8 @@ func TestLevelFileSpawnsEnemies(t *testing.T) {
 // TestLevelEnemiesKeepTheirGround spawns level 1 as the game does and lets every
 // enemy patrol for 20 seconds with the player far away: each registered kind
 // must be in the level, and each enemy must still stand on the ground it
-// spawned on, not fall off a platform or through the floor.
+// spawned on, not fall off a platform or through the floor. A flyer has no
+// ground: it must still fly at the height it spawned at.
 func TestLevelEnemiesKeepTheirGround(t *testing.T) {
 	WorldInit()
 	level := LoadLevel(LevelFile, DefaultLevelName)
@@ -116,6 +117,13 @@ func TestLevelEnemiesKeepTheirGround(t *testing.T) {
 		p := farPlayer(e)
 		for range int(20 * tps()) { // the first ticks drop it onto its ground
 			UpdateEnemy(e, p, qt)
+		}
+		if _, flies := e.bp.Mover.(flyingMover); flies {
+			if e.Pos.Y != start.Y || e.onGround {
+				t.Errorf("%s from (%v, %v): after 20 s at (%v, %v) onGround=%v, want still flying at its spawn height",
+					e.bp.Name, start.X, start.Y, e.Pos.X, e.Pos.Y, e.onGround)
+			}
+			continue
 		}
 		if !e.onGround || e.Pos.Y > start.Y+LevelTileHeight {
 			t.Errorf("%s from (%v, %v): after 20 s at (%v, %v) onGround=%v, want still on the ground it spawned on",
