@@ -130,7 +130,7 @@ func (player *PlayerRuntime) HitEnemies(enemies []*EnemyRuntime) {
 		if e.State.IsDead() || slices.Contains(player.struck, e) || !box.Intersects(e.GetBounds()) {
 			continue
 		}
-		e.TakeDamage(st.Hits[i].Damage)
+		e.TakeHitFrom(st.Hits[i].Damage, centerX(player.GetBounds()))
 		player.struck = append(player.struck, e)
 	}
 }
