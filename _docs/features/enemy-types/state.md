@@ -9,7 +9,7 @@
 - **Stopped at:** task 16 done: White Golem strips renamed `WhiteGolem_*` and committed
   (`7dededa`), `TestAssetBaseNamesUnique` (`ce20974`), blueprint + `%` on the platform at
   columns 44-49 of level 1 (`36fc396`), `TestLevelEnemiesKeepTheirGround` (`d21c103`).
-  `verify.mjs --full` 8/8. Not looked at in a window yet (it spawns far from the player start).
+  `verify.mjs --full` 8/8. User checked it in game: "working".
   Then removed the succubus (user: animation not good): tests now run on the test-only
   `testEnemyBlueprint` (`4917db1`, `a4a5b53`), blueprint + `!` + sheet gone (`0f42350`)
 - **Traps:** behaviour tests use `testEnemyBlueprint` (enemy_test.go), not a game enemy: change the roster freely. ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
@@ -18,7 +18,7 @@
   art faces left (`FacesLeft`). The ledge probe acts only in `EnemyPatrol`: chasing enemies
   still run off edges. A new Attacker must implement `Ready` (a ranged one: its fire timer).
   Death clips of both golems, Enemy3 and the demon end on a blank frame (the body vanishes)
-- **Open questions / blockers:** user's native look at the White Golem (tuning is a first guess: 80 HP, 15 dmg, slow). Keep or delete `tools/battler2strip` (its goblin mapping
+- **Open questions / blockers:** Keep or delete `tools/battler2strip` (its goblin mapping
   points at a deleted sheet). No strip pack for a ranged enemy (task 25). My call, not in
   D8: an enemy mid-swing can't guard (user not asked yet). Hook noise: `docs-check.mjs:292`
   counts untracked assets as changed code (issue proposed, not filed)
