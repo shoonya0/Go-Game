@@ -30,8 +30,8 @@ func (c ClipName) String() string {
 var requiredClips = []ClipName{ClipIdle, ClipWalk, ClipAttack1, ClipHurt, ClipDeath}
 
 // clipFallback is the clip to try when a species has no art for a clip. Run
-// falls back through alert, so a species with only an alert loop (the
-// succubus) chases with it. Guard has no fallback: without its art the enemy
+// falls back through alert, so a species with only an alert loop chases with
+// it. Guard has no fallback: without its art the enemy
 // doesn't guard.
 var clipFallback = map[ClipName]ClipName{
 	ClipRun:     ClipAlert,

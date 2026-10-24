@@ -3,7 +3,7 @@ package core
 import "slices"
 
 // Player attack damage per hit, in enemy health bars (EnemyHealthPerBar HP). A
-// succubus has 2 bars.
+// skeleton has 2 bars.
 const (
 	halfBar = EnemyHealthPerBar / 2
 

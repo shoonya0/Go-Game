@@ -1,11 +1,10 @@
 package core
 
 // EnemyState is the behavioural state shared by every enemy, regardless of which
-// sprite sheet backs it. The succubus sheet groups its frames exactly this way
-// (IDLE/PATROL, ALERT, ATTACK, HURT, DIED), and other enemies reuse the same set
-// even when their frame counts and pixel sizes differ. Each enemy's Animations
-// map is keyed by these values, so the general update/draw code never needs to
-// know which concrete enemy it is driving.
+// sprite sheet backs it. Every enemy uses the same set even when their frame
+// counts and pixel sizes differ. Each enemy's Animations map is keyed by these
+// values, so the general update/draw code never needs to know which concrete
+// enemy it is driving.
 type EnemyState int
 
 const (
