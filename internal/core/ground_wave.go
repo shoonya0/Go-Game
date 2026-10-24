@@ -100,7 +100,8 @@ func (w *GroundWave) update(qt *DynamicQuadtree, enemies []*EnemyRuntime) {
 
 	box := w.Box()
 	for _, e := range enemies {
-		if e.State.IsDead() || slices.Contains(w.struck, e) || !box.Intersects(e.GetBounds()) {
+		// The wave runs along the floor: it passes under flyers and jumpers.
+		if e.State.IsDead() || !e.bp.Mover.Grounded(e) || slices.Contains(w.struck, e) || !box.Intersects(e.GetBounds()) {
 			continue
 		}
 		e.TakeHitFrom(GroundWaveDamage, centerX(e.GetBounds())-w.dir) // from behind the wave, the side it came from

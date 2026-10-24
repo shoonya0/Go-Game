@@ -121,8 +121,7 @@ func TestPlayerHitsGuardedFromTheFront(t *testing.T) {
 		qt := waveWorld(0, 2000)
 		e = newGuardEnemy(t, true)
 		e.Pos = Position{X: 700}
-		b := e.GetBounds()
-		e.Pos.Y += waveGroundY - (b.Y + b.Height) // stand it on the floor
+		standOnWaveFloor(e)
 		e.FlipX = facesPlayer
 		tickWaves(uPlayer(500, groundWaveSpawnFrame), qt, []*EnemyRuntime{e}, int(tps()))
 		if blocked := e.Health == e.bp.Stats.MaxHealth; blocked != facesPlayer {
