@@ -71,9 +71,14 @@ type Portal struct {
 	Pos Position
 }
 
-// Bounds returns the portal's one-tile activation zone.
+// Bounds returns the portal's area: its doorway, centered on its grid cell
+// (Pos is the cell's top-left) and standing on the cell's floor.
 func (c Portal) Bounds() AABB {
-	return AABB{X: c.Pos.X, Y: c.Pos.Y, Width: LevelTileWidth, Height: LevelTileHeight}
+	return AABB{
+		X:     c.Pos.X + (LevelTileWidth-portalWidth)/2,
+		Y:     c.Pos.Y + LevelTileHeight - portalHeight,
+		Width: portalWidth, Height: portalHeight,
+	}
 }
 
 // Level is the built, ready-to-use result of loading a level: its solid

@@ -28,6 +28,7 @@ type Game struct {
 	tileset    *ebiten.Image
 	level      core.Level
 	quadtree   *core.DynamicQuadtree
+	portals    *core.PortalSprite
 
 	showHitboxes bool // debug overlay, toggled with F3
 }
@@ -56,6 +57,7 @@ func NewGame() *Game {
 		level:      level,
 		touch:      touch,
 		quadtree:   quadtree,
+		portals:    core.NewPortalSprite(),
 	}
 }
 
@@ -74,6 +76,7 @@ func (g *Game) Update() error {
 	g.player.UpdateCamera(screenWidth, screenHeight, float64(core.Level_1_Width), float64(core.Level_1_Height))
 
 	g.updateEnemies()
+	g.portals.Update()
 
 	return nil
 }
@@ -96,6 +99,7 @@ func (g *Game) updateEnemies() {
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.player.DrawParallaxBackground(screen, g.background, screenWidth, screenHeight)
 	g.player.DrawLevel(screen, g.quadtree, screenWidth, screenHeight, g.tileset)
+	g.portals.Draw(screen, g.level.Portals, g.player.Camera.Pos)
 	for _, e := range g.enemies {
 		e.DrawEnemyAnimation(screen, g.player.Camera)
 		e.DrawHealthBar(screen, g.player.Camera)
@@ -117,7 +121,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 // drawHitboxes outlines the body and attack boxes of the enemies and the player.
 func (g *Game) drawHitboxes(screen *ebiten.Image) {
-	providers := make([]core.HitboxProvider, 0, len(g.enemies)+1)
+	providers := make([]core.HitboxProvider, 0, len(g.enemies)+len(g.level.Portals)+1)
+	for _, p := range g.level.Portals {
+		providers = append(providers, p)
+	}
 	for _, e := range g.enemies {
 		providers = append(providers, e)
 	}
