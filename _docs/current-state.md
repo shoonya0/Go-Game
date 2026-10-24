@@ -12,7 +12,7 @@ and /feature-docs update. -->
 
 - **Feature:** [enemy-types](./features/enemy-types/state.md) · Increments 1–3 merged (PR #18, #19, #20; tasks 1–21, 15/19/20 dropped); increment 4 (flying enemies) in progress: tasks 22-24 done
 - **Branch:** `feature/enemy-types`, fresh from `main` at `c2c3b87` (PR #20 merged by the user)
-- **Next step:** task 26: the Smasher (`*`) is built, waiting for your look in game (F3); task 25 needs ranged art in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Next step:** task 26: the Smasher (`*`) is built, waiting for your look in game (F3); then the PR (task 27: review and web check done). Task 25 needs ranged art in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
 - **Updated:** 2026-10-24 (increment 3 merged, PR #20)
 
 <!-- Once a feature is active, the first line becomes, for example:
@@ -35,12 +35,12 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `4466cbd`, Windows, go1.26.7)
+## Test baseline (at `0c4c596`, Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
-| `go test ./...` | ✅ 130/130 top-level tests pass: 121 in `internal/core`, 9 in `tools/battler2strip` | — |
+| `go test ./...` | ✅ 131/131 top-level tests pass: 122 in `internal/core`, 9 in `tools/battler2strip` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
 | GitHub CI | PR #20 and `main` at `c2c3b87`: green (build, verify ubuntu + windows) | — |
 

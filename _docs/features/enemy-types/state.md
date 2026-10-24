@@ -1,13 +1,14 @@
 # Enemy types: state
 
-## Now (updated 2026-10-24 at `4466cbd`)
+## Now (updated 2026-10-24 at `0c4c596`)
 
 - **Status:** 🟡 in progress; increments 1-3 merged (PR #18 `2bc4469`, PR #19 `9124414`,
   PR #20 `c2c3b87`); increment 4 started on `feature/enemy-types` (local, not pushed)
 - **Current task:** task 26 (dive + Smasher) in [tasks.md](./tasks.md): built, waiting for the user's look in game (F3)
 - **Stopped at:** tasks 22-23 done; Flying Demon `^` added (row 25, col 14 of level 1, over the first floor).
   The user checked the demon in game (increment 4 done). Smasher `*` added (row 25, col 38): body 56×80,
-  `HoverHeight` 160, `FallSpeed` 700 are first guesses. Task 25 waits for ranged art
+  `HoverHeight` 160, `FallSpeed` 700 are first guesses. Task 25 waits for ranged art. Task 27 partly done:
+  web smoke check passed, `code-reviewer` found no blockers (one flyer wall-pin edge case, fixed)
 - **Traps:** behaviour tests use `testEnemyBlueprint` (enemy_test.go), not a game enemy: change the roster freely; flyer tests use `testFlyerBlueprint` (enemy_fly_test.go). Ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
   `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
   `GuardChance` in [0,1] with a guard clip. No strip pack has a `guard` clip. The mushroom
@@ -24,6 +25,12 @@
   using them (D4)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-24: task 27 checks (partial)
+
+- Changed: flyer wall-pin fix in `flyingMover.Move` + `TestStrandedFlyerPatrolsWhereItIs` (review note)
+- Verified: new test failed first (pinned at the wall); web build loads, no console errors, demon + F3 boxes draw; `code-reviewer`: no blockers; `verify.mjs` 5/5
+- Next: user's look at the Smasher; then PR (ask before merge). Review gaps, not bugs: no test for hurt mid-dive
 
 ### 2026-10-24: task 26, dive attack + Smasher built
 
@@ -48,9 +55,3 @@
 - Changed: `spawnY` + `dy` in the move intent, `turnAtPathEnd`; new `flyingMover` (leash box, `HoverHeight`, dead flyers fall)
 - Verified: tests failed first (build); mutations (gravity on, leash off) caught; `verify.mjs` 5/5; 125 tests pass
 - Next: task 23, ground wave skips flyers
-
-### 2026-10-24: increment 3 merged
-
-- Changed: PR #20 merged by the user (`c2c3b87`); old branch deleted, `feature/enemy-types` restarted from `main`
-- Verified: CI on PR #20 and on `main` green (build, verify ubuntu + windows); merged tree = branch tip `5671d66`
-- Next: increment 4, task 22
