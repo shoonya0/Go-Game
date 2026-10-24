@@ -1,17 +1,19 @@
 # Enemy types: state
 
-## Now (updated 2026-10-23, task 9)
+## Now (updated 2026-10-24 at `136582f`)
 
 - **Status:** 🟡 in progress; increment 1 merged to `main` (PR #18, `2bc4469`)
-- **Current task:** 10. Goblin mapping, bake, check every clip by eye with a contact sheet
-  (see [tasks.md](./tasks.md)). The contact-sheet output doesn't exist yet: add it to the tool there
-- **Stopped at:** task 9 done: `tools/battler2strip/` with 7 tests, depguard `tools` rule. A
-  test gnoll bake (208×120 frames, 3 clips, 124 KB) looked right; its cell picks were guesses
+- **Current task:** 11. Where the raw battler sheets live, out of the `//go:embed`
+  (see [tasks.md](./tasks.md)): needs the user's answer first, then WASM size before/after
+- **Stopped at:** task 10 done: goblin mapping committed, baked into `assets/enemy/Goblin/`
+  (untracked, 9 strips, 423 KB; re-bake: the command in `tools/battler2strip/main.go`).
+  Checked on a contact sheet: all clips face right, attacks hit on frame 4
 - **Traps:** the tool keeps its own copy of the clip names (it can't import the game); keep it in sync with `enemy_clips.go`. `TestBlueprintsValid` needs speeds > 0, so the static training dummy (task 20)
   will need it relaxed for a `static` mover. The mushroom art faces left (`FacesLeft`). No ledge probe yet (task 12).
   A new Attacker must implement `Ready` (a ranged one: its fire timer)
 - **Open questions / blockers:** task 11: where the raw battler sheets live once baked
-  (the user decides; they must leave the embed)
+  (the user decides; they must leave the embed). Asked 2026-10-24.
+  Hook noise: `docs-check.mjs:292` counts untracked assets as changed code (issue proposed, not filed)
 - **Don't forget:** assets changed on 2026-10-23. Removed: the desert set, `Bat with VFX/`,
   `slime/`. Skeleton is split into `Skeleton_White/` and `Skeleton_Yellow/`. Added:
   `Free Sprites/`, 17 RPG Maker MV side-view battlers (9×6 grid, 3 frames per motion, no walk
@@ -20,6 +22,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-24: task 10, goblin mapping + contact sheet
+
+- Changed: `tools/battler2strip` (`-contact`, clip-order baking, `TestContactSheetStacksStrips`); new `mappings/goblin.json`
+- Verified: `verify.mjs --full` 8/8; goblin contact sheet checked row by row (9 clips)
+- Docs touched: tasks (10 ticked), state, current-state
 
 ### 2026-10-23: task 9, battler2strip
 
@@ -44,9 +52,3 @@
 - Changed: new `enemy_attack.go` + test; `enemy.go` (`HitFrame`, `Attacker`, `swing`), `enemy_ai.go`, `enemy_clips.go` (`clipFor` picks attack_2), `enemy_types.go`
 - Verified: `verify.mjs --full` 8/8; reviewer measured missed swings when cooldown > clip (mushroom −40%), fixed test-first (`TestMeleeSwingLandsAfterCooldown`)
 - Docs touched: design (Attacker done), tasks (6 ticked), state
-
-### 2026-10-23: task 5, Mover + groundMover
-
-- Changed: new `enemy_move.go`; `enemy_ai.go` steers the Mover; `enemy.go` (`Mover` field), `enemy_types.go`
-- Verified: `verify.mjs --full` 8/8; enemy tests 19/19 with no test file changed; code-reviewer: no blocking findings
-- Docs touched: design (Mover done, Steer/Move split), tasks (5, 17, 18 ticked), state

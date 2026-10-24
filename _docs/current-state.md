@@ -12,8 +12,8 @@ and /feature-docs update. -->
 
 - **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation) done, tasks 1–8; next increment 2 (battler baking)
 - **Branch:** `feature/enemy-types`, fresh from `main` at `2bc4469` (increment 1 merged as PR #18: modular enemy foundation, skeleton + mushroom)
-- **Next step:** task 10 (goblin mapping + bake, contact sheet) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
-- **Updated:** 2026-10-23 (task 9: `tools/battler2strip` built)
+- **Next step:** task 11 (where raw battler sheets live: the user decides) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Updated:** 2026-10-24 (task 10: goblin baked)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
