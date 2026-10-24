@@ -49,7 +49,6 @@ steady row (fliers bob on purpose), and no frame is cut off.
 
 | Enemy | Source | Format | Move | Attack | Notes |
 |---|---|---|---|---|---|
-| Succubus (exists) | `succubus.png` | 270×360 grid | ground | melee | already wired |
 | Skeleton White / Yellow | `Skeleton_White/`, `Skeleton_Yellow/` | strips 96×64 | ground | melee ×2 | idle 8, walk 10, attack1 10, attack2 9, hurt 5, die 13 (checked) |
 | White Golem | `White_Golem/` | strips 90×64 | ground | melee, slow | idle 8, walk 10, attack 11 (slam on 6), hurt 4, die 13 (13th blank); files renamed `WhiteGolem_*` (D4); marker `%` |
 | Mushroom | `Mushroom/` | strips 80×64 | ground | melee | idle 7, run 8, attack 10, hit 5, die 15 (checked); art faces left; stun clips later |
@@ -60,7 +59,7 @@ steady row (fliers bob on purpose), and no frame is cut off.
 
 ## Acceptance criteria
 
-1. The succubus plays exactly as before after the refactor: existing enemy tests pass unchanged.
+1. The succubus played exactly as before after the refactor: existing enemy tests passed unchanged. (Removed from the game on 2026-10-24; its numbers live on as the test-only `testEnemyBlueprint`.)
 2. Every roster enemy (not the bosses) has a blueprint, a unique level marker, and spawns
    from `level_1.json` (or a test level) with all its clips drawing the right frames.
 3. Ground enemies fall, stand on tiles, turn at walls and **don't walk off platform edges**

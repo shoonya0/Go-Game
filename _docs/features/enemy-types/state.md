@@ -1,6 +1,6 @@
 # Enemy types: state
 
-## Now (updated 2026-10-24 at `d21c103`)
+## Now (updated 2026-10-24 at `477ca01`)
 
 - **Status:** 🟡 in progress; increments 1-2 merged (PR #18 `2bc4469`, PR #19 `9124414`);
   increment 3 (ground roster + guard): tasks 12-14, 16 done, 15/19/20 dropped; committed locally, not pushed
@@ -9,8 +9,10 @@
 - **Stopped at:** task 16 done: White Golem strips renamed `WhiteGolem_*` and committed
   (`7dededa`), `TestAssetBaseNamesUnique` (`ce20974`), blueprint + `%` on the platform at
   columns 44-49 of level 1 (`36fc396`), `TestLevelEnemiesKeepTheirGround` (`d21c103`).
-  `verify.mjs --full` 8/8. Not looked at in a window yet (it spawns far from the player start)
-- **Traps:** ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
+  `verify.mjs --full` 8/8. Not looked at in a window yet (it spawns far from the player start).
+  Then removed the succubus (user: animation not good): tests now run on the test-only
+  `testEnemyBlueprint` (`4917db1`, `a4a5b53`), blueprint + `!` + sheet gone (`0f42350`)
+- **Traps:** behaviour tests use `testEnemyBlueprint` (enemy_test.go), not a game enemy: change the roster freely. ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
   `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
   `GuardChance` in [0,1] with a guard clip. No strip pack has a `guard` clip. The mushroom
   art faces left (`FacesLeft`). The ledge probe acts only in `EnemyPatrol`: chasing enemies
@@ -27,6 +29,12 @@
   folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-24: succubus removed
+
+- Changed: tests moved to `testEnemyBlueprint`; succubus blueprint, `KindSuccubus`, `!` and `succubus.png` removed; comments
+- Verified: same 119 tests pass; each of the 4 commits tested alone in a clean worktree; `verify.mjs --full` 8/8
+- Next: user's look at the White Golem, then task 21
 
 ### 2026-10-24: task 16, White Golem
 
@@ -50,11 +58,5 @@
 
 - Changed: `art-src/battlers/` removed (18 sheets + layout guide); tasks 15, 19, 20 dropped; scope and registry updated
 - Verified: measured every sheet (all 9×6, 3 frames per motion; walk rows differ 1-3 %); looked at dog and bat
-- Next: talk with the user about the enemy plan
-
-### 2026-10-24: goblin removed
-
-- Changed: reverted the goblin (`12de28a`, `3b98b41`); the user turned it down because it had no walk animation
-- Verified: `verify.mjs` 5/5 after the revert
 - Next: talk with the user about the enemy plan
 

@@ -98,3 +98,6 @@
   user to decide). The battler-only plans are dropped: goblin, kobold/gnoll ranged enemy,
   training dummy (`static` mover), bat, water candidates. D8 guard works but no pack has a
   `guard` clip yet.
+- **Succubus removed too (2026-10-24, user's call):** its animation didn't look good in the
+  game. Its numbers and clips became the test-only `testEnemyBlueprint`, so the behaviour
+  tests written against it still pin the same behaviour.

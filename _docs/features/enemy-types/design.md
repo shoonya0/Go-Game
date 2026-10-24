@@ -23,7 +23,7 @@ and a diver from above without a change to the brain.
   `HitFrame`. `AttackCooldown` can outlast a whole attack clip, so `Ready` holds a new swing
   back (the enemy idles, facing the player) until the cooldown ends by the hit frame;
   otherwise the skeleton whiffed every other swing (`TestMeleeEverySwingLands`). The
-  succubus keeps `HitFrame` 0. `EnemyEffects` joins `Update` with projectiles (task 25).
+  test-only enemy (`testEnemyBlueprint`) keeps `HitFrame` 0. `EnemyEffects` joins `Update` with projectiles (task 25).
 - **Clips** (`enemy_clips.go`, `enemy_motion.go`): draw-time motion is in screen pixels and
   moves only the sprite; the collision box stays put (D7).
 

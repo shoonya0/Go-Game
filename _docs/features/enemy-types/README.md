@@ -26,7 +26,7 @@ Up: [project docs index](../../README.md) · Code: `internal/core/enemy*.go`, `i
 | Path | Why start here |
 |---|---|
 | `internal/core/enemy.go` | `EnemyKind`, `EnemyBlueprint`, `EnemyClip`, `EnemyRuntime`: what a species is |
-| `internal/core/enemy_types.go` | Blueprint registry: succubus, skeleton (white/yellow), mushroom |
+| `internal/core/enemy_types.go` | Blueprint registry: skeleton (white/yellow), mushroom, White Golem |
 | `internal/core/enemy_ai.go` | Shared brain: patrol → chase → attack, driving the parts below |
 | `internal/core/enemy_move.go`, `enemy_attack.go` | `Mover` (`groundMover`) and `Attacker` (`meleeAttack`) |
 | `internal/core/enemy_clips.go`, `enemy_anim.go`, `enemy_motion.go` | Clip names + fallbacks, playback, draw-time motion |

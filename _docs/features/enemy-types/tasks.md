@@ -69,6 +69,8 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [ ] ~~20. Training dummy (`static` mover, no attack) → check: `TestStaticEnemyNeverMoves`~~ Dropped: its sheet was a battler
 - [x] 21a. Capability check (user request): `bp.Has(clip)` + a capability table → check:
       `TestBlueprintHasOwnArtOnly` (failed first, catches a `Has` that counts fallbacks), `TestEnemyCapabilities` (`1cbad37`, `9296da3`)
+- [x] 21b. Remove the succubus (user: animation not good) → check: same 119 tests pass, each
+      commit tested alone; tests moved to the test-only `testEnemyBlueprint` (`4917db1`..`477ca01`)
 - [ ] 21. Place one of each in `level_1.json` (or a test level), web smoke check,
       `verify.mjs --full`, docs update
 
