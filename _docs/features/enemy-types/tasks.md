@@ -71,8 +71,11 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
       `TestBlueprintHasOwnArtOnly` (failed first, catches a `Has` that counts fallbacks), `TestEnemyCapabilities` (`1cbad37`, `9296da3`)
 - [x] 21b. Remove the succubus (user: animation not good) → check: same 119 tests pass, each
       commit tested alone; tests moved to the test-only `testEnemyBlueprint` (`4917db1`..`477ca01`)
-- [ ] 21. Place one of each in `level_1.json` (or a test level), web smoke check,
-      `verify.mjs --full`, docs update
+- [x] 21. Place one of each in `level_1.json` (or a test level), web smoke check,
+      `verify.mjs --full`, docs update. Every kind placed (enforced by
+      `TestLevelEnemiesKeepTheirGround`); web build loads, no console errors, F3 boxes; 8/8.
+      `code-reviewer`: one blocking bug, an enemy frozen at a ledge outside its patrol path,
+      fixed with `TestStrandedEnemyPatrolsWhereItIs` (`3edfa17`)
 
 ## Increment 4: flying movement
 

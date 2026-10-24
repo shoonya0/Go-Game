@@ -10,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increments 1–2 merged (tasks 1–11); increment 3 (ground roster) in progress: tasks 12-14, 16 done, 15/19/20 dropped (strip packs only, D9)
+- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increments 1–2 merged (tasks 1–11); increment 3 (ground roster) done, PR next: tasks 12-14, 16, 21 done, 15/19/20 dropped (strip packs only, D9)
 - **Branch:** `feature/enemy-types`, fresh from `main` at `9124414` (merged: increment 1 as PR #18, increment 2 battler baking as PR #19)
-- **Next step:** task 21 (close increment 3: web smoke check, code review, PR). Succubus removed (`0f42350`) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Next step:** push and open the increment 3 PR (ask before merge), then increment 4 (flying enemies). Succubus removed (`0f42350`) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
 - **Updated:** 2026-10-24 (strip packs only: battler sheets deleted, enemy art checked)
 
 <!-- Once a feature is active, the first line becomes, for example:
@@ -35,12 +35,12 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `477ca01`, Windows, go1.26.7)
+## Test baseline (at `3edfa17`, Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
-| `go test ./...` | ✅ 119/119 top-level tests pass: 110 in `internal/core`, 9 in `tools/battler2strip` | — |
+| `go test ./...` | ✅ 120/120 top-level tests pass: 111 in `internal/core`, 9 in `tools/battler2strip` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
 | GitHub CI | PR #19: still pending when merged (user watches it) | — |
 
@@ -67,7 +67,7 @@ enemy health / level marker tests, and on `feature/enemy-types` the characterisa
 11. The full knockdown (`KnockedOut`) still draws from row 17 while the short one uses row 16. ASSUMED (not rechecked this session)
 12. `//go:embed enemy` embeds every file on disk, untracked ones included, so local builds carry untracked enemy art that CI and Render don't (31 untracked files: 5 enemy packs, `levels/portal.png`, `player/SkeletonIdle.gif`; the portal and GIF are planned, keep them). The raw battler sheets are gone: moved out of the embed (task 11), then deleted (enemy-types D9). VERIFIED (`git ls-files`)
 13. The Stop hook (`.claude/hooks/stop-state.mjs`) and docs-check's "stale state" warning fire while untracked files sit under a feature's `scope:` (`assets/enemy/*`), even right after state.md was committed. Noise until those assets are committed or the check ignores untracked files. VERIFIED (this session)
-14. ~~Enemies have no ledge probe~~ Patrolling enemies turn at ledges (task 12); a chasing enemy can still run off one. VERIFIED (`TestGroundEnemyTurnsAtLedge`)
+14. ~~Enemies have no ledge probe~~ Patrolling enemies turn at ledges (task 12), and one stranded off its patrol path patrols where it is (`3edfa17`); a chasing enemy can still run off a ledge. VERIFIED (`TestGroundEnemyTurnsAtLedge`)
 15. `LBackground_1.png` and `LBackground_2.png` (2.6 MB) are embedded but not loaded; only `LBackground_3.png` is. Kept on purpose (user). VERIFIED (code read)
 
 ## Open decisions

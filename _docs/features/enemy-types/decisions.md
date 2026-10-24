@@ -84,6 +84,9 @@
   behind always land. Enemies without the clip never guard.
 - **Why:** user request. Every battler sheet has a Guard motion; the strip packs don't, so it
   must be optional rather than part of the shared state machine's required clips.
+- **Open (user to decide; no enemy guards yet):** an enemy mid-swing can't guard (my call),
+  and one in its hurt reaction can guard the next combo hit (not decided). `blocks` in
+  `enemy_guard.go` is where either rule lives.
 
 ## D9. Strip packs only; behaviour stays in parts (2026-10-24, user's call)
 
