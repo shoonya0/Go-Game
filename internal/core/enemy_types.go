@@ -10,7 +10,6 @@ var enemyBlueprints = map[EnemyKind]*EnemyBlueprint{
 	KindSkeletonWhite:  skeletonBlueprint("White", "@"),
 	KindSkeletonYellow: skeletonBlueprint("Yellow", "#"),
 	KindMushroom:       &mushroomBlueprint,
-	KindGoblin:         &goblinBlueprint,
 }
 
 // blueprintFor returns the blueprint for a kind, panicking on an unregistered
@@ -167,55 +166,5 @@ func mushroomClip(anim string, frames int, fps float64, loop bool) EnemyClip {
 	return EnemyClip{
 		Sheet:  "../assets/enemy/Mushroom/Mushroom-" + anim + ".png",
 		Frames: frames, FrameW: mushroomFrameWidth, FrameH: mushroomFrameHeight, FPS: fps, Loop: loop,
-	}
-}
-
-// ---------------- goblin ----------------
-
-// The goblin is baked by tools/battler2strip (mappings/goblin.json) into one
-// 240×120 strip per clip, facing right, feet on the bottom row; the art is
-// about 82px tall at draw size. Re-bake rather than edit the strips.
-const (
-	goblinFrameWidth  = 240
-	goblinFrameHeight = 120
-)
-
-var goblinBlueprint = EnemyBlueprint{
-	Name:       "Goblin",
-	Marker:     "$",
-	BodyWidth:  40,
-	BodyHeight: 80,
-	Scale:      1, // baked at draw size
-	Mover:      groundMover{},
-	Attacker:   meleeAttack{},
-	Stats: EnemyStats{
-		MaxHealth:      40, // 2 bars, the least allowed
-		Damage:         7,
-		WalkSpeed:      60,
-		ChaseSpeed:     150,
-		DetectRange:    360,
-		AttackRange:    56, // the stab reaches ~54px past the body
-		AttackCooldown: 1.0,
-		PatrolTiles:    2.5,
-		GuardChance:    0.35,
-	},
-	Clips: map[ClipName]EnemyClip{ // battler art has no step cycle: walk and run bob at draw time
-		ClipIdle:    goblinClip("idle", 4, 6, true),
-		ClipWalk:    goblinClip("walk", 4, 8, true).moving(motionFX{BobPx: 2, BobHz: 4}),
-		ClipAlert:   goblinClip("alert", 6, 8, true),
-		ClipRun:     goblinClip("run", 4, 12, true).moving(motionFX{BobPx: 3, BobHz: 6, LeanDeg: 6}),
-		ClipAttack1: goblinClip("attack_1", 6, 12, false).held(1, 1, 1, 1, 2, 1.5).hitsOn(4),   // frame 4: the stab at full reach
-		ClipAttack2: goblinClip("attack_2", 6, 12, false).held(1, 1, 1.5, 1, 2, 1.5).hitsOn(4), // frame 4: the swing lands
-		ClipGuard:   goblinClip("guard", 3, 10, false),
-		ClipHurt:    goblinClip("hurt", 3, 10, false).moving(motionFX{HitShakePx: 3}),
-		ClipDeath:   goblinClip("death", 9, 10, false),
-	},
-}
-
-// goblinClip is one of the goblin's baked strips.
-func goblinClip(clip string, frames int, fps float64, loop bool) EnemyClip {
-	return EnemyClip{
-		Sheet:  "../assets/enemy/Goblin/Goblin_" + clip + ".png",
-		Frames: frames, FrameW: goblinFrameWidth, FrameH: goblinFrameHeight, FPS: fps, Loop: loop,
 	}
 }
