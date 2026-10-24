@@ -11,6 +11,7 @@ var enemyBlueprints = map[EnemyKind]*EnemyBlueprint{
 	KindMushroom:       &mushroomBlueprint,
 	KindWhiteGolem:     &whiteGolemBlueprint,
 	KindFlyingDemon:    &flyingDemonBlueprint,
+	KindSmasher:        &smasherBlueprint,
 }
 
 // blueprintFor returns the blueprint for a kind, panicking on an unregistered
@@ -212,5 +213,53 @@ func flyingDemonClip(anim string, frames int, fps float64, loop bool) EnemyClip 
 	return EnemyClip{
 		Sheet:  "../assets/enemy/flying_Demon/FlyingDemon_" + anim + ".png",
 		Frames: frames, FrameW: flyingDemonFrameWidth, FrameH: flyingDemonFrameHeight, FPS: fps, Loop: loop,
+	}
+}
+
+// ---------------- smasher ----------------
+
+// The smasher (Enemy3) ships as one 64×64 strip per animation, facing left:
+// assets/enemy/Enemy3-Movement-In-Animation/Enemy3-<anim>.png. It flies, hangs
+// over the player and dives onto them (diveAttack): the smash start is the
+// wind-up, the smash loop the fall, and the smash end the impact, squashed on
+// its frame 0.
+const smasherFrameSize = 64
+
+var smasherBlueprint = EnemyBlueprint{
+	Name:       "Smasher",
+	Marker:     "*",
+	BodyWidth:  56,
+	BodyHeight: 80,
+	Scale:      1.5, // 52px of art -> ~78px on screen
+	FacesLeft:  true,
+	Mover:      flyingMover{LeashTiles: 5, HoverHeight: 160},
+	Attacker:   diveAttack{FallSpeed: 700, MaxDrop: 300},
+	Stats: EnemyStats{
+		MaxHealth:      60,
+		Damage:         20,
+		WalkSpeed:      50,
+		ChaseSpeed:     110,
+		DetectRange:    360,
+		AttackRange:    50,
+		AttackCooldown: 2.5,
+		PatrolTiles:    2,
+	},
+	Clips: map[ClipName]EnemyClip{
+		ClipIdle:       smasherClip("Idle", 8, 8, true),
+		ClipWalk:       smasherClip("Fly", 8, 10, true),
+		ClipRun:        smasherClip("Fly", 8, 14, true),
+		ClipAttack1:    smasherClip("AttackSmashStart", 12, 12, true), // wind-up: the dive ends it after one play
+		ClipAttackLoop: smasherClip("AttackSmashLoop", 3, 12, true),
+		ClipAttackEnd:  smasherClip("SmashEnd", 8, 10, false),
+		ClipHurt:       smasherClip("Hit", 4, 10, false).moving(motionFX{HitShakePx: 2}),
+		ClipDeath:      smasherClip("Die", 16, 12, false), // the 17th frame is blank: end on the last wisp
+	},
+}
+
+// smasherClip is one of the smasher's strips.
+func smasherClip(anim string, frames int, fps float64, loop bool) EnemyClip {
+	return EnemyClip{
+		Sheet:  "../assets/enemy/Enemy3-Movement-In-Animation/Enemy3-" + anim + ".png",
+		Frames: frames, FrameW: smasherFrameSize, FrameH: smasherFrameSize, FPS: fps, Loop: loop,
 	}
 }

@@ -14,6 +14,7 @@ const (
 	KindMushroom
 	KindWhiteGolem
 	KindFlyingDemon
+	KindSmasher
 )
 
 // EnemyStats are the tunable gameplay numbers for an enemy species. They live in
