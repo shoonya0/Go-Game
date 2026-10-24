@@ -158,3 +158,29 @@ func TestSnippetNamesClipsAndSize(t *testing.T) {
 		t.Errorf("clips not in standard order:\n%s", got)
 	}
 }
+
+// The contact sheet stacks the strips top to bottom on an opaque background,
+// with a separator line between frames, so every clip can be checked by eye
+// in one image.
+func TestContactSheetStacksStrips(t *testing.T) {
+	a := image.NewRGBA(image.Rect(0, 0, 30, 10)) // 3 frames of 10×10
+	b := image.NewRGBA(image.Rect(0, 0, 10, 10)) // 1 frame
+	for x := range 10 {
+		for y := range 10 {
+			b.SetRGBA(x, y, color.RGBA{0, 0, 255, 255})
+		}
+	}
+	sheet := contactSheet([]*image.RGBA{a, b}, 10)
+	if got := sheet.Bounds(); got.Dx() != 30 || got.Dy() != 2*(10+contactGap) {
+		t.Fatalf("contact sheet is %dx%d, want 30x%d", got.Dx(), got.Dy(), 2*(10+contactGap))
+	}
+	if c := sheet.RGBAAt(5, 5); c != contactBackground {
+		t.Errorf("transparent frame shows %v, want the background %v", c, contactBackground)
+	}
+	if c := sheet.RGBAAt(10, 5); c != contactLine {
+		t.Errorf("frame edge shows %v, want a separator line", c)
+	}
+	if c := sheet.RGBAAt(5, 10+contactGap+5); c.B != 255 {
+		t.Errorf("second strip's frame shows %v, want its blue", c)
+	}
+}

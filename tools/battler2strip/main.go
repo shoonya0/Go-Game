@@ -3,7 +3,10 @@
 // drawn in game, plus a blueprint snippet printed to stdout. It runs offline
 // and is not part of the game build (enemy-types decision D7).
 //
-//	go run ./tools/battler2strip -out assets/enemy/Goblin tools/battler2strip/mappings/goblin.json
+//	go run ./tools/battler2strip -out assets/enemy/Goblin -contact goblin_contact.png tools/battler2strip/mappings/goblin.json
+//
+// -contact also writes every clip into one image, a row per clip in the game's
+// clip order, for checking the bake by eye. Keep it out of assets/.
 //
 // Run it from the repo root: the mapping's sheet path and -out are relative to
 // the working directory.
@@ -18,13 +21,13 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
-	"sort"
 )
 
 func main() {
 	out := flag.String("out", "", "folder to write the strips to (created if missing)")
+	contact := flag.String("contact", "", "also write a contact sheet of all clips to this PNG")
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: battler2strip -out DIR MAPPING.json")
+		fmt.Fprintln(os.Stderr, "usage: battler2strip -out DIR [-contact FILE.png] MAPPING.json")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -32,13 +35,13 @@ func main() {
 		flag.Usage()
 		os.Exit(2)
 	}
-	if err := run(flag.Arg(0), *out); err != nil {
+	if err := run(flag.Arg(0), *out, *contact); err != nil {
 		fmt.Fprintln(os.Stderr, "battler2strip:", err)
 		os.Exit(1)
 	}
 }
 
-func run(mappingPath, outDir string) error {
+func run(mappingPath, outDir, contactFile string) error {
 	m, err := readMapping(mappingPath)
 	if err != nil {
 		return err
@@ -51,13 +54,13 @@ func run(mappingPath, outDir string) error {
 		return err
 	}
 
-	names := make([]string, 0, len(m.Clips))
-	for name := range m.Clips {
-		names = append(names, name)
-	}
-	sort.Strings(names)
+	var strips []*image.RGBA
 	var total int
-	for _, name := range names {
+	for _, n := range clipNames {
+		name := n.name
+		if _, ok := m.Clips[name]; !ok {
+			continue
+		}
 		strip, err := bakeClip(sheet, m, m.Clips[name])
 		if err != nil {
 			return fmt.Errorf("clip %q: %w", name, err)
@@ -71,11 +74,22 @@ func run(mappingPath, outDir string) error {
 			return err
 		}
 		total += buf.Len()
+		strips = append(strips, strip)
 		fmt.Fprintf(os.Stderr, "wrote %s (%d frames, %d KB)\n", file, len(m.Clips[name].Frames), buf.Len()/1024)
 	}
-	fmt.Fprintf(os.Stderr, "%d strips, %d KB in all\n", len(names), total/1024)
+	fmt.Fprintf(os.Stderr, "%d strips, %d KB in all\n", len(strips), total/1024)
 
 	w, h := frameSize(sheet.Bounds(), m.DrawHeight)
+	if contactFile != "" {
+		var buf bytes.Buffer
+		if err := png.Encode(&buf, contactSheet(strips, w)); err != nil {
+			return err
+		}
+		if err := os.WriteFile(contactFile, buf.Bytes(), 0o644); err != nil {
+			return err
+		}
+		fmt.Fprintf(os.Stderr, "wrote %s (rows in clip order)\n", contactFile)
+	}
 	fmt.Print(snippet(m, repoRelative(outDir), w, h))
 	return nil
 }

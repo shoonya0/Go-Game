@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
 	"math"
 	"path"
@@ -221,4 +222,38 @@ func snippet(m Mapping, outDir string, w, h int) string {
 	}
 	sb.WriteString("},\n")
 	return sb.String()
+}
+
+// Contact sheet look: light grey under the art, so transparent pixels and
+// stray marks show, a darker line at each frame's left edge, and a gap
+// between clips.
+var (
+	contactBackground = color.RGBA{225, 225, 225, 255}
+	contactLine       = color.RGBA{160, 160, 160, 255}
+)
+
+const contactGap = 4
+
+// contactSheet stacks the clip strips top to bottom, so every baked frame can
+// be checked by eye in one image.
+func contactSheet(strips []*image.RGBA, frameW int) *image.RGBA {
+	w, h := 0, 0
+	for _, s := range strips {
+		w = max(w, s.Bounds().Dx())
+		h += s.Bounds().Dy() + contactGap
+	}
+	sheet := image.NewRGBA(image.Rect(0, 0, w, h))
+	draw.Draw(sheet, sheet.Bounds(), &image.Uniform{contactBackground}, image.Point{}, draw.Src)
+	y := 0
+	for _, s := range strips {
+		r := s.Bounds().Sub(s.Bounds().Min).Add(image.Pt(0, y))
+		draw.Draw(sheet, r, s, s.Bounds().Min, draw.Over)
+		for x := frameW; x < r.Dx(); x += frameW {
+			for ly := r.Min.Y; ly < r.Max.Y; ly++ {
+				sheet.SetRGBA(x, ly, contactLine)
+			}
+		}
+		y = r.Max.Y + contactGap
+	}
+	return sheet
 }
