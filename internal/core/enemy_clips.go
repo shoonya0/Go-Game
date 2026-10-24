@@ -12,12 +12,14 @@ const (
 	ClipRun
 	ClipAttack1
 	ClipAttack2
+	ClipAttackLoop // a phased attack's middle, e.g. a dive's fall
+	ClipAttackEnd  // a phased attack's follow-through, e.g. a dive's impact
 	ClipGuard
 	ClipHurt
 	ClipDeath
 )
 
-var clipNames = [...]string{"idle", "walk", "alert", "run", "attack_1", "attack_2", "guard", "hurt", "death"}
+var clipNames = [...]string{"idle", "walk", "alert", "run", "attack_1", "attack_2", "attack_loop", "attack_end", "guard", "hurt", "death"}
 
 func (c ClipName) String() string {
 	if c < 0 || int(c) >= len(clipNames) {
@@ -96,8 +98,8 @@ func (bp *EnemyBlueprint) resolveClip(name ClipName) (_ ClipName, ok bool) {
 // swing picked.
 func (e *EnemyRuntime) clipFor(s EnemyState) ClipName {
 	name := stateClips[s]
-	if s == EnemyAttack && e.swing.second {
-		name = ClipAttack2
+	if s == EnemyAttack {
+		name = e.swing.clip()
 	}
 	name, _ = e.bp.resolveClip(name)
 	return name

@@ -15,14 +15,42 @@ type Attacker interface {
 	Ready(e *EnemyRuntime) bool
 	// Start begins a new swing, as the enemy enters its attack state.
 	Start(e *EnemyRuntime)
-	// Update runs each tick of a swing while the target is in range.
+	// Update runs each tick of a swing while the target is in range, or every
+	// tick of a committed one.
 	Update(e *EnemyRuntime, target *PlayerRuntime)
+	// Committed reports whether a started attack plays out even when the
+	// target leaves range. A melee swing is called off; a dive is not.
+	Committed(e *EnemyRuntime) bool
 }
 
 // swingState is the attack in progress. The zero value is a fresh attack_1 swing.
 type swingState struct {
-	second bool // plays attack_2 instead of attack_1
-	landed bool // this swing has hit, so it can't hit again
+	second bool        // plays attack_2 instead of attack_1
+	landed bool        // this swing has hit, so it can't hit again
+	phase  attackPhase // where a phased attack (a dive) is
+}
+
+// attackPhase is a step of a phased attack, each with its own clip. A melee
+// swing stays in phaseStart.
+type attackPhase int
+
+const (
+	phaseStart attackPhase = iota // attack_1 (or attack_2): the swing, or a dive's wind-up
+	phaseLoop                     // attack_loop: a dive's fall
+	phaseEnd                      // attack_end: a dive's impact
+)
+
+// clip is the attack clip the swing plays now.
+func (s swingState) clip() ClipName {
+	switch {
+	case s.phase == phaseLoop:
+		return ClipAttackLoop
+	case s.phase == phaseEnd:
+		return ClipAttackEnd
+	case s.second:
+		return ClipAttack2
+	}
+	return ClipAttack1
 }
 
 // rollSecondAttack picks attack_2 over attack_1 for a new swing. A variable so
@@ -40,6 +68,8 @@ func (meleeAttack) InRange(e *EnemyRuntime, target AABB) bool {
 }
 
 func (meleeAttack) Box(e *EnemyRuntime) AABB { return meleeBox(e, e.FlipX) }
+
+func (meleeAttack) Committed(*EnemyRuntime) bool { return false }
 
 // Ready holds a new swing back until the cooldown will be over by its hit
 // frame. The cooldown can outlast a whole attack clip, so a swing started any
