@@ -1,10 +1,10 @@
 # Enemy types: state
 
-## Now (updated 2026-10-24, task 11)
+## Now (updated 2026-10-24 at `9124414`)
 
-- **Status:** 🟡 in progress; increment 1 merged (PR #18, `2bc4469`); increment 2 (battler baking, tasks 9-11) done, not pushed
+- **Status:** 🟡 in progress; increment 1 merged (PR #18, `2bc4469`); increment 2 (battler baking, tasks 9-11) merged (PR #19, `9124414`)
 - **Current task:** 12. Ledge probe in `groundMover` (see [tasks.md](./tasks.md)), the first
-  task of increment 3. Increment 2 is ready for a PR first (ask before merging: `main` deploys)
+  task of increment 3, on a fresh `feature/enemy-types` from `main` at `9124414`
 - **Stopped at:** task 11 done: raw battler sheets moved to `art-src/battlers/` (committed, not
   embedded). Goblin strips in `assets/enemy/Goblin/` stay untracked until task 15
 - **Traps:** the tool keeps its own copy of the clip names (it can't import the game); keep it in sync with `enemy_clips.go`. `TestBlueprintsValid` needs speeds > 0, so the static training dummy (task 20)

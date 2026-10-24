@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-23)
 
-Snapshot at `2bc4469` (`main`, PR #18 merged). One page. Details live in each increment's entry in
+Snapshot at `9124414` (`main`, PR #19 merged). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -10,10 +10,10 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increment 1 (modular foundation) done, tasks 1–8; next increment 2 (battler baking)
-- **Branch:** `feature/enemy-types`, fresh from `main` at `2bc4469` (increment 1 merged as PR #18: modular enemy foundation, skeleton + mushroom)
+- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increments 1–2 merged (tasks 1–11); next increment 3 (ground roster)
+- **Branch:** `feature/enemy-types`, fresh from `main` at `9124414` (merged: increment 1 as PR #18, increment 2 battler baking as PR #19)
 - **Next step:** task 12 (ledge probe in `groundMover`) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
-- **Updated:** 2026-10-24 (task 11: raw sheets moved to `art-src/battlers/`)
+- **Updated:** 2026-10-24 (increment 2 merged, PR #19)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -41,7 +41,7 @@ and /feature-docs update. -->
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
 | `go test ./...` | ✅ 100/100 top-level tests pass, all in `internal/core` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
-| GitHub CI | ✅ PR #18: build, verify (ubuntu, windows) pass | — |
+| GitHub CI | PR #19: still pending when merged (user watches it) | — |
 
 Compare runs **by test name**: `go test ./internal/core -v | grep "^--- "` lists them. Added since the last
 baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAttackSteps`,
