@@ -41,8 +41,10 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
       `tools/battler2strip/mappings/goblin.json`; `-contact` added to the tool. 9 clips, 240×120
       frames, 423 KB; both attacks hit on frame 4. Strips in `assets/enemy/Goblin/` stay
       untracked until task 15 loads them. Hurt's flinch is subtle (hit shake covers it)
-- [ ] 11. Decide what stays in `assets/`: keep raw sheets out of the `//go:embed` (move to
+- [x] 11. Decide what stays in `assets/`: keep raw sheets out of the `//go:embed` (move to
       `art-src/` or similar, ask the user) → check: WASM size before/after in `verify.mjs --full`
+      User chose `art-src/battlers/`, committed (D7). Local WASM 51.2 → 36.2 MB; re-bake from
+      the new path is byte-identical; `art-src/` added to `.dockerignore`
 
 ## Increment 3: ground roster (melee) + guard
 

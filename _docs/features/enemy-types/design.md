@@ -47,12 +47,12 @@ Built (task 9). Usage and the mapping fields are in `tools/battler2strip/main.go
 `bake.go` (`Mapping`, `ClipMapping`). A mapping per enemy lives next to the tool, not in the embed:
 
 ```json
-{"name": "Goblin", "sheet": "assets/enemy/Free Sprites/goblin sheet.png",
+{"name": "Goblin", "sheet": "art-src/battlers/goblin sheet.png",
  "facesLeft": true, "drawHeight": 120,
  "clips": {"attack_1": {"frames": [[0,1,0], [1,0,0], [1,0,1], [1,0,2]], "fps": 12, "hold": [1,1,2], "hitFrame": 2}}}
 ```
 
-Each frame is `[motion block 0-2, row 0-5, frame 0-2]` (layout `Free Sprites/imagePattern.png`).
+Each frame is `[motion block 0-2, row 0-5, frame 0-2]` (layout `art-src/battlers/imagePattern.png`).
 Clip timing goes in the mapping only so the printed snippet is complete, which keeps
 re-baking a single command. Cell edges are rounded from the exact fractional grid, so a
 sheet whose size doesn't divide by 9 or 6 still tiles; each cell is then box-filtered to
