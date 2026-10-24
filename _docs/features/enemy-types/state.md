@@ -1,18 +1,19 @@
 # Enemy types: state
 
-## Now (updated 2026-10-24 at `e5264dc`)
+## Now (updated 2026-10-24 at `4466cbd`)
 
 - **Status:** 🟡 in progress; increments 1-3 merged (PR #18 `2bc4469`, PR #19 `9124414`,
   PR #20 `c2c3b87`); increment 4 started on `feature/enemy-types` (local, not pushed)
-- **Current task:** task 25 (projectiles + a ranged enemy; no strip pack has shooting art, D9) in [tasks.md](./tasks.md)
+- **Current task:** task 26 (dive + Smasher) in [tasks.md](./tasks.md): built, waiting for the user's look in game (F3)
 - **Stopped at:** tasks 22-23 done; Flying Demon `^` added (row 25, col 14 of level 1, over the first floor).
-  The user checked the demon in game: "Flying Demon working" (increment 4 done, tasks 22-24)
+  The user checked the demon in game (increment 4 done). Smasher `*` added (row 25, col 38): body 56×80,
+  `HoverHeight` 160, `FallSpeed` 700 are first guesses. Task 25 waits for ranged art
 - **Traps:** behaviour tests use `testEnemyBlueprint` (enemy_test.go), not a game enemy: change the roster freely; flyer tests use `testFlyerBlueprint` (enemy_fly_test.go). Ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
   `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
   `GuardChance` in [0,1] with a guard clip. No strip pack has a `guard` clip. The mushroom
   art faces left (`FacesLeft`). The ledge probe acts only in `EnemyPatrol`: chasing enemies
   still run off edges. Tests that hit an enemy with a ground wave must put it on the floor
-  with `standOnWaveFloor` (sets `onGround`). A new Attacker must implement `Ready` (a ranged one: its fire timer).
+  with `standOnWaveFloor` (sets `onGround`). A new Attacker must implement `Ready` (a ranged one: its fire timer) and `Committed`.
   Detection is horizontal only (`DetectRange` on dx), also for flyers. A flyer's spawn
   cell is its home height. Death clips of both golems, Enemy3 and the demon end on a blank frame
 - **Open questions / blockers:** guard rules while mid-swing or hurt (decisions D8, open). Keep or delete `tools/battler2strip` (its goblin mapping
@@ -23,6 +24,12 @@
   using them (D4)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-24: task 26, dive attack + Smasher built
+
+- Changed: `attack_loop`/`attack_end` clips, `swingState.phase`, `Attacker.Committed`; `diveAttack` (`enemy_dive.go`); Smasher `*` in level 1
+- Verified: dive tests failed first (build); mutations (not committed, no MaxDrop) caught; it hits a player in the level; `verify.mjs --full` 8/8
+- Next: user looks at the Smasher in game; then task 25 (needs ranged art) or 27
 
 ### 2026-10-24: task 24, Flying Demon built
 
@@ -47,9 +54,3 @@
 - Changed: PR #20 merged by the user (`c2c3b87`); old branch deleted, `feature/enemy-types` restarted from `main`
 - Verified: CI on PR #20 and on `main` green (build, verify ubuntu + windows); merged tree = branch tip `5671d66`
 - Next: increment 4, task 22
-
-### 2026-10-24: task 21, increment 3 closed
-
-- Changed: ledge-freeze fix in `turnAtLedge` + `TestStrandedEnemyPatrolsWhereItIs`; D8 open guard questions; tasks 21 ticked
-- Verified: new test failed first (frozen at x=674); `verify.mjs --full` 8/8; 120 tests; web build loads, no console errors
-- Next: push, PR, user approves merge
