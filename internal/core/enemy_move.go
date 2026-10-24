@@ -56,11 +56,33 @@ func (groundMover) Steer(e *EnemyRuntime, in moveIntent) {
 
 func (m groundMover) Move(e *EnemyRuntime, qt *DynamicQuadtree) {
 	m.applyGravity(e)
+	m.turnAtLedge(e, qt)
 	m.resolveHorizontal(e, qt)
 	e.onGround = m.resolveVertical(e, qt)
 }
 
 func (groundMover) Grounded(e *EnemyRuntime) bool { return e.onGround }
+
+// turnAtLedge stops a patrolling enemy whose next step would put its leading
+// edge past solid ground and reverses its patrol, so it paces its platform
+// instead of walking off. Chasing enemies still follow the player off edges.
+func (groundMover) turnAtLedge(e *EnemyRuntime, qt *DynamicQuadtree) {
+	if qt == nil || !e.onGround || e.State != EnemyPatrol || e.VelX == 0 {
+		return
+	}
+	probeX := e.Pos.X + e.VelX*deltaTime() // leading edge after this step
+	if e.VelX > 0 {
+		probeX += e.bp.BodyWidth - 1
+	}
+	probe := AABB{X: probeX, Y: e.Pos.Y + e.bp.BodyHeight, Width: 1, Height: 1}
+	for _, obj := range qt.Retrieve(probe) {
+		if plat, ok := obj.(*Platform); ok && plat.TileInfo.TileType != Water && probe.Intersects(plat.GetBounds()) {
+			return // ground ahead
+		}
+	}
+	e.VelX = 0
+	e.patrolDir = -e.patrolDir
+}
 
 // applyGravity accelerates the enemy downward, capped at the shared fall speed.
 func (groundMover) applyGravity(e *EnemyRuntime) {

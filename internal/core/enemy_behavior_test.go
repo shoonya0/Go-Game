@@ -61,6 +61,23 @@ func TestEnemyPatrolBouncesOffWall(t *testing.T) {
 	}
 }
 
+func TestGroundEnemyTurnsAtLedge(t *testing.T) {
+	const floorEnd = 12 * LevelTileWidth // 720, on a tile edge
+	qt := waveWorld(0, floorEnd)
+	e := newTestEnemy(Position{X: 640, Y: waveGroundY - blueprintFor(KindSuccubus).BodyHeight})
+	p := farPlayer(e) // patrol path reaches past the edge: 640 + 4 tiles
+
+	for i := 0; i < 4*int(tps()); i++ {
+		UpdateEnemy(e, p, qt)
+		if right := e.Pos.X + e.bp.BodyWidth; right > floorEnd || !e.onGround {
+			t.Fatalf("tick %d: right edge %v onGround=%v, want to stay on the floor ending at %v", i, right, e.onGround, floorEnd)
+		}
+	}
+	if e.patrolDir != -1 || !e.FlipX || e.Pos.X >= 640 {
+		t.Errorf("after reaching the ledge: x=%v patrolDir=%v flipX=%v, want walking back left of 640", e.Pos.X, e.patrolDir, e.FlipX)
+	}
+}
+
 func TestEnemyChasesLeft(t *testing.T) {
 	e := newTestEnemy(Position{X: 1000})
 	p := &PlayerRuntime{Pos: Position{X: 1000 - e.bp.Stats.DetectRange + 10}, Combat: Combat{Health: 100, MaxHealth: 100}}
