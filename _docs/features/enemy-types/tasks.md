@@ -80,7 +80,7 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 ## Increment 5: more attack styles
 
 - [ ] 25. `EnemyEffects` + `Projectile` (owned by `Game`, like ground waves); a ranged enemy
-      (kobold or gnoll `shoot` clip) → check: `TestProjectileHitsPlayer`, `TestProjectileStopsAtTile`
+      (needs a strip pack with a shooting clip: none yet, D9) → check: `TestProjectileHitsPlayer`, `TestProjectileStopsAtTile`
 - [ ] 26. `diveAttack` (start → loop → end); Smasher (Enemy3) → check: `TestDiveAttackPhases`, manual look
 - [ ] 27. `verify.mjs --full`, web smoke check, `/code-review`, docs update, PR (ask before merge)
 
@@ -88,5 +88,6 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 
 - [ ] Bosses: Striker (`Striker/`, 96×96, attack 128×96, dash/jump), Orange Golem (rename files first, D4)
 - [ ] Mushroom stun attack (`Mushroom-AttackWithStun`, `Mushroom-Stun`): needs a player stun state
-- [ ] `waterMover` (Sahuagin, crab, water slime are candidates)
+- [ ] `waterMover` (no candidate since the battlers were dropped, D9)
+- [ ] Delete `tools/battler2strip` or keep it (D9, user to decide)
 - [ ] `readAsset` by full path instead of base name (project known issue #3)

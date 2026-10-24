@@ -83,3 +83,17 @@
   behind always land. Enemies without the clip never guard.
 - **Why:** user request. Every battler sheet has a Guard motion; the strip packs don't, so it
   must be optional rather than part of the shared state machine's required clips.
+
+## D9. Strip packs only; behaviour stays in parts (2026-10-24, user's call)
+
+- **Decision:** every enemy comes from a strip pack in `assets/enemy/`. The battler sheets
+  are deleted (see D7) and nothing is baked. An enemy is still a blueprint plus a `Mover`
+  and an `Attacker` (D1, D2): the same clip-loading path and the same movement parts serve
+  every species.
+- **Why:** the goblin, the first baked battler, slid in its standing pose; the user turned
+  it down. Strip packs all have real walk/run/fly frames, and one format means one loading
+  path and no offline step.
+- **Consequences:** D7's tool `tools/battler2strip` has nothing left to bake (keep or delete:
+  user to decide). The battler-only plans are dropped: goblin, kobold/gnoll ranged enemy,
+  training dummy (`static` mover), bat, water candidates. D8 guard works but no pack has a
+  `guard` clip yet.
