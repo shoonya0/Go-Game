@@ -122,7 +122,7 @@ func TestBlueprintsValid(t *testing.T) {
 		names[bp.Name] = kind
 
 		for _, name := range requiredClips {
-			if _, ok := bp.Clips[name]; !ok {
+			if !bp.Has(name) {
 				t.Errorf("%s: no %v clip, which every enemy needs", bp.Name, name)
 			}
 		}
@@ -150,8 +150,8 @@ func TestBlueprintsValid(t *testing.T) {
 				t.Errorf("%s: %s = %v, want > 0", bp.Name, stat, v)
 			}
 		}
-		if _, hasGuard := bp.Clips[ClipGuard]; st.GuardChance < 0 || st.GuardChance > 1 || (st.GuardChance > 0 && !hasGuard) {
-			t.Errorf("%s: GuardChance %v (guard clip: %v), want 0-1 and a guard clip when > 0", bp.Name, st.GuardChance, hasGuard)
+		if st.GuardChance < 0 || st.GuardChance > 1 || (st.GuardChance > 0 && !bp.Has(ClipGuard)) {
+			t.Errorf("%s: GuardChance %v (guard clip: %v), want 0-1 and a guard clip when > 0", bp.Name, st.GuardChance, bp.Has(ClipGuard))
 		}
 		if st.AttackRange >= st.DetectRange {
 			t.Errorf("%s: AttackRange %v >= DetectRange %v, so it would never chase", bp.Name, st.AttackRange, st.DetectRange)

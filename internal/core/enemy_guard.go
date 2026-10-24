@@ -26,7 +26,7 @@ func (e *EnemyRuntime) blocks(srcX float64) bool {
 	if e.State.IsDead() || e.State.IsAttacking() || e.bp.Stats.GuardChance <= 0 {
 		return false
 	}
-	if _, ok := e.bp.Clips[ClipGuard]; !ok {
+	if !e.bp.Has(ClipGuard) {
 		return false
 	}
 	fromRight := srcX > centerX(e.GetBounds())

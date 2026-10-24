@@ -53,8 +53,7 @@ func (meleeAttack) Ready(e *EnemyRuntime) bool {
 }
 
 func (meleeAttack) Start(e *EnemyRuntime) {
-	_, hasSecond := e.bp.Clips[ClipAttack2]
-	e.swing = swingState{second: hasSecond && rollSecondAttack()}
+	e.swing = swingState{second: e.bp.Has(ClipAttack2) && rollSecondAttack()}
 }
 
 func (meleeAttack) Update(e *EnemyRuntime, target *PlayerRuntime) {
