@@ -10,6 +10,7 @@ var enemyBlueprints = map[EnemyKind]*EnemyBlueprint{
 	KindSkeletonWhite:  skeletonBlueprint("White", "@"),
 	KindSkeletonYellow: skeletonBlueprint("Yellow", "#"),
 	KindMushroom:       &mushroomBlueprint,
+	KindWhiteGolem:     &whiteGolemBlueprint,
 }
 
 // blueprintFor returns the blueprint for a kind, panicking on an unregistered
@@ -166,5 +167,52 @@ func mushroomClip(anim string, frames int, fps float64, loop bool) EnemyClip {
 	return EnemyClip{
 		Sheet:  "../assets/enemy/Mushroom/Mushroom-" + anim + ".png",
 		Frames: frames, FrameW: mushroomFrameWidth, FrameH: mushroomFrameHeight, FPS: fps, Loop: loop,
+	}
+}
+
+// ---------------- white golem ----------------
+
+// The white golem ships as one 90×64 strip per animation, facing right:
+// assets/enemy/White_Golem/WhiteGolem_<anim>.png (renamed from Golem_1_*, which
+// the orange golem also uses, D4). The body is about 38px tall, feet on the
+// bottom row. A slow, heavy enemy: it winds up for three frames and slams the
+// ground on frame 6, raising ice spikes on both sides.
+const (
+	whiteGolemFrameWidth  = 90
+	whiteGolemFrameHeight = 64
+)
+
+var whiteGolemBlueprint = EnemyBlueprint{
+	Name:       "White Golem",
+	Marker:     "%",
+	BodyWidth:  56,
+	BodyHeight: 74,
+	Scale:      2, // 38px of art -> ~76px on screen
+	Mover:      groundMover{},
+	Attacker:   meleeAttack{},
+	Stats: EnemyStats{
+		MaxHealth:      80,
+		Damage:         15,
+		WalkSpeed:      30,
+		ChaseSpeed:     70,
+		DetectRange:    300,
+		AttackRange:    64,
+		AttackCooldown: 1.8,
+		PatrolTiles:    2,
+	},
+	Clips: map[ClipName]EnemyClip{ // no run clip: chasing walks faster
+		ClipIdle:    whiteGolemClip("idle", 8, 8, true),
+		ClipWalk:    whiteGolemClip("walk", 10, 10, true),
+		ClipAttack1: whiteGolemClip("attack", 11, 12, false).held(1, 1, 1, 1, 1, 2, 2).hitsOn(6), // frame 5: arm up; frame 6: the slam lands
+		ClipHurt:    whiteGolemClip("hurt", 4, 10, false).moving(motionFX{HitShakePx: 2}),
+		ClipDeath:   whiteGolemClip("die", 12, 12, false), // the 13th frame is blank: end on the rubble
+	},
+}
+
+// whiteGolemClip is one of the white golem's strips.
+func whiteGolemClip(anim string, frames int, fps float64, loop bool) EnemyClip {
+	return EnemyClip{
+		Sheet:  "../assets/enemy/White_Golem/WhiteGolem_" + anim + ".png",
+		Frames: frames, FrameW: whiteGolemFrameWidth, FrameH: whiteGolemFrameHeight, FPS: fps, Loop: loop,
 	}
 }
