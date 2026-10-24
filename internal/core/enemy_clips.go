@@ -47,6 +47,7 @@ var stateClips = map[EnemyState]ClipName{
 	EnemyAlert:  ClipRun,
 	EnemyAttack: ClipAttack1,
 	EnemyHurt:   ClipHurt,
+	EnemyGuard:  ClipGuard, // optional: only species with guard art enter it
 	EnemyDead:   ClipDeath,
 }
 

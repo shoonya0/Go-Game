@@ -27,6 +27,7 @@ type EnemyStats struct {
 	AttackRange    float64 // horizontal distance at which the enemy can strike
 	AttackCooldown float64 // minimum seconds between landed hits
 	PatrolTiles    float64 // half-width (in tiles) of the patrol path around spawn
+	GuardChance    float64 // chance (0-1) to block a hit from the front; needs a guard clip (D8)
 }
 
 // EnemyClip describes one animation of a species: which sprite sheet holds it

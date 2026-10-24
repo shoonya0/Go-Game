@@ -127,6 +127,9 @@ func TestBlueprintsValid(t *testing.T) {
 			}
 		}
 		for st := range stateClips {
+			if st == EnemyGuard {
+				continue // optional trait, checked below
+			}
 			if _, ok := bp.resolveClip(stateClips[st]); !ok {
 				t.Errorf("%s: nothing to play in state %d", bp.Name, st)
 			}
@@ -146,6 +149,9 @@ func TestBlueprintsValid(t *testing.T) {
 			if v <= 0 {
 				t.Errorf("%s: %s = %v, want > 0", bp.Name, stat, v)
 			}
+		}
+		if _, hasGuard := bp.Clips[ClipGuard]; st.GuardChance < 0 || st.GuardChance > 1 || (st.GuardChance > 0 && !hasGuard) {
+			t.Errorf("%s: GuardChance %v (guard clip: %v), want 0-1 and a guard clip when > 0", bp.Name, st.GuardChance, hasGuard)
 		}
 		if st.AttackRange >= st.DetectRange {
 			t.Errorf("%s: AttackRange %v >= DetectRange %v, so it would never chase", bp.Name, st.AttackRange, st.DetectRange)

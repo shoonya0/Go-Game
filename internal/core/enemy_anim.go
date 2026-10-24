@@ -4,7 +4,7 @@ import "github.com/hajimehoshi/ebiten/v2"
 
 // UpdateEnemyAnimation advances the active animation by one tick. It restarts the
 // clip when the state changed this tick, loops looping clips, and resolves the
-// follow-up state when a one-shot clip finishes: attack/hurt return to patrol,
+// follow-up state when a one-shot clip finishes: attack/hurt/guard return to patrol,
 // while death holds on its final frame and marks the enemy removable. It mirrors
 // PlayerRuntime.UpdateAnimation, except that a clip may Hold single frames longer.
 func (e *EnemyRuntime) UpdateEnemyAnimation() {

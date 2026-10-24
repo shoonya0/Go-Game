@@ -14,6 +14,7 @@ const (
 	EnemyAlert                    // chasing the player after spotting them
 	EnemyAttack                   // striking the player (one-shot)
 	EnemyHurt                     // reacting to damage (one-shot)
+	EnemyGuard                    // blocking a hit from the front (one-shot, D8)
 	EnemyDead                     // death animation, then inert (one-shot)
 )
 
@@ -22,6 +23,9 @@ func (s EnemyState) IsDead() bool { return s == EnemyDead }
 
 // IsHurt reports whether the enemy is playing its hurt reaction.
 func (s EnemyState) IsHurt() bool { return s == EnemyHurt }
+
+// IsGuarding reports whether the enemy is playing its guard (block) reaction.
+func (s EnemyState) IsGuarding() bool { return s == EnemyGuard }
 
 // IsAttacking reports whether the enemy is mid-attack.
 func (s EnemyState) IsAttacking() bool { return s == EnemyAttack }
@@ -32,5 +36,5 @@ func (s EnemyState) IsAlert() bool { return s == EnemyAlert }
 // IsOneShot reports whether the state is a non-looping action that should hand
 // back to a follow-up state once its animation finishes (see enemy_anim.go).
 func (s EnemyState) IsOneShot() bool {
-	return s == EnemyAttack || s == EnemyHurt || s == EnemyDead
+	return s == EnemyAttack || s == EnemyHurt || s == EnemyGuard || s == EnemyDead
 }

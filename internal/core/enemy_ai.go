@@ -29,8 +29,8 @@ func UpdateEnemy(e *EnemyRuntime, target *PlayerRuntime, qt *DynamicQuadtree) {
 // are within detection range, otherwise patrol. It sets the behavioural state and
 // facing, and steers the Mover, which sets the velocity.
 func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
-	// Let a hurt reaction play out before re-deciding, so hits interrupt cleanly.
-	if e.State.IsHurt() {
+	// Let a hurt or guard reaction play out before re-deciding, so hits interrupt cleanly.
+	if e.State.IsHurt() || e.State.IsGuarding() {
 		e.bp.Mover.Steer(e, moveIntent{mode: moveHold})
 		return
 	}
