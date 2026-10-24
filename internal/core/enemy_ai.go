@@ -36,14 +36,15 @@ func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
 	}
 
 	st := e.bp.Stats
-	dx := centerX(target.GetBounds()) - centerX(e.GetBounds())
+	tb, eb := target.GetBounds(), e.GetBounds()
+	dx := centerX(tb) - centerX(eb)
 	dist := math.Abs(dx)
 
 	switch {
 	case e.bp.Attacker.InRange(e, target.GetBounds()):
 		e.attack(target, dx)
 	case dist <= st.DetectRange:
-		e.chase(dx)
+		e.chase(dx, centerY(tb)-centerY(eb))
 	default:
 		e.patrol()
 	}
@@ -66,11 +67,12 @@ func (e *EnemyRuntime) attack(target *PlayerRuntime, dx float64) {
 	e.bp.Attacker.Update(e, target)
 }
 
-// chase moves the enemy toward the player at chase speed.
-func (e *EnemyRuntime) chase(dx float64) {
+// chase moves the enemy toward the player at chase speed. dx and dy run from
+// the enemy's center to the player's.
+func (e *EnemyRuntime) chase(dx, dy float64) {
 	e.setState(EnemyAlert)
 	e.faceToward(dx)
-	e.bp.Mover.Steer(e, moveIntent{mode: moveChase, dx: dx})
+	e.bp.Mover.Steer(e, moveIntent{mode: moveChase, dx: dx, dy: dy})
 }
 
 // patrol paces the enemy around its spawn point; the Mover decides where the
@@ -83,3 +85,6 @@ func (e *EnemyRuntime) patrol() {
 
 // centerX returns the horizontal center of a box.
 func centerX(b AABB) float64 { return b.X + b.Width/2 }
+
+// centerY returns the vertical center of a box.
+func centerY(b AABB) float64 { return b.Y + b.Height/2 }

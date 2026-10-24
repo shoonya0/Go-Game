@@ -56,6 +56,7 @@ func newTestEnemy(pos Position) *EnemyRuntime {
 		Pos:       pos,
 		Health:    bp.Stats.MaxHealth,
 		spawnX:    pos.X,
+		spawnY:    pos.Y,
 		patrolDir: 1,
 	}
 }

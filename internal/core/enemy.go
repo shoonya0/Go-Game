@@ -109,6 +109,7 @@ type EnemyRuntime struct {
 
 	// AI / per-tick bookkeeping (not for external use).
 	spawnX      float64    // patrol anchor (X at spawn)
+	spawnY      float64    // flyers' home height (Y at spawn)
 	patrolDir   float64    // current patrol direction: -1 or +1
 	attackTimer float64    // seconds until the next hit may land
 	swing       swingState // the attack in progress
@@ -149,6 +150,7 @@ func NewEnemy(kind EnemyKind, pos Position) *EnemyRuntime {
 		Pos:        pos,
 		Health:     bp.Stats.MaxHealth,
 		spawnX:     pos.X,
+		spawnY:     pos.Y,
 		patrolDir:  1,
 	}
 }
