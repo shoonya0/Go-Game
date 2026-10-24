@@ -37,10 +37,10 @@ func TestBuildLevelPlatformCount(t *testing.T) {
 	}
 }
 
-func TestBuildLevelCheckpoints(t *testing.T) {
+func TestBuildLevelPortals(t *testing.T) {
 	WorldInit()
 
-	// Code 9 is a non-solid checkpoint: it must not become a platform, and it
+	// Code 9 is a non-solid portal: it must not become a platform, and it
 	// must be recorded at the right world coordinates.
 	grid := [][]int{
 		{0, 9, 0},
@@ -48,14 +48,14 @@ func TestBuildLevelCheckpoints(t *testing.T) {
 	}
 	level := BuildLevel(grid)
 	if len(level.Platforms) != 3 {
-		t.Fatalf("got %d platforms, want 3 (checkpoint must not be solid)", len(level.Platforms))
+		t.Fatalf("got %d platforms, want 3 (portal must not be solid)", len(level.Platforms))
 	}
-	if len(level.Checkpoints) != 1 {
-		t.Fatalf("got %d checkpoints, want 1", len(level.Checkpoints))
+	if len(level.Portals) != 1 {
+		t.Fatalf("got %d portals, want 1", len(level.Portals))
 	}
-	cp := level.Checkpoints[0]
+	cp := level.Portals[0]
 	if cp.Pos.X != float64(1*LevelTileWidth) || cp.Pos.Y != 0 {
-		t.Errorf("checkpoint at (%v, %v), want (%v, 0)", cp.Pos.X, cp.Pos.Y, float64(1*LevelTileWidth))
+		t.Errorf("portal at (%v, %v), want (%v, 0)", cp.Pos.X, cp.Pos.Y, float64(1*LevelTileWidth))
 	}
 }
 

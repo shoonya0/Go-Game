@@ -3,7 +3,7 @@ package core
 import "testing"
 
 // tickFlash runs the combat update (which counts the flash down) for n ticks
-// with no world, so no hazards or checkpoints interfere.
+// with no world, so no hazards or portals interfere.
 func tickFlash(p *PlayerRuntime, n int) {
 	for i := 0; i < n; i++ {
 		p.updateCombat(nil, nil, true)

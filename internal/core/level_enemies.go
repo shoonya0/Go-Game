@@ -60,7 +60,7 @@ func isMarkerChar(c byte) bool {
 }
 
 // levelCell is one cell of a JSON level grid. A number is a tile code (see
-// tileTypeFromCode and CheckpointCode); a string is an enemy marker, the
+// tileTypeFromCode and PortalCode); a string is an enemy marker, the
 // code an EnemyBlueprint registers as its Marker (e.g. ! or !@).
 type levelCell struct {
 	tile   int

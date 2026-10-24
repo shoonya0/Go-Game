@@ -55,8 +55,8 @@ type Tile struct {
 	TileType TileType // eg:= grass ,ice ,sand etc.
 }
 
-// CheckpointCode is the grid value that marks a (non-solid) respawn point.
-const CheckpointCode = 9
+// PortalCode is the grid value that marks a (non-solid) respawn point.
+const PortalCode = 9
 
 // ---------------- platform ----------------
 type Platform struct {
@@ -65,22 +65,23 @@ type Platform struct {
 	DrawOffsetY         float64 // this is the draw offset for the tile
 }
 
-// Checkpoint is a respawn location the player activates by touching it.
-type Checkpoint struct {
+// Portal is a respawn point (and, later, a gateway to other levels) the
+// player activates by touching it.
+type Portal struct {
 	Pos Position
 }
 
-// Bounds returns the checkpoint's one-tile activation zone.
-func (c Checkpoint) Bounds() AABB {
+// Bounds returns the portal's one-tile activation zone.
+func (c Portal) Bounds() AABB {
 	return AABB{X: c.Pos.X, Y: c.Pos.Y, Width: LevelTileWidth, Height: LevelTileHeight}
 }
 
 // Level is the built, ready-to-use result of loading a level: its solid
-// platforms, its checkpoints and where its enemies spawn.
+// platforms, its portals and where its enemies spawn.
 type Level struct {
-	Platforms   []Platform
-	Checkpoints []Checkpoint
-	Enemies     []EnemySpawn
+	Platforms []Platform
+	Portals   []Portal
+	Enemies   []EnemySpawn
 }
 
 var Tiles map[TileType][2]Tile
@@ -230,7 +231,7 @@ func LoadLevel(path, name string) Level {
 }
 
 // BuildLevel converts a grid of tile codes into a Level: one solid Platform per
-// non-empty tile cell, plus a Checkpoint per CheckpointCode cell. It is a pure
+// non-empty tile cell, plus a Portal per PortalCode cell. It is a pure
 // function of its input, so it is easy to test and reuse independently of asset
 // loading.
 func BuildLevel(grid [][]int) Level {
@@ -243,13 +244,13 @@ func BuildLevel(grid [][]int) Level {
 		for x := range grid[y] {
 			code := grid[y][x]
 
-			if code == CheckpointCode {
-				level.Checkpoints = append(level.Checkpoints, Checkpoint{
+			if code == PortalCode {
+				level.Portals = append(level.Portals, Portal{
 					Pos: Position{X: float64(x * LevelTileWidth), Y: float64(y * LevelTileHeight)},
 				})
 			}
 
-			// Checkpoint cells are non-solid (code 9 maps to Empty), so no platform.
+			// Portal cells are non-solid (code 9 maps to Empty), so no platform.
 			tileType := tileTypeFromCode(code)
 			if tileType != Empty {
 				level.Platforms = append(level.Platforms, getTileInfo(x, y, tileType, grid, prevPlat))

@@ -119,8 +119,8 @@ func (player *PlayerRuntime) canMove() bool {
 }
 
 // UpdatePlayer advances the player one tick: input, physics, collision, state and
-// combat (power regen/run drain, hazard/fall damage, checkpoint respawn).
-func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, checkpoints []Checkpoint) {
+// combat (power regen/run drain, hazard/fall damage, portal respawn).
+func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, portals []Portal) {
 	player.PreviousState = PlayerState{CurrentState: PlayerStateType(player.State.GetPlayerState())}
 
 	player.applyHorizontalMovement(in)
@@ -133,7 +133,7 @@ func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, ch
 	player.queueCombo(in)
 
 	player.updateStamina()
-	player.updateCombat(qt, checkpoints, onGround)
+	player.updateCombat(qt, portals, onGround)
 
 	if qt != nil {
 		qt.Update(player)

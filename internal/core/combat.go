@@ -97,11 +97,11 @@ func (p *PlayerRuntime) updateStamina() {
 	}
 }
 
-// updateCombat applies checkpoint pickups, environmental damage and fall damage
+// updateCombat applies portal saves, environmental damage and fall damage
 // for this tick, then starts a death animation if health has run out.
-func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, checkpoints []Checkpoint, onGround bool) {
+func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, portals []Portal, onGround bool) {
 	p.damageFlash = math.Max(p.damageFlash-deltaTime(), 0)
-	p.updateCheckpoints(checkpoints)
+	p.updatePortals(portals)
 
 	inWater, inLarva := p.scanHazards(qt)
 	p.applyFallDamage(onGround, inWater)
@@ -132,11 +132,11 @@ func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, checkpoints []Checkpoi
 	}
 }
 
-// updateCheckpoints promotes the last checkpoint the player is overlapping to the
+// updatePortals promotes the last portal the player is overlapping to the
 // active respawn point.
-func (p *PlayerRuntime) updateCheckpoints(checkpoints []Checkpoint) {
+func (p *PlayerRuntime) updatePortals(portals []Portal) {
 	body := p.GetBounds()
-	for _, cp := range checkpoints {
+	for _, cp := range portals {
 		if body.Intersects(cp.Bounds()) {
 			p.RespawnPos = cp.Pos
 		}
@@ -191,7 +191,7 @@ func (p *PlayerRuntime) applyFallDamage(onGround, inWater bool) {
 	p.groundedPrev = onGround
 }
 
-// respawn returns the player to the active checkpoint with full pools.
+// respawn returns the player to the active portal with full pools.
 func (p *PlayerRuntime) respawn() {
 	p.Pos = p.RespawnPos
 	p.Combat.Health = p.Combat.MaxHealth

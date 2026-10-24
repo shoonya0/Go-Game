@@ -67,7 +67,7 @@ func (g *Game) Update() error {
 		g.showHitboxes = !g.showHitboxes
 	}
 
-	core.UpdatePlayer(g.player, &g.input, g.quadtree, g.level.Checkpoints)
+	core.UpdatePlayer(g.player, &g.input, g.quadtree, g.level.Portals)
 	g.player.UpdateAnimation()
 	g.player.HitEnemies(g.enemies)
 	g.player.UpdateGroundWaves(g.quadtree, g.enemies)
