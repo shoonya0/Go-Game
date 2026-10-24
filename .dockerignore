@@ -5,3 +5,4 @@ bin/
 web/game.wasm
 web/wasm_exec.js
 *.md
+art-src/

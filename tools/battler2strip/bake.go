@@ -14,7 +14,7 @@ import (
 
 // An RPG Maker MV side-view battler is a 9×6 grid of cells: three columns of
 // motion blocks, each block three frames wide, six motions per column (layout:
-// assets/enemy/Free Sprites/imagePattern.png).
+// art-src/battlers/imagePattern.png).
 const (
 	gridCols    = 9
 	gridRows    = 6

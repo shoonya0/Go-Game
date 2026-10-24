@@ -1,6 +1,6 @@
 {
   "name": "Goblin",
-  "sheet": "assets/enemy/Free Sprites/goblin sheet.png",
+  "sheet": "art-src/battlers/goblin sheet.png",
   "facesLeft": true,
   "drawHeight": 120,
   "clips": {
