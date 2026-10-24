@@ -76,10 +76,34 @@ func TestPlayerStartsAtFirstPortal(t *testing.T) {
 		t.Fatalf("first portal at %v, want the top-row one", first.Pos)
 	}
 	body := p.GetBounds()
-	if centerX(body) != centerX(first.Bounds()) || body.Y+body.Height != first.Pos.Y+LevelTileHeight {
+	if centerX(body) != centerX(first.Bounds()) || body.Y+body.Height != first.Bounds().Y+first.Bounds().Height {
 		t.Errorf("player body %+v, want centered in portal %+v, feet on its floor", body, first.Bounds())
 	}
 	if p.RespawnPos != p.Pos {
 		t.Errorf("respawn %v, want the start position %v (start portal saved)", p.RespawnPos, p.Pos)
+	}
+}
+
+// TestPortalStandsOnTheGround: a portal's base, and the player standing in it,
+// sit on the solid top of the tile below, which for grass, sand and water is
+// nudged below the cell line (TopTileVisualOffset).
+func TestPortalStandsOnTheGround(t *testing.T) {
+	WorldInit()
+	for _, below := range []TileType{Grass, Sand, Water, Rock} {
+		code := 0
+		for i, tt := range tileRowOrder {
+			if tt == below {
+				code = i + 1
+			}
+		}
+		level := BuildLevel([][]int{{9}, {code}})
+		ground := level.Platforms[0].Y
+		portal := level.Portals[0]
+		if b := portal.Bounds(); b.Y+b.Height != ground {
+			t.Errorf("%s: portal base at y=%v, want the ground's top %v", below, b.Y+b.Height, ground)
+		}
+		if feet := portal.StandPos().Y + bodyHeight; feet != ground {
+			t.Errorf("%s: player feet at y=%v, want the ground's top %v", below, feet, ground)
+		}
 	}
 }

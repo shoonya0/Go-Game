@@ -68,25 +68,29 @@ type Platform struct {
 // Portal is a respawn point (and, later, a gateway to other levels) the
 // player activates by touching it.
 type Portal struct {
-	Pos Position
+	Pos       Position
+	FloorDrop float64 // how far the ground's solid top sits below the cell (a top tile's margin)
 }
 
+// floorY is the world y of the ground the portal stands on.
+func (c Portal) floorY() float64 { return c.Pos.Y + LevelTileHeight + c.FloorDrop }
+
 // Bounds returns the portal's area: its doorway, centered on its grid cell
-// (Pos is the cell's top-left) and standing on the cell's floor.
+// (Pos is the cell's top-left) and standing on the ground below it.
 func (c Portal) Bounds() AABB {
 	return AABB{
 		X:     c.Pos.X + (LevelTileWidth-portalWidth)/2,
-		Y:     c.Pos.Y + LevelTileHeight - portalHeight,
+		Y:     c.floorY() - portalHeight,
 		Width: portalWidth, Height: portalHeight,
 	}
 }
 
 // StandPos returns the player position (body top-left) that stands the player
-// in the middle of the portal, feet on its cell's floor.
+// in the middle of the portal, feet on the ground below it.
 func (c Portal) StandPos() Position {
 	return Position{
 		X: c.Pos.X + (LevelTileWidth-bodyWidth)/2,
-		Y: c.Pos.Y + LevelTileHeight - bodyHeight,
+		Y: c.floorY() - bodyHeight,
 	}
 }
 
@@ -259,9 +263,12 @@ func BuildLevel(grid [][]int) Level {
 			code := grid[y][x]
 
 			if code == PortalCode {
-				level.Portals = append(level.Portals, Portal{
-					Pos: Position{X: float64(x * LevelTileWidth), Y: float64(y * LevelTileHeight)},
-				})
+				portal := Portal{Pos: Position{X: float64(x * LevelTileWidth), Y: float64(y * LevelTileHeight)}}
+				// The cell below is a top tile (a portal is non-solid), nudged down by its margin.
+				if hasVisualOffset(tileTypeFromCode(cellAt(grid, x, y+1))) {
+					portal.FloorDrop = TopTileVisualOffset
+				}
+				level.Portals = append(level.Portals, portal)
 			}
 
 			// Portal cells are non-solid (code 9 maps to Empty), so no platform.
