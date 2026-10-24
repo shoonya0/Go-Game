@@ -28,6 +28,7 @@ const (
 type moveIntent struct {
 	mode moveMode
 	dx   float64 // chase: horizontal distance to the player (positive = right)
+	dy   float64 // chase: vertical distance to the player (positive = down)
 }
 
 // groundMover walks on tiles under gravity, like the player.
@@ -37,13 +38,7 @@ func (groundMover) Steer(e *EnemyRuntime, in moveIntent) {
 	st := e.bp.Stats
 	switch in.mode {
 	case movePatrol:
-		// Turn at each end of the path, PatrolTiles either side of spawn.
-		rangePx := st.PatrolTiles * LevelTileWidth
-		if e.Pos.X > e.spawnX+rangePx {
-			e.patrolDir = -1
-		} else if e.Pos.X < e.spawnX-rangePx {
-			e.patrolDir = 1
-		}
+		turnAtPathEnd(e, st.PatrolTiles*LevelTileWidth)
 		e.VelX = e.patrolDir * st.WalkSpeed
 	case moveChase:
 		if in.dx > 0 {
@@ -53,6 +48,16 @@ func (groundMover) Steer(e *EnemyRuntime, in moveIntent) {
 		}
 	default:
 		e.VelX = 0
+	}
+}
+
+// turnAtPathEnd turns a patrolling enemy around at each end of its path,
+// rangePx either side of spawn.
+func turnAtPathEnd(e *EnemyRuntime, rangePx float64) {
+	if e.Pos.X > e.spawnX+rangePx {
+		e.patrolDir = -1
+	} else if e.Pos.X < e.spawnX-rangePx {
+		e.patrolDir = 1
 	}
 }
 

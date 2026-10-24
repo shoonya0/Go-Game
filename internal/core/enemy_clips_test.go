@@ -51,13 +51,13 @@ func TestBlueprintHasOwnArtOnly(t *testing.T) {
 			t.Errorf("Has(%v) = false for a required clip it has", name)
 		}
 	}
-	for _, name := range []ClipName{ClipAlert, ClipRun, ClipAttack2, ClipGuard} {
+	for _, name := range []ClipName{ClipAlert, ClipRun, ClipAttack2, ClipAttackLoop, ClipAttackEnd, ClipGuard} {
 		if bp.Has(name) {
 			t.Errorf("Has(%v) = true without its art", name)
 		}
 	}
 
-	want := []string{"idle", "walk", "(walk)", "(walk)", "attack_1", "(attack_1)", "-", "hurt", "death"}
+	want := []string{"idle", "walk", "(walk)", "(walk)", "attack_1", "(attack_1)", "-", "-", "-", "hurt", "death"}
 	if got := bp.capabilities(); !reflect.DeepEqual(got, want) {
 		t.Errorf("capabilities() = %q\nwant %q", got, want)
 	}

@@ -1,58 +1,57 @@
 # Enemy types: state
 
-## Now (updated 2026-10-24 at `3edfa17`)
+## Now (updated 2026-10-24 at `0c4c596`)
 
-- **Status:** 🟡 in progress; increments 1-2 merged (PR #18 `2bc4469`, PR #19 `9124414`);
-  increment 3 (ground roster + guard) done: tasks 12-14, 16, 21 done, 15/19/20 dropped; committed locally, not pushed
-- **Current task:** close increment 3: push `feature/enemy-types`, open the PR, ask the user before merging;
-  then increment 4 (task 22, `flyingMover`) in [tasks.md](./tasks.md)
-- **Stopped at:** task 21 done: web smoke check clean (32.6 MB WASM, no console errors),
-  `verify.mjs --full` 8/8, 120 tests. `code-reviewer` found an enemy frozen at a ledge
-  outside its patrol path (task 12 bug); fixed with a test (`3edfa17`)
-- **Traps:** behaviour tests use `testEnemyBlueprint` (enemy_test.go), not a game enemy: change the roster freely. ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
+- **Status:** 🟡 in progress; increments 1-3 merged (PR #18 `2bc4469`, PR #19 `9124414`,
+  PR #20 `c2c3b87`); increment 4 started on `feature/enemy-types` (local, not pushed)
+- **Current task:** task 27 (PR for increments 4-5) in [tasks.md](./tasks.md); task 25 stays open, blocked on ranged art
+- **Stopped at:** tasks 22-23 done; Flying Demon `^` added (row 25, col 14 of level 1, over the first floor).
+  The user checked the demon in game (increment 4 done). Smasher `*` added (row 25, col 38): body 56×80,
+  `HoverHeight` 160, `FallSpeed` 700 are first guesses. Task 25 waits for ranged art. Task 27 partly done:
+  web smoke check passed, `code-reviewer` found no blockers (one flyer wall-pin edge case, fixed)
+- **Traps:** behaviour tests use `testEnemyBlueprint` (enemy_test.go), not a game enemy: change the roster freely; flyer tests use `testFlyerBlueprint` (enemy_fly_test.go). Ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
   `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
   `GuardChance` in [0,1] with a guard clip. No strip pack has a `guard` clip. The mushroom
   art faces left (`FacesLeft`). The ledge probe acts only in `EnemyPatrol`: chasing enemies
-  still run off edges. A new Attacker must implement `Ready` (a ranged one: its fire timer).
-  Death clips of both golems, Enemy3 and the demon end on a blank frame (the body vanishes)
+  still run off edges. Tests that hit an enemy with a ground wave must put it on the floor
+  with `standOnWaveFloor` (sets `onGround`). A new Attacker must implement `Ready` (a ranged one: its fire timer) and `Committed`.
+  Detection is horizontal only (`DetectRange` on dx), also for flyers. A flyer's spawn
+  cell is its home height. Death clips of both golems, Enemy3 and the demon end on a blank frame
 - **Open questions / blockers:** guard rules while mid-swing or hurt (decisions D8, open). Keep or delete `tools/battler2strip` (its goblin mapping
   points at a deleted sheet). No strip pack for a ranged enemy (task 25). Hook noise: `docs-check.mjs:292`
   counts untracked assets as changed code (issue proposed, not filed)
-- **Don't forget:** assets changed on 2026-10-23. Removed: the desert set, `Bat with VFX/`,
-  `slime/`. Skeleton is split into `Skeleton_White/` and `Skeleton_Yellow/`. Added:
-  17 RPG Maker MV side-view battlers (deleted on 2026-10-24, see decisions). The golems still
-  share `Golem_1_*.png` (D4); the user confirmed they are two different enemies. The enemy
-  folders are untracked, but `//go:embed enemy` embeds them anyway; commit each with its code
+- **Don't forget:** the remaining enemy folders are untracked, but `//go:embed enemy` embeds them
+  anyway; commit each with its code. Rename the Orange Golem files `OrangeGolem_*` before
+  using them (D4)
 
 ## Recent sessions (newest first, keep 5)
 
-### 2026-10-24: task 21, increment 3 closed
+### 2026-10-24: task 27 checks (partial)
 
-- Changed: ledge-freeze fix in `turnAtLedge` + `TestStrandedEnemyPatrolsWhereItIs`; D8 open guard questions; tasks 21 ticked
-- Verified: new test failed first (frozen at x=674); `verify.mjs --full` 8/8; 120 tests; web build loads, no console errors
-- Next: push, PR, user approves merge
+- Changed: flyer wall-pin fix in `flyingMover.Move` + `TestStrandedFlyerPatrolsWhereItIs` (review note)
+- Verified: new test failed first (pinned at the wall); web build loads, no console errors, demon + F3 boxes draw; `code-reviewer`: no blockers; `verify.mjs` 5/5
+- Next: PR (ask before merge); the user confirmed "Smasher working". Review gaps, not bugs: no test for hurt mid-dive
 
-### 2026-10-24: succubus removed
+### 2026-10-24: task 26, dive attack + Smasher built
 
-- Changed: tests moved to `testEnemyBlueprint`; succubus blueprint, `KindSuccubus`, `!` and `succubus.png` removed; comments
-- Verified: same 119 tests pass; each of the 4 commits tested alone in a clean worktree; `verify.mjs --full` 8/8
-- Next: user's look at the White Golem, then task 21
+- Changed: `attack_loop`/`attack_end` clips, `swingState.phase`, `Attacker.Committed`; `diveAttack` (`enemy_dive.go`); Smasher `*` in level 1
+- Verified: dive tests failed first (build); mutations (not committed, no MaxDrop) caught; it hits a player in the level; `verify.mjs --full` 8/8
+- Next: user looks at the Smasher in game; then task 25 (needs ranged art) or 27
 
-### 2026-10-24: task 16, White Golem
+### 2026-10-24: task 24, Flying Demon built
 
-- Changed: strips renamed `WhiteGolem_*`; `whiteGolemBlueprint`, `KindWhiteGolem`, `%` in level 1; tests `TestAssetBaseNamesUnique`, `TestLevelEnemiesKeepTheirGround`
-- Verified: both tests failed first / on mutation (missing marker, spawn over the pit); `verify.mjs --full` 8/8; 119 tests pass
-- Next: task 21, then close increment 3
+- Changed: strips renamed `FlyingDemon_*`; `flyingDemonBlueprint`, `KindFlyingDemon`, `^` in level 1; level test checks flyers keep their height
+- Verified: level test failed first (not placed); swing test lands every bite; it reaches a player under it in the level; `verify.mjs --full` 8/8
+- Next: task 25; the user confirmed "Flying Demon working"
 
-### 2026-10-24: capability check
+### 2026-10-24: task 23, ground wave skips flyers
 
-- Changed: `Has` + `capabilities` in `enemy_clips.go`; guard, second attack and `TestBlueprintsValid` use `Has`
-- Verified: new tests failed first (build), mutation (fallback counted) caught; `verify.mjs` 5/5; 117 tests pass
-- Next: task 16, White Golem
+- Changed: `GroundWave.update` skips enemies not `Grounded`; test helper `standOnWaveFloor` (sets `onGround`), used by the two wave-hit tests
+- Verified: `TestGroundWaveMissesFlyers` failed first (flyer hit); without `onGround` in the helper the 2 old tests fail; `verify.mjs` 5/5
+- Next: task 24, Flying Demon
 
-### 2026-10-24: strip packs only (D9)
+### 2026-10-24: task 22, flyingMover
 
-- Changed: checked every strip pack (whole frames, steady feet, nothing cut off); Striker size fixed; spec, decisions (D9), tasks, current-state updated
-- Verified: frame scan of `assets/enemy/`; `go test ./...` 115 pass; docs-check clean
-- Next: task 16, White Golem
-
+- Changed: `spawnY` + `dy` in the move intent, `turnAtPathEnd`; new `flyingMover` (leash box, `HoverHeight`, dead flyers fall)
+- Verified: tests failed first (build); mutations (gravity on, leash off) caught; `verify.mjs` 5/5; 125 tests pass
+- Next: task 23, ground wave skips flyers

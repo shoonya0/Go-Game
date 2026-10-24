@@ -124,6 +124,7 @@ func TestMeleeEverySwingLands(t *testing.T) {
 		{"skeleton attack_2", blueprintFor(KindSkeletonWhite), true},
 		{"mushroom", blueprintFor(KindMushroom), false},
 		{"white golem", blueprintFor(KindWhiteGolem), false},
+		{"flying demon", blueprintFor(KindFlyingDemon), false},
 		{"test enemy, hit on frame 0", &testEnemyBlueprint, false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

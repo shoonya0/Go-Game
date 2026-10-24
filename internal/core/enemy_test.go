@@ -56,6 +56,7 @@ func newTestEnemy(pos Position) *EnemyRuntime {
 		Pos:       pos,
 		Health:    bp.Stats.MaxHealth,
 		spawnX:    pos.X,
+		spawnY:    pos.Y,
 		patrolDir: 1,
 	}
 }
@@ -174,6 +175,9 @@ func TestBlueprintsValid(t *testing.T) {
 			if _, ok := bp.resolveClip(stateClips[st]); !ok {
 				t.Errorf("%s: nothing to play in state %d", bp.Name, st)
 			}
+		}
+		if _, dives := bp.Attacker.(diveAttack); dives && (!bp.Has(ClipAttackLoop) || !bp.Has(ClipAttackEnd)) {
+			t.Errorf("%s: dives without attack_loop and attack_end clips (fall, impact)", bp.Name)
 		}
 		if bp.Mover == nil || bp.Attacker == nil {
 			t.Errorf("%s: Mover=%v Attacker=%v, want both set", bp.Name, bp.Mover, bp.Attacker)

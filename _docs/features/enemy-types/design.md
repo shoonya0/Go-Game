@@ -24,6 +24,8 @@ and a diver from above without a change to the brain.
   back (the enemy idles, facing the player) until the cooldown ends by the hit frame;
   otherwise the skeleton whiffed every other swing (`TestMeleeEverySwingLands`). The
   test-only enemy (`testEnemyBlueprint`) keeps `HitFrame` 0. `EnemyEffects` joins `Update` with projectiles (task 25).
+- **Flying** (`enemy_fly.go`, task 22): the leash is a box (`LeashTiles` in X and in Y around spawn), not a circle; a chased player beyond it is followed to its edge. Patrol paths are cut to the leash. A dead flyer falls like a ground enemy.
+- **Dive** (`enemy_dive.go`, task 26): the phase lives in `swingState.phase` and picks attack_1 → attack_loop → attack_end. The Attacker, not the clip, ends the wind-up, so the wind-up clip loops; the end clip is one-shot and hands back to the brain. `Committed` keeps the brain attacking once a dive starts.
 - **Clips** (`enemy_clips.go`, `enemy_motion.go`): draw-time motion is in screen pixels and
   moves only the sprite; the collision box stays put (D7).
 
@@ -31,10 +33,8 @@ and a diver from above without a change to the brain.
 
 | Part | Notes |
 |---|---|
-| `flyingMover` | no gravity, `HoverHeight`, `Leash` (tiles), steers in X and Y, bobbing optional |
 | `waterMover` | later; like flying but clamped to water tiles |
 | `rangedAttack` | spawns a `Projectile` on `FireFrame`; `KeepDistance` |
-| `diveAttack` | phases start → loop (falling) → end; uses up to 3 clips |
 
 Part-specific runtime state (dive phase, fire timer, wake flag) goes in one small typed
 field on `EnemyRuntime` per part, like `swing swingState`, not in a `map[string]any`; the

@@ -26,6 +26,13 @@ func uPlayer(x float64, frame int) *PlayerRuntime {
 	return p
 }
 
+// standOnWaveFloor puts e on waveWorld's floor, grounded as a tick of
+// UpdateEnemy would leave it.
+func standOnWaveFloor(e *EnemyRuntime) {
+	e.Pos.Y = waveGroundY - e.bp.BodyHeight
+	e.onGround = true
+}
+
 // tickWaves runs the wave update for n ticks.
 func tickWaves(p *PlayerRuntime, qt *DynamicQuadtree, enemies []*EnemyRuntime, n int) {
 	for i := 0; i < n; i++ {
@@ -137,8 +144,7 @@ func TestGroundWaveStopsAtWall(t *testing.T) {
 func TestGroundWaveHitsEachEnemyOnce(t *testing.T) {
 	qt := waveWorld(0, 2000)
 	e := newTestEnemy(Position{X: 700})
-	b := e.GetBounds()
-	e.Pos.Y += waveGroundY - (b.Y + b.Height) // stand it on the floor
+	standOnWaveFloor(e)
 	enemies := []*EnemyRuntime{e}
 
 	p := uPlayer(500, groundWaveSpawnFrame)
@@ -146,6 +152,28 @@ func TestGroundWaveHitsEachEnemyOnce(t *testing.T) {
 
 	if want := e.bp.Stats.MaxHealth - GroundWaveDamage; e.Health != want {
 		t.Errorf("enemy health = %d, want %d (one wave hit)", e.Health, want)
+	}
+}
+
+// TestGroundWaveMissesFlyers: the wave runs along the floor, so it passes
+// under an enemy that isn't on the ground, even one low enough to touch it.
+func TestGroundWaveMissesFlyers(t *testing.T) {
+	qt := waveWorld(0, 2000)
+	e := newTestFlyer(Position{X: 700, Y: waveGroundY - testFlyerBlueprint.BodyHeight - 1})
+	p := uPlayer(500, groundWaveSpawnFrame)
+
+	touched := false
+	for range int(tps()) {
+		tickWaves(p, qt, []*EnemyRuntime{e}, 1)
+		for _, w := range p.waves {
+			touched = touched || w.Box().Intersects(e.GetBounds())
+		}
+	}
+	if !touched {
+		t.Fatal("the wave never reached the flyer's body; the test proves nothing")
+	}
+	if e.Health != e.bp.Stats.MaxHealth {
+		t.Errorf("flyer health = %d, want %d (the wave passes under it)", e.Health, e.bp.Stats.MaxHealth)
 	}
 }
 

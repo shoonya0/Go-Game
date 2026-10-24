@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-24)
 
-Snapshot at `f7b861a` (`feature/enemy-types`, local; `main` at `9124414`, PR #19 merged). One page. Details live in each increment's entry in
+Snapshot at `c2c3b87` (`main`, PR #20 merged). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -10,10 +10,10 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increments 1–2 merged (tasks 1–11); increment 3 (ground roster) done, PR next: tasks 12-14, 16, 21 done, 15/19/20 dropped (strip packs only, D9)
-- **Branch:** `feature/enemy-types`, fresh from `main` at `9124414` (merged: increment 1 as PR #18, increment 2 battler baking as PR #19)
-- **Next step:** push and open the increment 3 PR (ask before merge), then increment 4 (flying enemies). Succubus removed (`0f42350`) in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
-- **Updated:** 2026-10-24 (strip packs only: battler sheets deleted, enemy art checked)
+- **Feature:** [enemy-types](./features/enemy-types/state.md) · Increments 1–3 merged (PR #18, #19, #20; tasks 1–21, 15/19/20 dropped); increment 4 (flying enemies) in progress: tasks 22-24 done
+- **Branch:** `feature/enemy-types`, fresh from `main` at `c2c3b87` (PR #20 merged by the user)
+- **Next step:** PR for increments 4-5 (task 27: review and web check done); ask before merge. Task 25 needs ranged art in [tasks.md](./features/enemy-types/tasks.md). Untracked assets (`assets/enemy/*` new folders, `assets/levels/portal.png`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Updated:** 2026-10-24 (increment 3 merged, PR #20)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -23,7 +23,7 @@ and /feature-docs update. -->
 
 - Run a 2D side-scrolling platformer natively (Windows) or in the browser (WASM). VERIFIED (CI builds both)
 - Move (WASD), run (Shift; drains 5 stamina/s, exhausted at 0 until 20 regenerates), jump (costs 5 stamina; at 0 stamina the player kneels until 2 bars refill), attack (J/I cost 10 stamina; U 34; O 10, plus 20 for its second part); sprite HUD with 10 hearts + 10 stamina segments; water/larva hazards, fall damage, checkpoints, respawn. VERIFIED (code read, tests)
-- Fight three enemy types in level 1, each placed by a grid marker (one or two punctuation characters): the skeleton in white (`@`) and yellow (`#`), the mushroom (`&`) and the White Golem (`%`, slow and heavy; checked by the user in game). All patrol, chase and attack; while patrolling they turn at walls and platform edges (chasing ones can still run off); they hit only when your body is inside their attack box. Each deals damage on the frame the weapon connects; the skeleton alternates two attacks. (The succubus and the goblin were removed: their animation didn't look good.) Between swings an enemy stands idle until its cooldown is ready, so no swing misses. Each shows 2 health bars above its head and regenerates 0.1 bar/s; sprites bob, lean and shake when hit (draw-time motion). Skeleton/mushroom checked by the user in game; hit timing not yet. Your attacks hurt it (J/I 0.5 bar, jump + I 1.5 and its spin hits behind you too, K 0.5 + 1, L 1 + 2, O 1 + 2); K, L and O stop halfway unless pressed again (O after sprite 9); U sends a ground wave along the floor that hurts it too. Attacks move the player (`internal/core/attack_step.go`): J steps 45 px back, I and U 45 px forward, K's second part 15 px and O's 45 px forward; L doesn't move. Taking damage makes the player blink red for 1 s; a hit of 2+ hearts knocks them down 1.5 tiles back, 3+ hearts plays the full knockdown and 2 tiles; at 0 HP one of two death animations plays before respawn. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go`, tests pass)
+- Fight six enemy types in level 1, each placed by a grid marker (one or two punctuation characters): the skeleton in white (`@`) and yellow (`#`), the mushroom (`&`) the White Golem (`%`, slow and heavy; checked by the user in game) and the Flying Demon (`^`, flies within 4 tiles of its spawn and bites; checked by the user in game) and the Smasher (`*`, hangs over you and dives down; checked by the user in game). All patrol, chase and attack; while patrolling they turn at walls and platform edges (chasing ones can still run off); they hit only when your body is inside their attack box. Each deals damage on the frame the weapon connects; the skeleton alternates two attacks. (The succubus and the goblin were removed: their animation didn't look good.) Between swings an enemy stands idle until its cooldown is ready, so no swing misses. Each shows 2 health bars above its head and regenerates 0.1 bar/s; sprites bob, lean and shake when hit (draw-time motion). Skeleton/mushroom checked by the user in game; hit timing not yet. Your attacks hurt it (J/I 0.5 bar, jump + I 1.5 and its spin hits behind you too, K 0.5 + 1, L 1 + 2, O 1 + 2); K, L and O stop halfway unless pressed again (O after sprite 9); U sends a ground wave along the floor that hurts it too (only enemies on the ground). Attacks move the player (`internal/core/attack_step.go`): J steps 45 px back, I and U 45 px forward, K's second part 15 px and O's 45 px forward; L doesn't move. Taking damage makes the player blink red for 1 s; a hit of 2+ hearts knocks them down 1.5 tiles back, 3+ hearts plays the full knockdown and 2 tiles; at 0 HP one of two death animations plays before respawn. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go`, tests pass)
 - Enemies are built from parts, not one Go type per species: a blueprint (stats, clips from one strip pack) plus a movement part (`groundMover`) and an attack part (`meleeAttack`). What an enemy can do is the clips it has (`bp.Has`); `go test ./internal/core -run TestEnemyCapabilities -v` prints the table. A guard trait exists (blocks hits from the front) but no current enemy has guard art. VERIFIED (`internal/core/enemy_types.go`, `enemy_guard.go`)
 - On a touch screen, buttons for every key: arrows bottom-left, attack symbols and a bigger sprint button bottom-right, a menu button top-left (the HUD moves right of it). Idle buttons are half see-through and stay out of the middle third of the screen. VERIFIED (tests; web build with simulated touches; not on a real device)
 - `GameState` (menu/playing/game over) is declared and set to `ModeMenu`, but never read: there is no menu, so the touch menu button and Escape only toggle `InputState.Menu`. VERIFIED (`cmd/main.go`)
@@ -35,14 +35,14 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `3edfa17`, Windows, go1.26.7)
+## Test baseline (at `0c4c596`, Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
-| `go test ./...` | ✅ 120/120 top-level tests pass: 111 in `internal/core`, 9 in `tools/battler2strip` | — |
+| `go test ./...` | ✅ 131/131 top-level tests pass: 122 in `internal/core`, 9 in `tools/battler2strip` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
-| GitHub CI | PR #19: still pending when merged (user watches it) | — |
+| GitHub CI | PR #20 and `main` at `c2c3b87`: green (build, verify ubuntu + windows) | — |
 
 Compare runs **by test name**: `go test ./internal/core -v | grep "^--- "` lists them. Added since the last
 baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAttackSteps`,
@@ -79,5 +79,5 @@ enemy health / level marker tests, and on `feature/enemy-types` the characterisa
 
 ## Next task
 
-- enemy-types task 16: White Golem ([tasks.md](./features/enemy-types/tasks.md)), then 21 to close increment 3 and open a PR.
+- enemy-types task 22: `flyingMover` ([tasks.md](./features/enemy-types/tasks.md)), start of increment 4.
 - Other candidates: draw a real menu for the menu button; crop `UIButtons.png`; touch buttons for jump (Space), F, R, Q; file the J sprite issue; untrack `game.exe`; tests for player physics with collision.
