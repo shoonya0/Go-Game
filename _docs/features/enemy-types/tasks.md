@@ -83,7 +83,7 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
       tile collision → check: `TestFlyingEnemyIgnoresGravity`, `TestFlyingEnemyLeash`
 - [x] 23. Ground wave skips enemies that aren't grounded (`Mover.Grounded`) → check:
       `TestGroundWaveMissesFlyers`
-- [ ] 24. Flying Demon (strips) ~~and Bat (battler)~~ → check: manual look, F3 boxes
+- [x] 24. Flying Demon (strips) ~~and Bat (battler)~~ → check: manual look, F3 boxes
 
 ## Increment 5: more attack styles
 

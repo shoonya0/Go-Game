@@ -4,9 +4,9 @@
 
 - **Status:** 🟡 in progress; increments 1-3 merged (PR #18 `2bc4469`, PR #19 `9124414`,
   PR #20 `c2c3b87`); increment 4 started on `feature/enemy-types` (local, not pushed)
-- **Current task:** task 24 (Flying Demon) in [tasks.md](./tasks.md): built, waiting for the user's look in game (F3 boxes)
+- **Current task:** task 25 (projectiles + a ranged enemy; no strip pack has shooting art, D9) in [tasks.md](./tasks.md)
 - **Stopped at:** tasks 22-23 done; Flying Demon `^` added (row 25, col 14 of level 1, over the first floor).
-  Body 60×90 at Scale 1.5 and `HoverHeight` 20 are guesses to check with F3
+  The user checked the demon in game: "Flying Demon working" (increment 4 done, tasks 22-24)
 - **Traps:** behaviour tests use `testEnemyBlueprint` (enemy_test.go), not a game enemy: change the roster freely; flyer tests use `testFlyerBlueprint` (enemy_fly_test.go). Ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
   `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
   `GuardChance` in [0,1] with a guard clip. No strip pack has a `guard` clip. The mushroom
@@ -28,7 +28,7 @@
 
 - Changed: strips renamed `FlyingDemon_*`; `flyingDemonBlueprint`, `KindFlyingDemon`, `^` in level 1; level test checks flyers keep their height
 - Verified: level test failed first (not placed); swing test lands every bite; it reaches a player under it in the level; `verify.mjs --full` 8/8
-- Next: user looks at it in game (F3), then task 25
+- Next: task 25; the user confirmed "Flying Demon working"
 
 ### 2026-10-24: task 23, ground wave skips flyers
 
