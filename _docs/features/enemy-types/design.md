@@ -31,7 +31,6 @@ and a diver from above without a change to the brain.
 
 | Part | Notes |
 |---|---|
-| ledge probe in `groundMover` | task 12 |
 | `flyingMover` | no gravity, `HoverHeight`, `Leash` (tiles), steers in X and Y, bobbing optional |
 | `waterMover` | later; like flying but clamped to water tiles |
 | `rangedAttack` | spawns a `Projectile` on `FireFrame`; `KeepDistance` |

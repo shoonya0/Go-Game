@@ -48,7 +48,7 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 
 ## Increment 3: ground roster (melee) + guard
 
-- [ ] 12. Ledge probe in `groundMover`: patrol turns at platform edges → check:
+- [x] 12. Ledge probe in `groundMover`: patrol turns at platform edges → check:
       `TestGroundEnemyTurnsAtLedge`
 - [ ] 13. Two-character level markers (D6) → check: `TestQuoteBareMarkers` extended, level loads
 - [ ] 14. Guard trait (D8): `EnemyGuard`, `GuardChance`, front-only block → check:
