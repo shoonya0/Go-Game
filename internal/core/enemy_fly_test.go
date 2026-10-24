@@ -115,3 +115,21 @@ func TestDeadFlyerFalls(t *testing.T) {
 		t.Errorf("dead flyer at y=%v, want fallen to %v", e.Pos.Y, want)
 	}
 }
+
+// TestStrandedFlyerPatrolsWhereItIs: a flyer whose patrol path lies beyond a
+// wall must not pin itself against the wall, turned back toward its path
+// every tick; it patrols where it is instead, like a stranded ground enemy.
+func TestStrandedFlyerPatrolsWhereItIs(t *testing.T) {
+	wall := AABB{X: 400, Y: waveGroundY - 400, Width: LevelTileWidth, Height: 400}
+	qt := waveWorld(0, 1200, wall)
+	e := newTestFlyer(Position{X: 300, Y: waveGroundY - 300})
+	e.spawnX = 1000 // home is past the wall
+	p := farPlayer(e)
+
+	for i := 0; i < 4*int(tps()); i++ {
+		UpdateEnemy(e, p, qt)
+	}
+	if right := e.Pos.X + e.bp.BodyWidth; right > wall.X-20 {
+		t.Errorf("after 4 s: right edge %v, want it to have flown away from the wall at %v (pinned there)", right, wall.X)
+	}
+}
