@@ -86,7 +86,7 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 
 ## Later (not planned yet)
 
-- [ ] Bosses: Striker (`Striker/`, 128×96, dash/jump), Orange Golem (rename files first, D4)
+- [ ] Bosses: Striker (`Striker/`, 96×96, attack 128×96, dash/jump), Orange Golem (rename files first, D4)
 - [ ] Mushroom stun attack (`Mushroom-AttackWithStun`, `Mushroom-Stun`): needs a player stun state
 - [ ] `waterMover` (Sahuagin, crab, water slime are candidates)
 - [ ] `readAsset` by full path instead of base name (project known issue #3)

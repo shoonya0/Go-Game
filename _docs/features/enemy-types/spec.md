@@ -81,7 +81,7 @@ enemy's task). Battler movement/attack choices are proposals (ASSUMED).
 | Turnip | `turnip sheet.png` | battler | ground | melee | |
 | Bat | `Bat_0000_dark.png` | battler | flying | melee | |
 | Training dummy | `training dummy sheet.png` | battler | static | none | practice target |
-| *Boss: Striker* | `Striker/` | strips 128×96 | — | — | **out of scope** |
+| *Boss: Striker* | `Striker/` | strips 96×96 (attack 128×96) | — | — | **out of scope** |
 | *Boss: Orange Golem* | `Orange_Golem/` | strips 90×64 | — | — | **out of scope** |
 
 ## Acceptance criteria
