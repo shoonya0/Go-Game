@@ -1,6 +1,6 @@
-# Go-Game (Pirate Adventure): current state (snapshot 2026-10-24)
+# Go-Game (Pirate Adventure): current state (snapshot 2026-10-25)
 
-Snapshot at `c2c3b87` (`main`, PR #20 merged). One page. Details live in each increment's entry in
+Snapshot at `87b3c60` (`feature/portals`, not pushed; `main` at `f6a311a`, PR #21 merged). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -10,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [portals](./features/portals/state.md) · started 2026-10-24, high priority; increment 1 (see, start at, save at a portal)
+- **Feature:** [portals](./features/portals/state.md) · started 2026-10-24, high priority; increments 1–2 code complete, increment 3 (travel) next
 - **Branch:** `feature/portals`, from `main` at `f6a311a` plus the enemy-types docs commit `f3cb97f`
-- **Next step:** increments 1–2 code complete (2026-10-25): user's look in game (portal, E prompt, enemies back after death), then increment 3 (task 7, levels by name) in [tasks.md](./features/portals/tasks.md). Paused: enemy-types (low priority; increments 1–5 merged, task 25 waits for ranged art). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Next step:** user's look in game (gold portal on the ground, E/tap prompt, enemies back after a death), then increment 3, task 7 (levels by name) in [tasks.md](./features/portals/tasks.md). Paused: enemy-types (low priority; increments 1–5 merged, task 25 waits for ranged art). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -21,7 +21,8 @@ and /feature-docs update. -->
 ## What a user can do today
 
 - Run a 2D side-scrolling platformer natively (Windows) or in the browser (WASM). VERIFIED (CI builds both)
-- Move (WASD), run (Shift; drains 5 stamina/s, exhausted at 0 until 20 regenerates), jump (costs 5 stamina; at 0 stamina the player kneels until 2 bars refill), attack (J/I cost 10 stamina; U 34; O 10, plus 20 for its second part); sprite HUD with 10 hearts + 10 stamina segments; water/larva hazards, fall damage, checkpoints, respawn. VERIFIED (code read, tests)
+- Move (WASD), run (Shift; drains 5 stamina/s, exhausted at 0 until 20 regenerates), jump (costs 5 stamina; at 0 stamina the player kneels until 2 bars refill), attack (J/I cost 10 stamina; U 34; O 10, plus 20 for its second part); sprite HUD with 10 hearts + 10 stamina segments; water/larva hazards, fall damage, respawn. VERIFIED (code read, tests)
+- Portals (on `feature/portals`, not merged): an animated stone portal stands on the ground at every code-`9` cell. A new game starts standing in the first one (reading order), already saved. Standing in a portal shows a pulsing gold button (E, or a tap ring on touch screens); E or a tap on it saves it, walking past does nothing. The saved portal is drawn gold, and a check flashes after a save. Dying respawns the player standing in the saved portal with full health and power, and every non-boss enemy of the level comes back at its spawn (a killed boss would stay dead; no boss kind exists yet). Travel between portals is not built yet. VERIFIED (tests; the user saw the start portal in game, the gold, E prompt and enemy revival not yet)
 - Fight six enemy types in level 1, each placed by a grid marker (one or two punctuation characters): the skeleton in white (`@`) and yellow (`#`), the mushroom (`&`) the White Golem (`%`, slow and heavy; checked by the user in game) and the Flying Demon (`^`, flies within 4 tiles of its spawn and bites; checked by the user in game) and the Smasher (`*`, hangs over you and dives down; checked by the user in game). All patrol, chase and attack; while patrolling they turn at walls and platform edges (chasing ones can still run off); they hit only when your body is inside their attack box. Each deals damage on the frame the weapon connects; the skeleton alternates two attacks. (The succubus and the goblin were removed: their animation didn't look good.) Between swings an enemy stands idle until its cooldown is ready, so no swing misses. Each shows 2 health bars above its head and regenerates 0.1 bar/s; sprites bob, lean and shake when hit (draw-time motion). Skeleton/mushroom checked by the user in game; hit timing not yet. Your attacks hurt it (J/I 0.5 bar, jump + I 1.5 and its spin hits behind you too, K 0.5 + 1, L 1 + 2, O 1 + 2); K, L and O stop halfway unless pressed again (O after sprite 9); U sends a ground wave along the floor that hurts it too (only enemies on the ground). Attacks move the player (`internal/core/attack_step.go`): J steps 45 px back, I and U 45 px forward, K's second part 15 px and O's 45 px forward; L doesn't move. Taking damage makes the player blink red for 1 s; a hit of 2+ hearts knocks them down 1.5 tiles back, 3+ hearts plays the full knockdown and 2 tiles; at 0 HP one of two death animations plays before respawn. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go`, tests pass)
 - Enemies are built from parts, not one Go type per species: a blueprint (stats, clips from one strip pack) plus a movement part (`groundMover`) and an attack part (`meleeAttack`). What an enemy can do is the clips it has (`bp.Has`); `go test ./internal/core -run TestEnemyCapabilities -v` prints the table. A guard trait exists (blocks hits from the front) but no current enemy has guard art. VERIFIED (`internal/core/enemy_types.go`, `enemy_guard.go`)
 - On a touch screen, buttons for every key: arrows bottom-left, attack symbols and a bigger sprint button bottom-right, a menu button top-left (the HUD moves right of it). Idle buttons are half see-through and stay out of the middle third of the screen. VERIFIED (tests; web build with simulated touches; not on a real device)
@@ -34,14 +35,14 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `0c4c596`, Windows, go1.26.7)
+## Test baseline (at `87b3c60`, Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
-| `go test ./...` | ✅ 131/131 top-level tests pass: 122 in `internal/core`, 9 in `tools/battler2strip` | — |
+| `go test ./...` | ✅ 143/143 top-level tests pass: 134 in `internal/core`, 9 in `tools/battler2strip` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
-| GitHub CI | PR #20 and `main` at `c2c3b87`: green (build, verify ubuntu + windows) | — |
+| GitHub CI | `main` at `f6a311a` (PR #21): green. `feature/portals` not pushed yet | — |
 
 Compare runs **by test name**: `go test ./internal/core -v | grep "^--- "` lists them. Added since the last
 baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAttackSteps`,
@@ -49,7 +50,7 @@ baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAtt
 enemy health / level marker tests, and on `feature/enemy-types` the characterisation tests (written against the succubus, now run on the test-only `testEnemyBlueprint`)
 (`internal/core/enemy_behavior_test.go`), the clip tests in `internal/core/enemy_clips_test.go`, hold/motion tests
 (`enemy_motion_test.go`), melee hit-frame tests (`enemy_attack_test.go`), `TestBlueprintsValid`, and the baking tool's tests
-(`tools/battler2strip/bake_test.go`), the ledge, marker and guard tests (`TestGroundEnemyTurnsAtLedge`, `TestTwoCharMarkerIsOneCell`, `enemy_guard_test.go`), the capability tests (`TestBlueprintHasOwnArtOnly`, `TestEnemyCapabilities`), `TestAssetBaseNamesUnique` and `TestLevelEnemiesKeepTheirGround`.
+(`tools/battler2strip/bake_test.go`), the ledge, marker and guard tests (`TestGroundEnemyTurnsAtLedge`, `TestTwoCharMarkerIsOneCell`, `enemy_guard_test.go`), the capability tests (`TestBlueprintHasOwnArtOnly`, `TestEnemyCapabilities`), `TestAssetBaseNamesUnique` and `TestLevelEnemiesKeepTheirGround`; on `feature/portals` the portal tests (`internal/core/portal_test.go`: sheet frames, standing on the ground, start, golden saved portal, E/tap saving, respawn), `TestTouchTapOffButtons` and `enemy_revive_test.go`.
 
 ## Known issues and risks
 
@@ -64,7 +65,7 @@ enemy health / level marker tests, and on `feature/enemy-types` the characterisa
 9. `assets/UI/UIButtons.png` is 3.1 MB and embedded in the WASM, though touch controls use only three of its sprites; cropping it would shrink the phone download. VERIFIED (`du`)
 10. The ground J sprite slashes behind the player, and J now steps back into it. Issue not filed. VERIFIED (sprite sheet)
 11. The full knockdown (`KnockedOut`) still draws from row 17 while the short one uses row 16. ASSUMED (not rechecked this session)
-12. `//go:embed enemy` embeds every file on disk, untracked ones included, so local builds carry untracked enemy art that CI and Render don't (31 untracked files: 5 enemy packs, `levels/portal.png`, `player/SkeletonIdle.gif`; the portal and GIF are planned, keep them). The raw battler sheets are gone: moved out of the embed (task 11), then deleted (enemy-types D9). VERIFIED (`git ls-files`)
+12. `//go:embed enemy` embeds every file on disk, untracked ones included, so local builds carry untracked enemy art that CI and Render don't (13 untracked files: the Orange Golem and Striker packs and `player/SkeletonIdle.gif`, kept for later; `levels/portal.png` is committed now). The raw battler sheets are gone: moved out of the embed (task 11), then deleted (enemy-types D9). VERIFIED (`git ls-files`)
 13. The Stop hook (`.claude/hooks/stop-state.mjs`) and docs-check's "stale state" warning fire while untracked files sit under a feature's `scope:` (`assets/enemy/*`), even right after state.md was committed. Noise until those assets are committed or the check ignores untracked files. VERIFIED (this session)
 14. ~~Enemies have no ledge probe~~ Patrolling enemies turn at ledges (task 12), and one stranded off its patrol path patrols where it is (`3edfa17`); a chasing enemy can still run off a ledge. VERIFIED (`TestGroundEnemyTurnsAtLedge`)
 15. `LBackground_1.png` and `LBackground_2.png` (2.6 MB) are embedded but not loaded; only `LBackground_3.png` is. Kept on purpose (user). VERIFIED (code read)
@@ -78,5 +79,5 @@ enemy health / level marker tests, and on `feature/enemy-types` the characterisa
 
 ## Next task
 
-- enemy-types task 22: `flyingMover` ([tasks.md](./features/enemy-types/tasks.md)), start of increment 4.
+- portals task 7: levels by name, switch the current level ([tasks.md](./features/portals/tasks.md)), start of increment 3 (travel).
 - Other candidates: draw a real menu for the menu button; crop `UIButtons.png`; touch buttons for jump (Space), F, R, Q; file the J sprite issue; untrack `game.exe`; tests for player physics with collision.
