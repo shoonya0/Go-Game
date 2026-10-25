@@ -37,6 +37,9 @@
 
 ## Later (not planned yet)
 
+- [ ] On the tick of a travel or cross-level respawn the camera and the prompt still belong to the
+      old place (`UpdateCamera` runs before `Respawned`/`Travel` in `cmd/main.go`): one wrong frame
+
 - [ ] Keep saved portals across game restarts (file on Windows, browser storage on the web)
 - [ ] A second level to travel to (add it to `Levels` in levels.go; its background needs a unique file name)
 - [x] `portal.png` halved to 1597×672 (3.6 MB → 1.0 MB; cells 336 px tall, ~2.8× the drawn 120 px)
