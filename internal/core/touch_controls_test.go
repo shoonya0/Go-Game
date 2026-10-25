@@ -149,3 +149,34 @@ func TestTouchButtonsStayOutOfPlayerArea(t *testing.T) {
 		}
 	}
 }
+
+// TestTouchTapOffButtons: a touch that starts on no button is a tap (at its
+// screen point) on that frame only, even while a button is held; touches that
+// start on a button, or are only held, never are.
+func TestTouchTapOffButtons(t *testing.T) {
+	tc := NewTouchControls(1360, 768)
+	free := image.Pt(680, 300)
+	weak := touchCenter(tc, TouchWeak)
+
+	var in InputState
+	tc.Update([]image.Point{weak, free})
+	tc.Started([]image.Point{free})
+	tc.Apply(&in)
+	if !in.Tapped || in.TapAt != (Position{X: 680, Y: 300}) || !tc.held[TouchWeak] {
+		t.Fatalf("new touch off the buttons beside a held J: tapped=%v at %v, want a tap at (680, 300)", in.Tapped, in.TapAt)
+	}
+
+	tc.Update([]image.Point{weak, free})
+	tc.Started(nil)
+	tc.Apply(&in)
+	if in.Tapped {
+		t.Error("a held touch tapped again")
+	}
+
+	tc.Update([]image.Point{weak})
+	tc.Started([]image.Point{weak})
+	tc.Apply(&in)
+	if in.Tapped {
+		t.Error("a button press counted as a tap")
+	}
+}

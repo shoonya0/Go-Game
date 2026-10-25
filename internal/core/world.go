@@ -55,8 +55,8 @@ type Tile struct {
 	TileType TileType // eg:= grass ,ice ,sand etc.
 }
 
-// CheckpointCode is the grid value that marks a (non-solid) respawn point.
-const CheckpointCode = 9
+// PortalCode is the grid value that marks a (non-solid) respawn point.
+const PortalCode = 9
 
 // ---------------- platform ----------------
 type Platform struct {
@@ -65,22 +65,51 @@ type Platform struct {
 	DrawOffsetY         float64 // this is the draw offset for the tile
 }
 
-// Checkpoint is a respawn location the player activates by touching it.
-type Checkpoint struct {
-	Pos Position
+// Portal is a respawn point and a gateway to the other active portals. The
+// player activates it by using it (E or a tap).
+type Portal struct {
+	Pos       Position
+	FloorDrop float64 // how far the ground's solid top sits below the cell (a top tile's margin)
+	Level     string  // name of the level it stands in (set by World)
 }
 
-// Bounds returns the checkpoint's one-tile activation zone.
-func (c Checkpoint) Bounds() AABB {
-	return AABB{X: c.Pos.X, Y: c.Pos.Y, Width: LevelTileWidth, Height: LevelTileHeight}
+// PortalRef names a portal across levels: its level and its cell.
+type PortalRef struct {
+	Level string
+	Cell  Position // the portal's Pos
+}
+
+// Ref returns the name of this portal across levels.
+func (c Portal) Ref() PortalRef { return PortalRef{Level: c.Level, Cell: c.Pos} }
+
+// floorY is the world y of the ground the portal stands on.
+func (c Portal) floorY() float64 { return c.Pos.Y + LevelTileHeight + c.FloorDrop }
+
+// Bounds returns the portal's area: its doorway, centered on its grid cell
+// (Pos is the cell's top-left) and standing on the ground below it.
+func (c Portal) Bounds() AABB {
+	return AABB{
+		X:     c.Pos.X + (LevelTileWidth-portalWidth)/2,
+		Y:     c.floorY() - portalHeight,
+		Width: portalWidth, Height: portalHeight,
+	}
+}
+
+// StandPos returns the player position (body top-left) that stands the player
+// in the middle of the portal, feet on the ground below it.
+func (c Portal) StandPos() Position {
+	return Position{
+		X: c.Pos.X + (LevelTileWidth-bodyWidth)/2,
+		Y: c.floorY() - bodyHeight,
+	}
 }
 
 // Level is the built, ready-to-use result of loading a level: its solid
-// platforms, its checkpoints and where its enemies spawn.
+// platforms, its portals and where its enemies spawn.
 type Level struct {
-	Platforms   []Platform
-	Checkpoints []Checkpoint
-	Enemies     []EnemySpawn
+	Platforms []Platform
+	Portals   []Portal
+	Enemies   []EnemySpawn
 }
 
 var Tiles map[TileType][2]Tile
@@ -230,7 +259,7 @@ func LoadLevel(path, name string) Level {
 }
 
 // BuildLevel converts a grid of tile codes into a Level: one solid Platform per
-// non-empty tile cell, plus a Checkpoint per CheckpointCode cell. It is a pure
+// non-empty tile cell, plus a Portal per PortalCode cell. It is a pure
 // function of its input, so it is easy to test and reuse independently of asset
 // loading.
 func BuildLevel(grid [][]int) Level {
@@ -243,13 +272,16 @@ func BuildLevel(grid [][]int) Level {
 		for x := range grid[y] {
 			code := grid[y][x]
 
-			if code == CheckpointCode {
-				level.Checkpoints = append(level.Checkpoints, Checkpoint{
-					Pos: Position{X: float64(x * LevelTileWidth), Y: float64(y * LevelTileHeight)},
-				})
+			if code == PortalCode {
+				portal := Portal{Pos: Position{X: float64(x * LevelTileWidth), Y: float64(y * LevelTileHeight)}}
+				// The cell below is a top tile (a portal is non-solid), nudged down by its margin.
+				if hasVisualOffset(tileTypeFromCode(cellAt(grid, x, y+1))) {
+					portal.FloorDrop = TopTileVisualOffset
+				}
+				level.Portals = append(level.Portals, portal)
 			}
 
-			// Checkpoint cells are non-solid (code 9 maps to Empty), so no platform.
+			// Portal cells are non-solid (code 9 maps to Empty), so no platform.
 			tileType := tileTypeFromCode(code)
 			if tileType != Empty {
 				level.Platforms = append(level.Platforms, getTileInfo(x, y, tileType, grid, prevPlat))
@@ -264,7 +296,9 @@ func BuildLevel(grid [][]int) Level {
 	return level
 }
 
-func (player *PlayerRuntime) DrawParallaxBackground(screen *ebiten.Image, background *ebiten.Image, screenWidth, screenHeight float64) {
+// DrawParallaxBackground scrolls the background with the camera's progress
+// across a level levelWidth wide.
+func (player *PlayerRuntime) DrawParallaxBackground(screen *ebiten.Image, background *ebiten.Image, screenWidth, screenHeight, levelWidth float64) {
 	bgW := background.Bounds().Dx()
 	bgH := background.Bounds().Dy()
 
@@ -276,8 +310,7 @@ func (player *PlayerRuntime) DrawParallaxBackground(screen *ebiten.Image, backgr
 	scaledW := float64(bgW) * scale
 
 	// Calculate offset based on camera position relative to total level width
-	maxLevelWidth := float64(Level_1_Width)
-	maxCamX := maxLevelWidth - screenWidth
+	maxCamX := levelWidth - screenWidth
 	if maxCamX < 1 {
 		maxCamX = 1
 	}

@@ -15,7 +15,7 @@ func TestSplitGridEnemyMarkers(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if grid[0][1] != 0 || grid[0][2] != CheckpointCode || grid[1][0] != 2 {
+	if grid[0][1] != 0 || grid[0][2] != PortalCode || grid[1][0] != 2 {
 		t.Errorf("tile grid = %v, want marker cell empty and other codes kept", grid)
 	}
 	if len(spawns) != 1 || spawns[0].Kind != KindSkeletonWhite {

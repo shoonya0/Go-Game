@@ -62,9 +62,22 @@ func InitPlayer(img *ebiten.Image) *PlayerRuntime {
 			CoyoteMs:     CoyoteMs,
 			AirJumpsLeft: AirJumpsLeft,
 		},
-		Combat:       newCombat(),
-		CheckpointID: "default",
+		Combat:   newCombat(),
+		atPortal: -1,
 	}
+}
+
+// StartAt places the player in the level's start portal, its first in reading
+// order (BuildLevel scans top row first), activated and saved as the
+// checkpoint. A level without portals keeps the default spawn.
+func (player *PlayerRuntime) StartAt(level Level) {
+	if len(level.Portals) == 0 {
+		return
+	}
+	start := level.Portals[0]
+	player.Pos = start.StandPos()
+	player.activatePortal(start)
+	player.fallPeakY = player.Pos.Y
 }
 
 // Approach moves current toward target by at most maxDelta, without overshoot.
@@ -119,8 +132,8 @@ func (player *PlayerRuntime) canMove() bool {
 }
 
 // UpdatePlayer advances the player one tick: input, physics, collision, state and
-// combat (power regen/run drain, hazard/fall damage, checkpoint respawn).
-func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, checkpoints []Checkpoint) {
+// combat (power regen/run drain, hazard/fall damage, portal respawn).
+func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, portals []Portal) {
 	player.PreviousState = PlayerState{CurrentState: PlayerStateType(player.State.GetPlayerState())}
 
 	player.applyHorizontalMovement(in)
@@ -133,7 +146,8 @@ func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, ch
 	player.queueCombo(in)
 
 	player.updateStamina()
-	player.updateCombat(qt, checkpoints, onGround)
+	player.updateCombat(qt, onGround)
+	player.updatePortals(portals, in)
 
 	if qt != nil {
 		qt.Update(player)

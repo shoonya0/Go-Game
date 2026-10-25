@@ -1,6 +1,9 @@
 package core
 
-import "math"
+import (
+	"math"
+	"slices"
+)
 
 // ------------------------ combat constants ------------------------
 const (
@@ -97,11 +100,10 @@ func (p *PlayerRuntime) updateStamina() {
 	}
 }
 
-// updateCombat applies checkpoint pickups, environmental damage and fall damage
+// updateCombat applies portal saves, environmental damage and fall damage
 // for this tick, then starts a death animation if health has run out.
-func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, checkpoints []Checkpoint, onGround bool) {
+func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, onGround bool) {
 	p.damageFlash = math.Max(p.damageFlash-deltaTime(), 0)
-	p.updateCheckpoints(checkpoints)
 
 	inWater, inLarva := p.scanHazards(qt)
 	p.applyFallDamage(onGround, inWater)
@@ -132,15 +134,81 @@ func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, checkpoints []Checkpoi
 	}
 }
 
-// updateCheckpoints promotes the last checkpoint the player is overlapping to the
-// active respawn point.
-func (p *PlayerRuntime) updateCheckpoints(checkpoints []Checkpoint) {
+// updatePortals finds the portal the player stands in and, when the player
+// uses it (E, or a tap on it on touch screens), activates it and makes it the
+// checkpoint. Holding E, or the touch, there for travelHoldSeconds asks for the
+// travel menu (TravelAsked). Walking past does nothing, and so does anything
+// while dying: travel would cut the death short and replay it there.
+func (p *PlayerRuntime) updatePortals(portals []Portal, in *InputState) {
+	p.savedNote = max(0, p.savedNote-deltaTime())
+	p.travelAsked = false
+	p.atPortal = -1
+	if p.State.IsDying() {
+		return
+	}
 	body := p.GetBounds()
-	for _, cp := range checkpoints {
+	for i, cp := range portals {
 		if body.Intersects(cp.Bounds()) {
-			p.RespawnPos = cp.Pos
+			p.atPortal = i
 		}
 	}
+	if p.atPortal < 0 {
+		return
+	}
+	cp := portals[p.atPortal]
+	p.atPortalRef = cp.Ref()
+	onPortal := cp.tapArea().Contains(in.TapAt.X+p.Camera.Pos.X, in.TapAt.Y+p.Camera.Pos.Y)
+	if in.Interact || (in.Tapped && onPortal) {
+		p.activatePortal(cp)
+		p.savedNote = portalSavedSeconds
+	}
+	hold := travelHoldTicks()
+	p.travelAsked = in.InteractTicks == hold || (in.TouchHoldTicks == hold && onPortal)
+	if p.travelAsked { // the press may have started outside: a hold saves too (D8)
+		p.activatePortal(cp)
+	}
+}
+
+// standingIn returns the portal the player stands in, or nil.
+func (p *PlayerRuntime) standingIn() *PortalRef {
+	if p.atPortal < 0 {
+		return nil
+	}
+	return &p.atPortalRef
+}
+
+// TravelAsked reports whether the player asked for the travel menu this tick.
+func (p *PlayerRuntime) TravelAsked() bool { return p.travelAsked }
+
+// activatePortal adds c to the active portals (once) and makes it the
+// checkpoint: the player respawns standing in it.
+func (p *PlayerRuntime) activatePortal(c Portal) {
+	ref := c.Ref()
+	if !slices.Contains(p.ActivePortals, ref) {
+		p.ActivePortals = append(p.ActivePortals, ref)
+	}
+	p.Checkpoint = ref
+	p.RespawnPos = c.StandPos()
+}
+
+// PortalLook is how a portal is drawn: still, swirling, or golden (D7).
+type PortalLook int
+
+const (
+	PortalInactive   PortalLook = iota // never used: one still frame
+	PortalActive                       // used: the loop in its own colors
+	PortalCheckpoint                   // the respawn point: the loop in gold
+)
+
+// PortalLook returns how portal c looks to this player.
+func (p *PlayerRuntime) PortalLook(c Portal) PortalLook {
+	switch ref := c.Ref(); {
+	case len(p.ActivePortals) > 0 && ref == p.Checkpoint:
+		return PortalCheckpoint
+	case slices.Contains(p.ActivePortals, ref):
+		return PortalActive
+	}
+	return PortalInactive
 }
 
 // scanHazards reports whether the player is touching water or larva tiles. The
@@ -191,22 +259,29 @@ func (p *PlayerRuntime) applyFallDamage(onGround, inWater bool) {
 	p.groundedPrev = onGround
 }
 
-// respawn returns the player to the active checkpoint with full pools.
+// respawn returns the player to the active portal with full pools.
 func (p *PlayerRuntime) respawn() {
-	p.Pos = p.RespawnPos
+	p.placeAt(p.RespawnPos)
+	p.Respawns++
 	p.Combat.Health = p.Combat.MaxHealth
 	p.Combat.Power = p.Combat.MaxPower
+	p.exhausted = false
+	p.damageFlash = 0
+}
+
+// placeAt puts the player at pos standing still and idle, as if just arrived:
+// no fall, hazard or push carries over.
+func (p *PlayerRuntime) placeAt(pos Position) {
+	p.Pos = pos
 	p.Physics.VelX = 0
 	p.Physics.VelY = 0
 	p.State.SetPlayerState(int(PlayerStateIdle))
-	p.fallPeakY = p.RespawnPos.Y
+	p.fallPeakY = pos.Y
 	p.groundedPrev = false
 	p.wasInLarva = false
 	p.waterDamageAccum = 0
 	p.inWater = false
 	p.running = false
-	p.exhausted = false
-	p.damageFlash = 0
 	p.knockTicks = 0
 }
 

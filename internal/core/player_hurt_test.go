@@ -114,7 +114,7 @@ func TestDeathPlaysAnimationThenRespawns(t *testing.T) {
 		p.RespawnPos = Position{X: 7, Y: 9}
 
 		p.ApplyDamage(p.Combat.Health) // lethal, and heavy: no knockdown when dying
-		p.updateCombat(nil, nil, true)
+		p.updateCombat(nil, true)
 		if p.State.CurrentState != c.want {
 			t.Fatalf("kneel=%v: state=%d, want %d", c.kneel, p.State.CurrentState, c.want)
 		}

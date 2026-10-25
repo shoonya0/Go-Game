@@ -1,10 +1,10 @@
 # Enemy types: state
 
-## Now (updated 2026-10-24 at `0c4c596`)
+## Now (updated 2026-10-25 at `407599c`)
 
-- **Status:** 🟡 in progress; increments 1-3 merged (PR #18 `2bc4469`, PR #19 `9124414`,
-  PR #20 `c2c3b87`); increment 4 started on `feature/enemy-types` (local, not pushed)
-- **Current task:** task 27 (PR for increments 4-5) in [tasks.md](./tasks.md); task 25 stays open, blocked on ranged art
+- **Status:** 🟡 in progress; increments 1-5 merged except task 25 (PR #18 `2bc4469`, #19 `9124414`,
+  #20 `c2c3b87`, #21 `f6a311a`, merged by the user); fresh `feature/enemy-types` from `main`
+- **Current task:** paused, low priority (the user, 2026-10-24: portals first). Portals added `EnemyBlueprint.Boss` and `RespawnEnemies` (`407599c`, level_enemies.go): a new boss kind sets `Boss: true`. None ready: task 25 (projectiles, ranged enemy) is blocked on art with a shooting clip; or the "Later" list in [tasks.md](./tasks.md)
 - **Stopped at:** tasks 22-23 done; Flying Demon `^` added (row 25, col 14 of level 1, over the first floor).
   The user checked the demon in game (increment 4 done). Smasher `*` added (row 25, col 38): body 56×80,
   `HoverHeight` 160, `FallSpeed` 700 are first guesses. Task 25 waits for ranged art. Task 27 partly done:
@@ -26,6 +26,18 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-25: portals work in this scope
+
+- Changed (by the portals feature): `EnemyBlueprint.Boss`, `RespawnEnemies` + `enemy_revive_test.go`
+- Verified: `TestRespawnRevivesEnemies`, `TestKilledBossStaysDead` failed first (build); `verify.mjs --full` 8/8
+- Docs touched: state
+
+### 2026-10-24: increments 4-5 merged
+
+- Changed: PR #21 merged by the user (`f6a311a`); remote branch gone, local `main` synced, `feature/enemy-types` restarted from it
+- Verified: `verify.mjs --full` 8/8 before the push; branch was up to date with `main`
+- Next: task 25 when ranged art exists, or a "Later" item (bosses, mushroom stun)
+
 ### 2026-10-24: task 27 checks (partial)
 
 - Changed: flyer wall-pin fix in `flyingMover.Move` + `TestStrandedFlyerPatrolsWhereItIs` (review note)
@@ -43,15 +55,3 @@
 - Changed: strips renamed `FlyingDemon_*`; `flyingDemonBlueprint`, `KindFlyingDemon`, `^` in level 1; level test checks flyers keep their height
 - Verified: level test failed first (not placed); swing test lands every bite; it reaches a player under it in the level; `verify.mjs --full` 8/8
 - Next: task 25; the user confirmed "Flying Demon working"
-
-### 2026-10-24: task 23, ground wave skips flyers
-
-- Changed: `GroundWave.update` skips enemies not `Grounded`; test helper `standOnWaveFloor` (sets `onGround`), used by the two wave-hit tests
-- Verified: `TestGroundWaveMissesFlyers` failed first (flyer hit); without `onGround` in the helper the 2 old tests fail; `verify.mjs` 5/5
-- Next: task 24, Flying Demon
-
-### 2026-10-24: task 22, flyingMover
-
-- Changed: `spawnY` + `dy` in the move intent, `turnAtPathEnd`; new `flyingMover` (leash box, `HoverHeight`, dead flyers fall)
-- Verified: tests failed first (build); mutations (gravity on, leash off) caught; `verify.mjs` 5/5; 125 tests pass
-- Next: task 23, ground wave skips flyers
