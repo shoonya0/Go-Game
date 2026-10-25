@@ -1,0 +1,7 @@
+{
+    // Level grids keep one row per line, and their bare enemy markers (^ @ # ...)
+    // are not valid JSON: treat them as plain text so no JSON formatter rewrites them.
+    "files.associations": {
+        "**/assets/levels/**/*.json": "plaintext"
+    }
+}
