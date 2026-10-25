@@ -89,3 +89,35 @@ func TestSaveContinueMissingCheckpoint(t *testing.T) {
 		}
 	}
 }
+
+// TestSaveAutosaveOnChangeOnly: the start portal is due once; after it is
+// written nothing is due until a portal is saved or the checkpoint moves.
+func TestSaveAutosaveOnChangeOnly(t *testing.T) {
+	WorldInit()
+	w, err := NewWorld(StartLevel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := InitPlayer(nil)
+	p.StartAt(w.Level)
+	start, last := w.Level.Portals[0], w.Level.Portals[len(w.Level.Portals)-1]
+
+	var a Autosave
+	s, due := a.Due(p)
+	if !due || s.Checkpoint != start.Ref() {
+		t.Fatalf("new game: due %v with checkpoint %v, want the start portal due", due, s.Checkpoint)
+	}
+	a.Written(s)
+	if _, due := a.Due(p); due {
+		t.Error("nothing changed: due, want not")
+	}
+	p.activatePortal(last)
+	if s, due = a.Due(p); !due || s.Checkpoint != last.Ref() {
+		t.Errorf("portal saved: due %v with checkpoint %v, want %v due", due, s.Checkpoint, last.Ref())
+	}
+	a.Written(s)
+	p.activatePortal(start) // back to an old portal: only the checkpoint moves
+	if _, due := a.Due(p); !due {
+		t.Error("checkpoint moved: not due, want due")
+	}
+}

@@ -32,6 +32,8 @@ type Game struct {
 	travel         *core.TravelMenu // opened by holding E (or a touch) at a portal
 	view           *ebiten.Image    // scratch screen for drawing a portal's thumbnail
 
+	autosave core.Autosave // writes the progress when it changes
+
 	showHitboxes bool // debug overlay, toggled with F3
 }
 
@@ -49,6 +51,7 @@ func NewGame() *Game {
 
 	player := core.InitPlayer(core.LoadImage(playerSpriteSheetPath))
 	player.StartAt(world.Level)
+	continueSave(world, player) // until the title screen's Continue exists
 
 	g := &Game{
 		state:   core.ModeMenu,
@@ -62,6 +65,38 @@ func NewGame() *Game {
 	}
 	g.syncBackground()
 	return g
+}
+
+// continueSave puts the player where the stored save left off. A missing or
+// unreadable save leaves the new game as it is.
+func continueSave(world *core.World, player *core.PlayerRuntime) {
+	data, ok := system.LoadRecord(core.SaveKey)
+	if !ok {
+		return
+	}
+	s, err := core.DecodeSave(data)
+	if err == nil {
+		err = world.Continue(player, s)
+	}
+	if err != nil {
+		log.Printf("save ignored: %v", err)
+	}
+}
+
+// saveProgress stores the player's progress when it changed since the last write.
+func (g *Game) saveProgress() {
+	s, due := g.autosave.Due(g.player)
+	if !due {
+		return
+	}
+	data, err := core.EncodeSave(s)
+	if err == nil {
+		err = system.StoreRecord(core.SaveKey, data)
+	}
+	if err != nil {
+		log.Printf("save: %v", err)
+	}
+	g.autosave.Written(s) // also on failure: retrying every tick would only spam the log
 }
 
 // syncBackground loads the current level's background when it changed.
@@ -105,6 +140,7 @@ func (g *Game) Update() error {
 	g.portals.Update()
 	g.captureThumbs()
 	g.travel.MaybeOpen(g.player, &g.input)
+	g.saveProgress()
 
 	return nil
 }

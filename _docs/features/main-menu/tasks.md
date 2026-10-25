@@ -7,7 +7,7 @@
   check: `go test ./internal/core -run TestSave -v`
 - [x] 2. Storage in `internal/system`: file on desktop, `localStorage` on the web (build
   tags) → check: `go test ./internal/system -run TestSaveFile -v`, `node scripts/verify.mjs --full`
-- [ ] 3. Autosave from `cmd/main.go` on portal save / travel (D3) → check: test + manual restart
+- [x] 3. Autosave from `cmd/main.go` on portal save / travel (D3) → check: test + manual restart
 
 ## Increment 2: title screen
 

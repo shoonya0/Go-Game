@@ -86,3 +86,23 @@ func (w *World) Continue(p *PlayerRuntime, s SaveData) error {
 	}
 	return nil
 }
+
+// Autosave tells when the player's progress differs from the last one
+// written, so the game saves on a change only (main-menu D3).
+type Autosave struct {
+	last    SaveData
+	written bool
+}
+
+// Due returns p's progress and true when it differs from the last one marked
+// written. The caller stores it, then calls Written.
+func (a *Autosave) Due(p *PlayerRuntime) (SaveData, bool) {
+	s := p.Snapshot()
+	if a.written && s.Checkpoint == a.last.Checkpoint && slices.Equal(s.ActivePortals, a.last.ActivePortals) {
+		return SaveData{}, false
+	}
+	return s, true
+}
+
+// Written marks s as the progress in storage.
+func (a *Autosave) Written(s SaveData) { a.last, a.written = s, true }
