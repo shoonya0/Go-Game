@@ -22,15 +22,15 @@
 
 - [x] 7. Levels by name: the game holds the current level and can switch to another
       (platforms, portals, enemies, background) → check: `TestSwitchLevel`
-- [ ] 8a. Portal looks (D7): inactive = one still frame, active = loop, checkpoint = gold;
+- [x] 8a. Portal looks (D7): inactive = one still frame, active = loop, checkpoint = gold;
       E/tap activates and makes it the checkpoint; active portals remembered by level + cell
       → check: `TestPortalActivatesOnInteract`, `TestPortalLooks`, manual look
-- [ ] 8b. Hold E 0.5 s, or a long press on the portal, opens the travel menu (D8); up/down
+- [x] 8b. Hold E 0.5 s, or a long press on the portal, opens the travel menu (D8); up/down
       pick, E/Enter travel, Esc or a tap outside closes; the game pauses while it is open
-      → check: `TestHoldEOpensTravelMenu`, `TestTravelMenuListsActivePortals`
+      → check: `TestHoldEOpensTravelMenu`, `TestTravelMenuListsActivePortals`, `TestTouchHoldFollowsTheFinger`
 - [ ] 8c. Menu draws a column of thumbnails (D9), captured when a portal is activated; the
       checkpoint framed gold → check: manual look (PC and touch)
-- [ ] 8d. Picking a portal travels there (switching level if needed); death respawns in the
+- [x] 8d. Picking a portal travels there (switching level if needed); death respawns in the
       checkpoint's level → check: `TestTravelMovesPlayer`, `TestRespawnInCheckpointLevel`
 - [ ] 9. Entering a level revives its non-boss enemies → check: `TestEnteringLevelRevivesEnemies`
 - [ ] 10. `verify.mjs --full`, web smoke check, `/code-review`, docs update, PR (ask before merge)
@@ -38,7 +38,7 @@
 ## Later (not planned yet)
 
 - [ ] Keep saved portals across game restarts (file on Windows, browser storage on the web)
-- [ ] A second level to travel to
+- [ ] A second level to travel to (add it to `Levels` in levels.go; its background needs a unique file name)
 - [ ] `portal.png` is 3.6 MB (was 5.6) but drawn 150 px tall: a 3× smaller copy would cut the web download
 - [ ] `portal.png` has an AI sparkle mark in its bottom-right corner (inside the last frame's
       cell): crop it out of the asset

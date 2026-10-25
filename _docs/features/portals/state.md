@@ -1,25 +1,31 @@
 # Portals: state
 
-## Now (updated 2026-10-25 at `6a3446e`)
+## Now (updated 2026-10-25 at `32c0bda`)
 
-- **Status:** 🟡 in progress; increments 1–2 code complete, increment 3 task 7 done. Still waiting
-  for the user's look in game: tasks 1 and 3 (gold, ground, E/tap prompt) and enemies coming back
-  after a death. Next: task 8 (travel menu) in [tasks.md](./tasks.md)
-- **Stopped at:** `World` (levels.go) holds the current level (platforms, quadtree, portals,
-  enemies); `Levels` names each level (file, key, background, size); `SwitchLevel(name)` rebuilds
-  it and gives a level visited before its enemies back as left (task 9 turns that into
-  `RespawnEnemies`, so killed bosses stay dead). main.go uses `g.world`; `syncBackground` reloads
-  the background when `world.Def.Background` changes: call it after travel. Nothing switches yet
-- **Open questions / blockers:** D3 (E saves and opens the menu in one press) to confirm in play.
-  Task 8: the respawn point is a bare `Position`, so a saved portal needs its level name too.
-  `portal.png` is 3.6 MB but drawn 150 px tall (asset change, ask the user).
-  `_asset_backups/` (untracked) is the user's own folder: never commit it
-- **Don't forget:** level sizes come from `LevelDef` (6000×2040 for level 1), not the grid (36×~100
-  cells = 6060×2160): computing them would shift the camera. The portal sheet's cells drift, so
-  frames are cropped to their art. Code 9 is non-solid. The game has no font: UI symbols are
-  vector icons (`touch_icons.go`)
+- **Status:** 🟡 in progress; user's redesign (D7–D9) built: tasks 7, 8a, 8b, 8d done, 8c (menu
+  thumbnails) waits for the user's look. Next: user's look in game, then task 9 in [tasks.md](./tasks.md)
+- **Stopped at:** looks by `PlayerRuntime.PortalLook` (inactive = frame 0, active = loop,
+  checkpoint = gold); E/tap `activatePortal` (adds to `ActivePortals`, sets `Checkpoint`).
+  `TravelAsked()` fires once when `InputState.InteractTicks` or a `TouchHoldTicks` on the portal
+  reaches `travelHoldTicks()` (0.5 s); main opens `TravelMenu` and pauses. Thumbnails: main's
+  `captureThumbs` draws the scene around a newly active portal into `g.view`, `SetThumb` shrinks it.
+  `World.Travel` / `World.Respawned` (levels.go) move between levels
+- **Open questions / blockers:** web check: synthetic key events don't reach the game in
+  agent-browser, so the menu was not seen there; the build loads and the start portal is gold.
+  Task 9: `SwitchLevel` brings a level's enemies back as left; it should revive non-bosses.
+  `portal.png` is 3.6 MB (ask the user). `_asset_backups/` is the user's: never commit it
+- **Don't forget:** Esc both closes the menu (`Back`) and toggles `InputState.Menu` (no menu
+  reads it yet). A thumbnail is taken once, so it shows the portal as it looked then. Level
+  sizes come from `LevelDef`, not the grid. Code 9 is non-solid. No font: UI symbols are vector
+  icons (`touch_icons.go`)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-25: user's redesign, looks + hold-E travel menu (8a–8d)
+
+- Changed: D7–D9, spec; `PortalRef`, `PortalLook`, `activatePortal`; input hold ticks, touch hold; `travel_menu.go`; `World.Travel/Respawned`; main wiring
+- Verified: new tests failed first (build), then pass; `verify.mjs --full` 8/8; web: loads, gold start portal, no console errors
+- Docs touched: decisions, spec, tasks, state, current-state, architecture
 
 ### 2026-10-25: task 7, levels by name
 
@@ -44,9 +50,3 @@
 - Changed: `InputState.Interact/Tapped/TapAt`, E in system/Input.go, touch taps, `updatePortals(…, in)`, `AABB.Contains`, `DrawPrompt` icons
 - Verified: `TestPortalSavesOnlyOnInteract`, `TestTapOnPortalSaves`, `TestTouchTapOffButtons` failed first (build); `verify.mjs --full` 8/8; `code-reviewer`: no blockers, 3 notes fixed (just-pressed taps, tap area over the prompt, 2 tests)
 - Docs touched: state
-
-### 2026-10-25: golden saved portal
-
-- Changed: `savedPortalTint` + `Draw(…, respawn, …)` (portal.go), `Portal.SavedBy`, `updatePortals` saves `StandPos`; user's `portal.png` fix committed
-- Verified: `TestOnlySavedPortalIsGolden` failed first (build); `verify.mjs --full` 8/8; gold previewed offline
-- Docs touched: decisions (D6), tasks, state
