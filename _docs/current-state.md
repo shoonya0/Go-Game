@@ -10,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** none active. Last done: [portals](./features/portals/state.md), merged 2026-10-25 (PR #22). Paused: enemy-types (low priority; task 25 waits for ranged art)
-- **Branch:** `main` at `6c50e76` (PR #23 merged too: `.vscode/settings.json` makes the editor treat level grids as plain text)
-- **Next step:** pick the next task (see "Next task" below). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Feature:** [main-menu](./features/main-menu/state.md) · Increment 1 (save across restarts), task 1. Started 2026-10-25. Next after it: more levels (own feature). Paused: enemy-types (low priority; task 25 waits for ranged art)
+- **Branch:** `feature/main-menu` from `main` at `aaa849c`
+- **Next step:** task 1 in [tasks](./features/main-menu/tasks.md). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
