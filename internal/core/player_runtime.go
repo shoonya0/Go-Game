@@ -47,6 +47,7 @@ type PlayerRuntime struct {
 	Combat       Combat
 	CheckpointID string
 	RespawnPos   Position // where respawn() places the player (active checkpoint)
+	Respawns     int      // times the player has respawned; the game revives enemies when it changes
 
 	// Combat bookkeeping (not for external use).
 	fallPeakY        float64 // highest point (min Y) reached during the current fall

@@ -216,8 +216,8 @@ func TestRespawnAtSavedPortal(t *testing.T) {
 		p.PreviousState = p.State
 	}
 
-	if p.State.IsDying() {
-		t.Fatal("still dying after 5 s")
+	if p.State.IsDying() || p.Respawns != 1 {
+		t.Fatalf("dying=%v respawns=%d after 5 s, want respawned once", p.State.IsDying(), p.Respawns)
 	}
 	if want := level.Portals[1].StandPos(); p.Pos != want {
 		t.Errorf("respawned at %v, want standing in the saved portal at %v", p.Pos, want)

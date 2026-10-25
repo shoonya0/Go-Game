@@ -21,8 +21,9 @@ type Game struct {
 	input core.InputState
 	touch *core.TouchControls // on-screen buttons for touch screens
 
-	player  *core.PlayerRuntime
-	enemies []*core.EnemyRuntime
+	player   *core.PlayerRuntime
+	enemies  []*core.EnemyRuntime
+	respawns int // player respawns already handled (enemies revived)
 
 	background *ebiten.Image
 	tileset    *ebiten.Image
@@ -78,6 +79,10 @@ func (g *Game) Update() error {
 	g.player.UpdateGroundWaves(g.quadtree, g.enemies)
 	g.player.UpdateCamera(screenWidth, screenHeight, float64(core.Level_1_Width), float64(core.Level_1_Height))
 
+	if g.player.Respawns != g.respawns {
+		g.respawns = g.player.Respawns
+		g.enemies = core.RespawnEnemies(g.level.Enemies, g.enemies)
+	}
 	g.updateEnemies()
 	g.portals.Update()
 

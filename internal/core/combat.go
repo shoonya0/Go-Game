@@ -204,6 +204,7 @@ func (p *PlayerRuntime) applyFallDamage(onGround, inWater bool) {
 // respawn returns the player to the active portal with full pools.
 func (p *PlayerRuntime) respawn() {
 	p.Pos = p.RespawnPos
+	p.Respawns++
 	p.Combat.Health = p.Combat.MaxHealth
 	p.Combat.Power = p.Combat.MaxPower
 	p.Physics.VelX = 0
