@@ -145,7 +145,8 @@ func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, po
 	player.queueCombo(in)
 
 	player.updateStamina()
-	player.updateCombat(qt, portals, onGround)
+	player.updateCombat(qt, onGround)
+	player.updatePortals(portals)
 
 	if qt != nil {
 		qt.Update(player)

@@ -99,9 +99,8 @@ func (p *PlayerRuntime) updateStamina() {
 
 // updateCombat applies portal saves, environmental damage and fall damage
 // for this tick, then starts a death animation if health has run out.
-func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, portals []Portal, onGround bool) {
+func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, onGround bool) {
 	p.damageFlash = math.Max(p.damageFlash-deltaTime(), 0)
-	p.updatePortals(portals)
 
 	inWater, inLarva := p.scanHazards(qt)
 	p.applyFallDamage(onGround, inWater)
