@@ -1,11 +1,11 @@
 # Portals: state
 
-## Now (updated 2026-10-25 at `4976039`)
+## Now (updated 2026-10-25 at `f1401fb`)
 
-- **Status:** 🟢 tasks 1–9 done, the user checked the game ("everything fine"). D10 built: the
-  portal travelled to becomes the checkpoint. Left: task 10's push + PR, and ask before merge
-- **Stopped at:** `World.Travel` calls `activatePortal` on the destination
-  (`TestTravelMakesDestinationCheckpoint`); `updatePortals` ignores input while dying
+- **Status:** 🟢 tasks 1–9 done, the user checked the game ("everything fine"). D10 and D11 built: the
+  portal travelled to becomes the checkpoint, and every teleport revives the level's enemies. Left: task 10's push + PR, and ask before merge
+- **Stopped at:** `World.Travel` calls `activatePortal` on the destination and `RespawnEnemies`
+  (`TestTravelMakesDestinationCheckpoint`, `TestTravelRevivesEnemies`); `updatePortals` ignores input while dying
 - **Open questions / blockers:** only one level exists: cross-level travel is tested with
   `testSecondLevel` only. `_asset_backups/` is the user's: never commit it
 - **Don't forget:** Esc both closes the menu (`Back`) and toggles `InputState.Menu` (no menu
@@ -14,6 +14,12 @@
   icons (`touch_icons.go`)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-25: D11, every teleport revives enemies; level edits
+
+- Changed: `World.Travel` revives the level's non-bosses; D11, spec; user's level edits committed (portal moved, Smasher added)
+- Verified: `TestTravelRevivesEnemies` failed first (6 of 7), then passes; `verify.mjs --full` 8/8
+- Docs touched: decisions, spec, tasks, state, current-state
 
 ### 2026-10-25: D10, travel sets the checkpoint; user's look done
 
@@ -38,9 +44,3 @@
 - Changed: `SwitchLevel` revives a visited level's non-bosses; `TestSwitchLevel` return check now expects all enemies (D4)
 - Verified: `TestEnteringLevelRevivesEnemies` failed first (5 of 6), then passes; `verify.mjs` 5/5
 - Docs touched: tasks, state, current-state
-
-### 2026-10-25: user's redesign, looks + hold-E travel menu (8a–8d)
-
-- Changed: D7–D9, spec; `PortalRef`, `PortalLook`, `activatePortal`; input hold ticks, touch hold; `travel_menu.go`; `World.Travel/Respawned`; main wiring
-- Verified: new tests failed first (build), then pass; `verify.mjs --full` 8/8; web: loads, gold start portal, no console errors
-- Docs touched: decisions, spec, tasks, state, current-state, architecture
