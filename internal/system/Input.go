@@ -60,7 +60,12 @@ func HandleInput(inputState *core.InputState) {
 	// ---------------- menus ----------------
 	inputState.UpJustPressed = inpututil.IsKeyJustPressed(ebiten.KeyW) || inpututil.IsKeyJustPressed(ebiten.KeyArrowUp)
 	inputState.DownJustPressed = inpututil.IsKeyJustPressed(ebiten.KeyS) || inpututil.IsKeyJustPressed(ebiten.KeyArrowDown)
+	inputState.LeftJustPressed = inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft)
+	inputState.RightJustPressed = inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyArrowRight)
 	inputState.Confirm = inpututil.IsKeyJustPressed(ebiten.KeyEnter)
+	mx, my := ebiten.CursorPosition()
+	inputState.Pointer = core.Position{X: float64(mx), Y: float64(my)}
+	inputState.Clicked = inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
 	inputState.Back = inpututil.IsKeyJustPressed(ebiten.KeyEscape)
 
 	// ---------------- skills ----------------
