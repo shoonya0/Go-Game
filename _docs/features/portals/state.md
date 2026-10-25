@@ -1,19 +1,23 @@
 # Portals: state
 
-## Now (updated 2026-10-25 at `f1401fb`)
+## Now (updated 2026-10-25 at `10b430d`)
 
-- **Status:** 🟢 tasks 1–9 done, the user checked the game ("everything fine"). D10 and D11 built: the
-  portal travelled to becomes the checkpoint, and every teleport revives the level's enemies. Left: task 10's push + PR, and ask before merge
-- **Stopped at:** `World.Travel` calls `activatePortal` on the destination and `RespawnEnemies`
-  (`TestTravelMakesDestinationCheckpoint`, `TestTravelRevivesEnemies`); `updatePortals` ignores input while dying
-- **Open questions / blockers:** only one level exists: cross-level travel is tested with
-  `testSecondLevel` only. `_asset_backups/` is the user's: never commit it
+- **Status:** ✅ done, merged to `main` in PR #22 (`10b430d`), branch deleted. All tasks 1–10 done
+- **Stopped at:** feature complete. Leftovers are in [tasks.md](./tasks.md) "Later" (saved portals
+  across restarts, a second level, one wrong camera frame after a cross-level travel, the sparkle mark)
+- **Open questions / blockers:** none. `_asset_backups/` is the user's: never commit it
 - **Don't forget:** Esc both closes the menu (`Back`) and toggles `InputState.Menu` (no menu
   reads it yet). A thumbnail is taken once, so it shows the portal as it looked then. Level
   sizes come from `LevelDef`, not the grid. Code 9 is non-solid. No font: UI symbols are vector
   icons (`touch_icons.go`)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-25: merged (PR #22)
+
+- Changed: nothing in code; the user merged PR #22, local `main` synced, merged branches deleted
+- Verified: `verify.mjs` 5/5 on `main` at `10b430d`
+- Docs touched: state, tasks, registry, current-state
 
 ### 2026-10-25: D11, every teleport revives enemies; level edits
 
@@ -38,9 +42,3 @@
 - Changed: `assets/levels/portal.png` halved (Catmull-Rom, scratch tool, no project code)
 - Verified: portal tests pass; `verify.mjs --full` 8/8; sheet looked at, detail kept
 - Docs touched: tasks, state
-
-### 2026-10-25: task 9, entering a level revives its enemies
-
-- Changed: `SwitchLevel` revives a visited level's non-bosses; `TestSwitchLevel` return check now expects all enemies (D4)
-- Verified: `TestEnteringLevelRevivesEnemies` failed first (5 of 6), then passes; `verify.mjs` 5/5
-- Docs touched: tasks, state, current-state

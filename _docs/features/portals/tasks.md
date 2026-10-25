@@ -35,7 +35,7 @@
 - [x] 9. Entering a level revives its non-boss enemies → check: `TestEnteringLevelRevivesEnemies`
 - [x] 8e. The portal travelled to becomes the checkpoint (D10) → check: `TestTravelMakesDestinationCheckpoint`
 - [x] 8f. Every teleport revives the level's non-boss enemies (D11) → check: `TestTravelRevivesEnemies`
-- [ ] 10. `verify.mjs --full`, web smoke check, `/code-review`, docs update, PR (ask before merge)
+- [x] 10. `verify.mjs --full`, web smoke check, `/code-review`, docs update, PR (ask before merge)
 
 ## Later (not planned yet)
 
