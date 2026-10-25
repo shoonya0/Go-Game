@@ -8,7 +8,8 @@
   task 1 and start 3 (save with E or a tap) in [tasks.md](./tasks.md)
 - **Stopped at:** `Portal.SavedBy(respawn)` picks the golden one; touching a portal now saves its
   `StandPos` (as the start does), so death already respawns the player standing in it; task 4 still
-  needs `TestRespawnAtSavedPortal`. Loop plays at 5 fps (user's call)
+  needs `TestRespawnAtSavedPortal`. Loop plays at 5 fps; portal 2 tiles tall, 1 wide; the user
+  tunes `portalLift` (portal.go) by eye to set the art's height above the ground (user's calls)
 - **Open questions / blockers:** D3 (E saves and opens the menu in one press) to confirm in play.
   `portal.png` is 3.6 MB but drawn 150 px tall (asset change, ask the user).
   `_asset_backups/` (untracked) is the user's own folder: never commit it
