@@ -32,7 +32,7 @@
       checkpoint framed gold → check: manual look (PC and touch)
 - [x] 8d. Picking a portal travels there (switching level if needed); death respawns in the
       checkpoint's level → check: `TestTravelMovesPlayer`, `TestRespawnInCheckpointLevel`
-- [ ] 9. Entering a level revives its non-boss enemies → check: `TestEnteringLevelRevivesEnemies`
+- [x] 9. Entering a level revives its non-boss enemies → check: `TestEnteringLevelRevivesEnemies`
 - [ ] 10. `verify.mjs --full`, web smoke check, `/code-review`, docs update, PR (ask before merge)
 
 ## Later (not planned yet)

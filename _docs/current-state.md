@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-25)
 
-Snapshot at `32c0bda` (`feature/portals`, not pushed; `main` at `f6a311a`, PR #21 merged). One page. Details live in each increment's entry in
+Snapshot at `b0190ce` (`feature/portals`, not pushed; `main` at `f6a311a`, PR #21 merged). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -10,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [portals](./features/portals/state.md) · started 2026-10-24, high priority; increments 1–2 code complete; the user's redesign (D7–D9: three portal looks, hold E for a travel menu) built, waiting for their look
+- **Feature:** [portals](./features/portals/state.md) · started 2026-10-24, high priority; increments 1–2 code complete; the user's redesign (D7–D9: three portal looks, hold E for a travel menu) built, waiting for their look; task 9 (entering a level revives its enemies) done
 - **Branch:** `feature/portals`, from `main` at `f6a311a` plus the enemy-types docs commit `f3cb97f`
-- **Next step:** user's look in game (gold portal on the ground, E/tap prompt, enemies back after a death, the three looks and the hold-E travel menu); then task 9 in [tasks.md](./features/portals/tasks.md). Paused: enemy-types (low priority; increments 1–5 merged, task 25 waits for ranged art). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Next step:** user's look in game (gold portal on the ground, E/tap prompt, enemies back after a death, the three looks and the hold-E travel menu); then task 10 (full check, `/code-review`, PR) in [tasks.md](./features/portals/tasks.md). Paused: enemy-types (low priority; increments 1–5 merged, task 25 waits for ranged art). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
