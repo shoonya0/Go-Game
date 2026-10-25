@@ -98,7 +98,7 @@ func (w *World) Travel(p *PlayerRuntime, ref PortalRef) error {
 // is another one (respawn placed p at RespawnPos), and the level's non-boss
 // enemies revived.
 func (w *World) Respawned(p *PlayerRuntime) {
-	if p.Checkpoint.Level != w.Name {
+	if p.Checkpoint.Level != "" && p.Checkpoint.Level != w.Name {
 		if err := w.Travel(p, p.Checkpoint); err != nil {
 			log.Printf("respawn: %v", err)
 		}

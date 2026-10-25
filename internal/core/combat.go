@@ -160,6 +160,9 @@ func (p *PlayerRuntime) updatePortals(portals []Portal, in *InputState) {
 	}
 	hold := travelHoldTicks()
 	p.travelAsked = in.InteractTicks == hold || (in.TouchHoldTicks == hold && onPortal)
+	if p.travelAsked { // the press may have started outside: a hold saves too (D8)
+		p.activatePortal(cp)
+	}
 }
 
 // standingIn returns the portal the player stands in, or nil.

@@ -134,3 +134,38 @@ func TestTravelMenuRowsFitTheScreen(t *testing.T) {
 		}
 	}
 }
+
+// TestTravelMenuWaitsForRelease: after the menu closes, a hold still going
+// (the E that confirmed, a finger left on the row) doesn't reopen it; a new
+// hold after letting go does.
+func TestTravelMenuWaitsForRelease(t *testing.T) {
+	level, p := twoPortals(t)
+	hold := travelHoldTicks()
+	m := NewTravelMenu(1360, 768)
+	m.OpenFor(p)
+	m.Update(&InputState{Interact: true, InteractTicks: 1}) // confirm, and keep E down
+
+	held := &InputState{InteractTicks: hold}
+	p.updatePortals(level.Portals, held)
+	m.MaybeOpen(p, held)
+	if m.Open {
+		t.Fatal("the E that confirmed, still held, reopened the menu")
+	}
+	m.MaybeOpen(p, &InputState{}) // E let go
+	p.updatePortals(level.Portals, held)
+	m.MaybeOpen(p, held)
+	if !m.Open {
+		t.Error("a new hold after letting go did not open the menu")
+	}
+}
+
+// TestHoldSavesThePortal: a hold that reaches the menu in a portal the press
+// didn't start in still activates it and makes it the checkpoint (D8).
+func TestHoldSavesThePortal(t *testing.T) {
+	level, p := twoPortals(t)
+	p.Pos = level.Portals[1].StandPos() // E went down before walking in: no Interact here
+	p.updatePortals(level.Portals, &InputState{InteractTicks: travelHoldTicks()})
+	if !p.TravelAsked() || p.Checkpoint != level.Portals[1].Ref() {
+		t.Errorf("asked=%v checkpoint %v, want the menu asked and %v saved", p.TravelAsked(), p.Checkpoint, level.Portals[1].Ref())
+	}
+}

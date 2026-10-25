@@ -142,3 +142,19 @@ func TestRespawnInCheckpointLevel(t *testing.T) {
 		t.Errorf("%d enemies after respawn, want all %d revived", len(w.Enemies), len(w.Level.Enemies))
 	}
 }
+
+// TestRespawnWithoutCheckpointStays: in a level with no portals there is no
+// checkpoint; a respawn stays in the level and still revives its enemies.
+func TestRespawnWithoutCheckpointStays(t *testing.T) {
+	WorldInit()
+	w, err := NewWorld(StartLevel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := InitPlayer(nil) // never started at a portal
+	w.Enemies = w.Enemies[1:]
+	w.Respawned(p)
+	if w.Name != StartLevel || len(w.Enemies) != len(w.Level.Enemies) {
+		t.Errorf("in %q with %d of %d enemies, want %q with all revived", w.Name, len(w.Enemies), len(w.Level.Enemies), StartLevel)
+	}
+}

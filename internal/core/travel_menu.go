@@ -43,6 +43,8 @@ type TravelMenu struct {
 	Selected int
 	Saved    PortalRef // the checkpoint when the menu opened, framed gold
 
+	waitRelease bool // closed while E or a touch was down: that hold can't reopen it
+
 	screenW, screenH int
 	thumbs           map[PortalRef]*ebiten.Image // a small picture of the level around each portal
 	up, down         *ebiten.Image               // arrows shown when rows are scrolled off
@@ -76,6 +78,18 @@ func (m *TravelMenu) OpenFor(p *PlayerRuntime) {
 	}
 }
 
+// MaybeOpen opens the menu when p asked for it this tick, unless the hold
+// began before the menu last closed (the E that confirmed a pick, a finger
+// left on a row): E and the touch must be let go first.
+func (m *TravelMenu) MaybeOpen(p *PlayerRuntime, in *InputState) {
+	if in.InteractTicks == 0 && in.TouchHoldTicks == 0 {
+		m.waitRelease = false
+	}
+	if p.TravelAsked() && !m.waitRelease {
+		m.OpenFor(p)
+	}
+}
+
 // Update applies one tick of input to the open menu: up/down move the pick, E
 // or Enter travels to it, Esc closes. On touch screens a tap on a row travels
 // there and a tap anywhere else closes. It returns the portal to travel to.
@@ -83,6 +97,7 @@ func (m *TravelMenu) Update(in *InputState) (PortalRef, bool) {
 	if !m.Open {
 		return PortalRef{}, false
 	}
+	defer func() { m.waitRelease = !m.Open }()
 	switch {
 	case in.Back:
 		m.Open = false

@@ -104,9 +104,7 @@ func (g *Game) Update() error {
 	g.updateEnemies()
 	g.portals.Update()
 	g.captureThumbs()
-	if g.player.TravelAsked() {
-		g.travel.OpenFor(g.player)
-	}
+	g.travel.MaybeOpen(g.player, &g.input)
 
 	return nil
 }
