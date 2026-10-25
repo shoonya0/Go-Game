@@ -63,3 +63,10 @@
 - **Decision:** each row is a small picture of the level around that portal, the checkpoint's
   row framed gold. No text: the game has no font, and adding one is a new dependency.
 - **Why:** places are easy to recognise; no dependency.
+
+## D10. The portal travelled to becomes the checkpoint (2026-10-25, user)
+
+- **Decision:** picking a portal in the travel menu takes the player there and makes it the
+  checkpoint (gold, the respawn point). The portal left from stays active.
+- **Why:** the user asked for it: after a teleport the player respawns where they went, not
+  where they came from.

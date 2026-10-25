@@ -112,6 +112,33 @@ func TestTravelMovesPlayer(t *testing.T) {
 	}
 }
 
+// TestTravelMakesDestinationCheckpoint: the portal travelled to becomes the
+// checkpoint (D10): drawn gold, and the player respawns standing in it.
+func TestTravelMakesDestinationCheckpoint(t *testing.T) {
+	WorldInit()
+	w, err := NewWorld(StartLevel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := InitPlayer(nil)
+	p.StartAt(w.Level)
+	from, there := w.Level.Portals[0], w.Level.Portals[len(w.Level.Portals)-1]
+	p.activatePortal(there)
+	p.activatePortal(from) // the hold at the start portal saved it
+
+	if err := w.Travel(p, there.Ref()); err != nil {
+		t.Fatal(err)
+	}
+	if p.Checkpoint != there.Ref() || p.RespawnPos != there.StandPos() {
+		t.Errorf("after travel: checkpoint %v, respawn %v; want the destination %v, %v",
+			p.Checkpoint, p.RespawnPos, there.Ref(), there.StandPos())
+	}
+	if p.PortalLook(there) != PortalCheckpoint || p.PortalLook(from) != PortalActive {
+		t.Errorf("after travel: destination look %v, start look %v; want checkpoint, active",
+			p.PortalLook(there), p.PortalLook(from))
+	}
+}
+
 // TestRespawnInCheckpointLevel: dying in another level than the checkpoint's
 // brings the player back to the checkpoint's level, standing in it, with that
 // level's enemies revived.
@@ -126,11 +153,12 @@ func TestRespawnInCheckpointLevel(t *testing.T) {
 	p.StartAt(w.Level)
 	w.Enemies = w.Enemies[1:] // one killed in the checkpoint's level
 
-	far := w.Level.Portals[0].Ref()
-	far.Level = second
-	if err := w.Travel(p, far); err != nil {
+	// into the other level without travelling (a travel would move the checkpoint, D10)
+	stand := w.Level.Portals[0].StandPos()
+	if err := w.SwitchLevel(second); err != nil {
 		t.Fatal(err)
 	}
+	p.placeAt(stand)
 	p.respawn() // as the death animation ends
 	w.Respawned(p)
 
