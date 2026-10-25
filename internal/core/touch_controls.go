@@ -42,6 +42,7 @@ const (
 	touchSprintSize = 104 // sprint is held a lot, so it is the biggest button
 	touchIconInset  = 15  // percent of the button cut from each side of its symbol, so it draws at 70%
 	touchIdleAlpha  = 0.5 // opacity of buttons that are not pressed
+	touchHoldDrift  = 24  // px a held finger may drift per tick and still be the same touch
 
 	// TouchHUDLeft is where the HUD starts when the menu button takes the
 	// top-left corner.
@@ -67,8 +68,10 @@ type TouchControls struct {
 	held, prev [touchButtonCount]bool
 
 	// A touch that starts on no button is a tap on the game world (e.g. a portal).
-	tapped bool        // a tap started this frame
-	tapAt  image.Point // where
+	tapped    bool        // a tap started this frame
+	tapAt     image.Point // where; while held, where the finger is now
+	holding   bool        // that touch is still down
+	holdTicks int         // ticks it has stayed down since it started
 
 	sprites *touchSprites
 }
@@ -127,11 +130,29 @@ func (tc *TouchControls) Update(points []image.Point) {
 			}
 		}
 	}
+	tc.followHold(points)
+}
+
+// followHold keeps counting a held tap while a touch point stays within
+// touchHoldDrift of where it was last tick (touch IDs aren't passed in), and
+// ends the hold once there is none.
+func (tc *TouchControls) followHold(points []image.Point) {
+	if !tc.holding {
+		return
+	}
+	for _, p := range points {
+		if d := p.Sub(tc.tapAt); d.X*d.X+d.Y*d.Y <= touchHoldDrift*touchHoldDrift {
+			tc.tapAt = p
+			tc.holdTicks++
+			return
+		}
+	}
+	tc.holding, tc.holdTicks = false, 0
 }
 
 // Started records the touches that began this frame (call it after Update):
-// the first one on no button is a tap at that point. A finger that slides off
-// a button, or rests off the buttons, is not.
+// the first one on no button is a tap at that point, and starts a hold. A
+// finger that slides off a button, or rests off the buttons, is not.
 func (tc *TouchControls) Started(points []image.Point) {
 	for _, p := range points {
 		onButton := false
@@ -140,6 +161,7 @@ func (tc *TouchControls) Started(points []image.Point) {
 		}
 		if !onButton {
 			tc.tapped, tc.tapAt = true, p
+			tc.holding, tc.holdTicks = true, 0
 			return
 		}
 	}
@@ -154,8 +176,10 @@ func (tc *TouchControls) Apply(in *InputState) {
 	if !tc.Enabled {
 		return
 	}
-	if tc.tapped {
-		in.Tapped, in.TapAt = true, Position{X: float64(tc.tapAt.X), Y: float64(tc.tapAt.Y)}
+	in.TouchHoldTicks = 0
+	if tc.holding {
+		in.Tapped, in.TouchHoldTicks = tc.tapped, tc.holdTicks
+		in.TapAt = Position{X: float64(tc.tapAt.X), Y: float64(tc.tapAt.Y)}
 	}
 	h := &tc.held
 
@@ -170,6 +194,8 @@ func (tc *TouchControls) Apply(in *InputState) {
 		in.Direction.LeftRight = 1
 	}
 	in.JumpJustPressed = in.JumpJustPressed || h[TouchUp]
+	in.UpJustPressed = in.UpJustPressed || tc.justPressed(TouchUp)
+	in.DownJustPressed = in.DownJustPressed || tc.justPressed(TouchDown)
 	// Sprint stands in for Left Shift, which both runs and dashes.
 	in.RunJustPressed = in.RunJustPressed || h[TouchSprint]
 	in.DashJustPressed = in.DashJustPressed || h[TouchSprint]

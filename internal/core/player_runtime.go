@@ -51,18 +51,20 @@ type PlayerRuntime struct {
 	Respawns      int         // times the player has respawned; the game revives enemies when it changes
 
 	// Combat bookkeeping (not for external use).
-	fallPeakY        float64 // highest point (min Y) reached during the current fall
-	groundedPrev     bool    // whether the player was grounded last tick (landing edge)
-	wasInLarva       bool    // whether the player was touching larva last tick (damage edge)
-	waterDamageAccum float64 // sub-point water damage carried between ticks
-	inWater          bool    // whether the player was submerged last tick (movement/jump)
-	running          bool    // whether the player is running this tick (drains power)
-	exhausted        bool    // power ran out while running; running is blocked until it recovers
-	damageFlash      float64 // seconds of red damage flash left
-	knockTicks       int     // ticks of heavy-hit push left
-	atPortal         int     // index of the portal the player stands in, -1 for none
-	savedNote        float64 // seconds the "saved" check stays up
-	knockVelX        float64 // push velocity (px/s) while knockTicks last
+	fallPeakY        float64   // highest point (min Y) reached during the current fall
+	groundedPrev     bool      // whether the player was grounded last tick (landing edge)
+	wasInLarva       bool      // whether the player was touching larva last tick (damage edge)
+	waterDamageAccum float64   // sub-point water damage carried between ticks
+	inWater          bool      // whether the player was submerged last tick (movement/jump)
+	running          bool      // whether the player is running this tick (drains power)
+	exhausted        bool      // power ran out while running; running is blocked until it recovers
+	damageFlash      float64   // seconds of red damage flash left
+	knockTicks       int       // ticks of heavy-hit push left
+	atPortal         int       // index of the portal the player stands in, -1 for none
+	atPortalRef      PortalRef // that portal, across levels (valid while atPortal >= 0)
+	savedNote        float64   // seconds the "saved" check stays up
+	travelAsked      bool      // a hold in a portal asked for the travel menu this tick
+	knockVelX        float64   // push velocity (px/s) while knockTicks last
 
 	struck      []*EnemyRuntime // enemies already hit by the current hit of the swing (HitEnemies)
 	strikeIdx   int             // which hit of the swing struck holds

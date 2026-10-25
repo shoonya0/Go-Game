@@ -136,9 +136,11 @@ func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, onGround bool) {
 
 // updatePortals finds the portal the player stands in and, when the player
 // uses it (E, or a tap on it on touch screens), activates it and makes it the
-// checkpoint. Walking past does nothing.
+// checkpoint. Holding E, or the touch, there for travelHoldSeconds asks for the
+// travel menu (TravelAsked). Walking past does nothing.
 func (p *PlayerRuntime) updatePortals(portals []Portal, in *InputState) {
 	p.savedNote = max(0, p.savedNote-deltaTime())
+	p.travelAsked = false
 	p.atPortal = -1
 	body := p.GetBounds()
 	for i, cp := range portals {
@@ -150,11 +152,26 @@ func (p *PlayerRuntime) updatePortals(portals []Portal, in *InputState) {
 		return
 	}
 	cp := portals[p.atPortal]
-	if in.Interact || (in.Tapped && cp.tapArea().Contains(in.TapAt.X+p.Camera.Pos.X, in.TapAt.Y+p.Camera.Pos.Y)) {
+	p.atPortalRef = cp.Ref()
+	onPortal := cp.tapArea().Contains(in.TapAt.X+p.Camera.Pos.X, in.TapAt.Y+p.Camera.Pos.Y)
+	if in.Interact || (in.Tapped && onPortal) {
 		p.activatePortal(cp)
 		p.savedNote = portalSavedSeconds
 	}
+	hold := travelHoldTicks()
+	p.travelAsked = in.InteractTicks == hold || (in.TouchHoldTicks == hold && onPortal)
 }
+
+// standingIn returns the portal the player stands in, or nil.
+func (p *PlayerRuntime) standingIn() *PortalRef {
+	if p.atPortal < 0 {
+		return nil
+	}
+	return &p.atPortalRef
+}
+
+// TravelAsked reports whether the player asked for the travel menu this tick.
+func (p *PlayerRuntime) TravelAsked() bool { return p.travelAsked }
 
 // activatePortal adds c to the active portals (once) and makes it the
 // checkpoint: the player respawns standing in it.
