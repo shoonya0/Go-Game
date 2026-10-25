@@ -11,6 +11,13 @@ import (
 // not read (main-menu D2).
 const saveVersion = 1
 
+// The storage keys of the two records the game keeps (main-menu D2): the
+// progress, wiped by New Game, and the settings, kept.
+const (
+	SaveKey     = "save"
+	SettingsKey = "settings"
+)
+
 // SaveData is the progress kept across restarts: the portals the player has
 // used and the one they respawn at. Continue starts standing in Checkpoint.
 type SaveData struct {

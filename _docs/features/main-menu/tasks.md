@@ -5,7 +5,7 @@
 - [x] 1. `core.SaveData` (portals, checkpoint; settings kept apart, D2) with snapshot from the player and
   restore into world + player (checkpoint level, standing in it); bad data → error →
   check: `go test ./internal/core -run TestSave -v`
-- [ ] 2. Storage in `internal/system`: file on desktop, `localStorage` on the web (build
+- [x] 2. Storage in `internal/system`: file on desktop, `localStorage` on the web (build
   tags) → check: `go test ./internal/system -run TestSaveFile -v`, `node scripts/verify.mjs --full`
 - [ ] 3. Autosave from `cmd/main.go` on portal save / travel (D3) → check: test + manual restart
 
