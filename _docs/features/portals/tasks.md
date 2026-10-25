@@ -2,11 +2,11 @@
 
 ## Increment 1: see a portal, start at it, save at it (spec: [spec.md](./spec.md))
 
-- [ ] 1. Portal sprite: 14-frame loop from `portal.png` (7×2 grid, ~228×336 cells), scaled to
+- [x] 1. Portal sprite: 14-frame loop from `portal.png` (7×2 grid, ~228×336 cells), scaled to
       about 2 tiles tall, drawn at every code-9 cell with its base on the cell floor
       → check: `TestBuildLevelPortals`, `TestPortalSheetFrames`, `TestPortalStandsOnItsCell`, manual look
 - [x] 2. A new game starts at the first portal (D5), saved → check: `TestPlayerStartsAtFirstPortal`
-- [ ] 3. Save with E, or a tap on the portal (touch), while overlapping it; touching alone no
+- [x] 3. Save with E, or a tap on the portal (touch), while overlapping it; touching alone no
       longer saves; a prompt shows at the portal and a short "saved" note after
       → check: `TestPortalSavesOnlyOnInteract`, `TestTapOnPortalSaves`, manual look
 - [x] 3a. The saved portal is drawn golden (D6) → check: `TestOnlySavedPortalIsGolden`, manual look
@@ -28,11 +28,12 @@
 - [x] 8b. Hold E 0.5 s, or a long press on the portal, opens the travel menu (D8); up/down
       pick, E/Enter travel, Esc or a tap outside closes; the game pauses while it is open
       → check: `TestHoldEOpensTravelMenu`, `TestTravelMenuListsActivePortals`, `TestTouchHoldFollowsTheFinger`
-- [ ] 8c. Menu draws a column of thumbnails (D9), captured when a portal is activated; the
+- [x] 8c. Menu draws a column of thumbnails (D9), captured when a portal is activated; the
       checkpoint framed gold → check: manual look (PC and touch)
 - [x] 8d. Picking a portal travels there (switching level if needed); death respawns in the
       checkpoint's level → check: `TestTravelMovesPlayer`, `TestRespawnInCheckpointLevel`
 - [x] 9. Entering a level revives its non-boss enemies → check: `TestEnteringLevelRevivesEnemies`
+- [x] 8e. The portal travelled to becomes the checkpoint (D10) → check: `TestTravelMakesDestinationCheckpoint`
 - [ ] 10. `verify.mjs --full`, web smoke check, `/code-review`, docs update, PR (ask before merge)
 
 ## Later (not planned yet)
