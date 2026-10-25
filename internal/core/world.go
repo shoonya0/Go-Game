@@ -290,7 +290,9 @@ func BuildLevel(grid [][]int) Level {
 	return level
 }
 
-func (player *PlayerRuntime) DrawParallaxBackground(screen *ebiten.Image, background *ebiten.Image, screenWidth, screenHeight float64) {
+// DrawParallaxBackground scrolls the background with the camera's progress
+// across a level levelWidth wide.
+func (player *PlayerRuntime) DrawParallaxBackground(screen *ebiten.Image, background *ebiten.Image, screenWidth, screenHeight, levelWidth float64) {
 	bgW := background.Bounds().Dx()
 	bgH := background.Bounds().Dy()
 
@@ -302,8 +304,7 @@ func (player *PlayerRuntime) DrawParallaxBackground(screen *ebiten.Image, backgr
 	scaledW := float64(bgW) * scale
 
 	// Calculate offset based on camera position relative to total level width
-	maxLevelWidth := float64(Level_1_Width)
-	maxCamX := maxLevelWidth - screenWidth
+	maxCamX := levelWidth - screenWidth
 	if maxCamX < 1 {
 		maxCamX = 1
 	}

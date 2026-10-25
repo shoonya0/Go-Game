@@ -22,14 +22,13 @@ type Game struct {
 	touch *core.TouchControls // on-screen buttons for touch screens
 
 	player   *core.PlayerRuntime
-	enemies  []*core.EnemyRuntime
-	respawns int // player respawns already handled (enemies revived)
+	world    *core.World // the current level: platforms, portals, enemies
+	respawns int         // player respawns already handled (enemies revived)
 
-	background *ebiten.Image
-	tileset    *ebiten.Image
-	level      core.Level
-	quadtree   *core.DynamicQuadtree
-	portals    *core.PortalSprite
+	background     *ebiten.Image
+	backgroundPath string // the asset background was loaded from
+	tileset        *ebiten.Image
+	portals        *core.PortalSprite
 
 	showHitboxes bool // debug overlay, toggled with F3
 }
@@ -38,30 +37,34 @@ type Game struct {
 func NewGame() *Game {
 	core.WorldInit()
 
-	levelBounds := core.AABB{Width: float64(core.Level_1_Width), Height: float64(core.Level_1_Height)}
-	quadtree := core.NewDynamicQuadtree(levelBounds)
-
-	level := core.LoadLevel(core.LevelFile, core.DefaultLevelName)
-	for i := range level.Platforms {
-		quadtree.Insert(&level.Platforms[i])
+	world, err := core.NewWorld(core.StartLevel)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	touch := core.NewTouchControls(screenWidth, screenHeight)
 	touch.Enabled = system.IsTouchDevice()
 
 	player := core.InitPlayer(core.LoadImage(playerSpriteSheetPath))
-	player.StartAt(level)
+	player.StartAt(world.Level)
 
-	return &Game{
-		state:      core.ModeMenu,
-		player:     player,
-		enemies:    core.SpawnEnemies(level.Enemies),
-		background: core.LoadImage(core.Background_1),
-		tileset:    core.LoadImage(core.Tileset),
-		level:      level,
-		touch:      touch,
-		quadtree:   quadtree,
-		portals:    core.NewPortalSprite(),
+	g := &Game{
+		state:   core.ModeMenu,
+		player:  player,
+		world:   world,
+		tileset: core.LoadImage(core.Tileset),
+		touch:   touch,
+		portals: core.NewPortalSprite(),
+	}
+	g.syncBackground()
+	return g
+}
+
+// syncBackground loads the current level's background when it changed.
+func (g *Game) syncBackground() {
+	if path := g.world.Def.Background; path != g.backgroundPath {
+		g.background = core.LoadImage(path)
+		g.backgroundPath = path
 	}
 }
 
@@ -73,15 +76,15 @@ func (g *Game) Update() error {
 		g.showHitboxes = !g.showHitboxes
 	}
 
-	core.UpdatePlayer(g.player, &g.input, g.quadtree, g.level.Portals)
+	core.UpdatePlayer(g.player, &g.input, g.world.Quadtree, g.world.Level.Portals)
 	g.player.UpdateAnimation()
-	g.player.HitEnemies(g.enemies)
-	g.player.UpdateGroundWaves(g.quadtree, g.enemies)
-	g.player.UpdateCamera(screenWidth, screenHeight, float64(core.Level_1_Width), float64(core.Level_1_Height))
+	g.player.HitEnemies(g.world.Enemies)
+	g.player.UpdateGroundWaves(g.world.Quadtree, g.world.Enemies)
+	g.player.UpdateCamera(screenWidth, screenHeight, g.world.Def.Width, g.world.Def.Height)
 
 	if g.player.Respawns != g.respawns {
 		g.respawns = g.player.Respawns
-		g.enemies = core.RespawnEnemies(g.level.Enemies, g.enemies)
+		g.world.Enemies = core.RespawnEnemies(g.world.Level.Enemies, g.world.Enemies)
 	}
 	g.updateEnemies()
 	g.portals.Update()
@@ -92,31 +95,31 @@ func (g *Game) Update() error {
 // updateEnemies advances every live enemy and culls those that have finished
 // dying.
 func (g *Game) updateEnemies() {
-	live := g.enemies[:0]
-	for _, e := range g.enemies {
-		core.UpdateEnemy(e, g.player, g.quadtree)
+	live := g.world.Enemies[:0]
+	for _, e := range g.world.Enemies {
+		core.UpdateEnemy(e, g.player, g.world.Quadtree)
 		e.UpdateEnemyAnimation()
 		if !e.Removable() {
 			live = append(live, e)
 		}
 	}
-	g.enemies = live
+	g.world.Enemies = live
 }
 
 // Draw renders one frame: background, level, then player.
 func (g *Game) Draw(screen *ebiten.Image) {
-	g.player.DrawParallaxBackground(screen, g.background, screenWidth, screenHeight)
-	g.player.DrawLevel(screen, g.quadtree, screenWidth, screenHeight, g.tileset)
-	g.portals.Draw(screen, g.level.Portals, g.player.RespawnPos, g.player.Camera.Pos)
-	for _, e := range g.enemies {
+	g.player.DrawParallaxBackground(screen, g.background, screenWidth, screenHeight, g.world.Def.Width)
+	g.player.DrawLevel(screen, g.world.Quadtree, screenWidth, screenHeight, g.tileset)
+	g.portals.Draw(screen, g.world.Level.Portals, g.player.RespawnPos, g.player.Camera.Pos)
+	for _, e := range g.world.Enemies {
 		e.DrawEnemyAnimation(screen, g.player.Camera)
 		e.DrawHealthBar(screen, g.player.Camera)
 	}
 	g.player.DrawPlayerAnimation(screen)
 	g.player.DrawGroundWaves(screen)
 	// Water is drawn after the player so the player appears submerged in it.
-	g.player.DrawWater(screen, g.quadtree, screenWidth, screenHeight, g.tileset)
-	g.portals.DrawPrompt(screen, g.level.Portals, g.player, g.touch.Enabled)
+	g.player.DrawWater(screen, g.world.Quadtree, screenWidth, screenHeight, g.tileset)
+	g.portals.DrawPrompt(screen, g.world.Level.Portals, g.player, g.touch.Enabled)
 	if g.showHitboxes {
 		g.drawHitboxes(screen)
 	}
@@ -130,11 +133,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 // drawHitboxes outlines the body and attack boxes of the enemies and the player.
 func (g *Game) drawHitboxes(screen *ebiten.Image) {
-	providers := make([]core.HitboxProvider, 0, len(g.enemies)+len(g.level.Portals)+1)
-	for _, p := range g.level.Portals {
+	providers := make([]core.HitboxProvider, 0, len(g.world.Enemies)+len(g.world.Level.Portals)+1)
+	for _, p := range g.world.Level.Portals {
 		providers = append(providers, p)
 	}
-	for _, e := range g.enemies {
+	for _, e := range g.world.Enemies {
 		providers = append(providers, e)
 	}
 	providers = append(providers, g.player)
