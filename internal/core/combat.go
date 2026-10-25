@@ -137,11 +137,15 @@ func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, onGround bool) {
 // updatePortals finds the portal the player stands in and, when the player
 // uses it (E, or a tap on it on touch screens), activates it and makes it the
 // checkpoint. Holding E, or the touch, there for travelHoldSeconds asks for the
-// travel menu (TravelAsked). Walking past does nothing.
+// travel menu (TravelAsked). Walking past does nothing, and so does anything
+// while dying: travel would cut the death short and replay it there.
 func (p *PlayerRuntime) updatePortals(portals []Portal, in *InputState) {
 	p.savedNote = max(0, p.savedNote-deltaTime())
 	p.travelAsked = false
 	p.atPortal = -1
+	if p.State.IsDying() {
+		return
+	}
 	body := p.GetBounds()
 	for i, cp := range portals {
 		if body.Intersects(cp.Bounds()) {

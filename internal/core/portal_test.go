@@ -288,3 +288,34 @@ func TestInactivePortalIsDullGray(t *testing.T) {
 		t.Errorf("tinted %d,%d,%d: want dark, under half the art's brightest channel %d", r8, g8, b8, blue.B)
 	}
 }
+
+// TestDyingPlayerCannotUsePortals: during the death animation E, a tap or a
+// hold at a portal neither saves it nor asks for the travel menu, so the
+// player can't travel away and die a second time there.
+func TestDyingPlayerCannotUsePortals(t *testing.T) {
+	withDeath(t, false)
+	level, p := twoPortals(t)
+	checkpoint := p.Checkpoint
+	p.Pos = level.Portals[1].StandPos()
+	p.ApplyDamage(p.Combat.Health)
+	p.updateCombat(nil, true)
+	if !p.State.IsDying() {
+		t.Fatal("the player is not dying after losing all health")
+	}
+
+	b := level.Portals[1].Bounds()
+	onPortal := Position{X: centerX(b) - p.Camera.Pos.X, Y: b.Y + b.Height/2 - p.Camera.Pos.Y}
+	hold := travelHoldTicks()
+	for name, in := range map[string]InputState{
+		"E":          {Interact: true},
+		"tap":        {Tapped: true, TapAt: onPortal},
+		"E held":     {InteractTicks: hold},
+		"touch held": {TouchHoldTicks: hold, TapAt: onPortal},
+	} {
+		p.updatePortals(level.Portals, &in)
+		if p.TravelAsked() || p.Checkpoint != checkpoint || p.PortalLook(level.Portals[1]) != PortalInactive {
+			t.Errorf("dying, %s: travel asked %v, checkpoint %v (want %v), look %v; want the portal left alone",
+				name, p.TravelAsked(), p.Checkpoint, checkpoint, p.PortalLook(level.Portals[1]))
+		}
+	}
+}
