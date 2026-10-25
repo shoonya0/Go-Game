@@ -10,6 +10,7 @@ const (
 	ScreenTitle                    // the main screen the game opens on
 	ScreenConfirmNew               // New Game with a save: overwrite it? (main-menu D4)
 	ScreenSettings                 // the volume (D5)
+	ScreenPause                    // Esc while playing: the game paused underneath (D7)
 )
 
 // MenuAction is what a menu choice asks the game to do.
@@ -21,6 +22,7 @@ const (
 	ActionContinue                   // start from the save
 	ActionQuit                       // close the game (desktop only, D6)
 	ActionSettingsChanged            // Settings changed: store them
+	ActionToTitle                    // leave the game for the title screen
 )
 
 // The title screen's labels; Quit is left out where the game can't close (D6).
@@ -36,8 +38,8 @@ type Screens struct {
 	Current  Screen
 	Settings Settings
 
-	title, confirm, settings *Menu
-	back                     Screen // the screen the settings return to
+	title, confirm, settings, pause *Menu
+	back                            Screen // the screen the settings return to
 }
 
 // NewScreens lays the menus out for a w×h screen, showing Quit only when
@@ -52,8 +54,14 @@ func NewScreens(w, h int, canQuit bool) *Screens {
 		title:    NewMenu(w, h, "PIRATE ADVENTURE", labels...),
 		confirm:  NewMenu(w, h, "OVERWRITE SAVE?", "No", "Yes"),
 		settings: NewMenu(w, h, "SETTINGS", volumeLabel(DefaultSettings().Volume), "Back"),
+		pause:    NewMenu(w, h, "PAUSED", "Resume", labelSettings, "Main Menu"),
 		Settings: DefaultSettings(),
 	}
+}
+
+// OpenPause pauses the game under the pause menu, its pick on Resume.
+func (s *Screens) OpenPause() {
+	s.Current, s.pause.Selected = ScreenPause, 0
 }
 
 // SetSettings shows s on the settings screen.
@@ -114,6 +122,16 @@ func (s *Screens) Update(in *InputState) MenuAction {
 		}
 	case ScreenSettings:
 		return s.updateSettings(in)
+	case ScreenPause:
+		i, back := s.pause.Update(in)
+		switch {
+		case back || in.Menu || i == 0:
+			s.Current = ScreenNone
+		case i == 1:
+			s.openSettings(ScreenPause)
+		case i == 2:
+			return ActionToTitle
+		}
 	}
 	return ActionNone
 }
@@ -166,5 +184,7 @@ func (s *Screens) Draw(screen *ebiten.Image) {
 		s.confirm.Draw(screen)
 	case ScreenSettings:
 		s.settings.Draw(screen)
+	case ScreenPause:
+		s.pause.Draw(screen)
 	}
 }

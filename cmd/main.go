@@ -182,9 +182,15 @@ func (g *Game) Update() error {
 			return ebiten.Termination
 		case core.ActionSettingsChanged:
 			g.saveSettings()
+		case core.ActionToTitle:
+			g.openTitle() // the progress is already saved (autosave)
 		}
 		// ActionContinue: the save's game is already set up behind the title.
 		g.portals.Update()
+		return nil
+	}
+	if g.input.Menu && !g.travel.Open { // Esc while the travel menu is open only closes it
+		g.screens.OpenPause()
 		return nil
 	}
 	if g.travel.Open { // the game is paused while the travel menu is open

@@ -73,3 +73,34 @@ func TestMenuScreensContinueAndQuit(t *testing.T) {
 		}
 	}
 }
+
+// TestMenuScreensPause: the pause menu resumes on Resume, Esc or the menu
+// button; its Settings return to it; Main Menu asks for the title screen.
+func TestMenuScreensPause(t *testing.T) {
+	s := NewScreens(1360, 768, true)
+	for name, in := range map[string]InputState{
+		"Resume":      {Confirm: true},
+		"Esc":         {Back: true, Menu: true},
+		"menu button": {Menu: true},
+	} {
+		s.OpenPause()
+		if a := s.Update(&in); a != ActionNone || s.Current != ScreenNone {
+			t.Errorf("%s: %v on screen %v, want playing again", name, a, s.Current)
+		}
+	}
+
+	s.OpenPause()
+	s.Update(&InputState{DownJustPressed: true})
+	s.Update(&InputState{Confirm: true})
+	if s.Current != ScreenSettings {
+		t.Fatalf("Settings: screen %v, want the settings screen", s.Current)
+	}
+	s.Update(&InputState{Back: true})
+	if s.Current != ScreenPause {
+		t.Errorf("Esc in settings opened from pause: screen %v, want the pause menu", s.Current)
+	}
+	s.Update(&InputState{DownJustPressed: true})
+	if a := s.Update(&InputState{Confirm: true}); a != ActionToTitle {
+		t.Errorf("Main Menu: %v, want to the title", a)
+	}
+}

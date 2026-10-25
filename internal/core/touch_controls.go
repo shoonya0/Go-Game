@@ -207,9 +207,7 @@ func (tc *TouchControls) Apply(in *InputState) {
 	in.Skills.SpecialAttack3 = in.Skills.SpecialAttack3 || h[TouchSpecial3]
 	in.Skills.SpecialAttack4 = in.Skills.SpecialAttack4 || tc.justPressed(TouchSpecial4)
 
-	if tc.justPressed(TouchMenu) {
-		in.Menu = !in.Menu
-	}
+	in.Menu = in.Menu || tc.justPressed(TouchMenu)
 }
 
 // Draw renders the buttons over the game, see-through while idle; pressed

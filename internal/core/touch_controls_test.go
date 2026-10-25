@@ -80,7 +80,7 @@ func TestTouchOppositeDirectionsCancel(t *testing.T) {
 }
 
 // K, L and O read as just-pressed, like their keys, so holding them does not
-// re-trigger the combo; the menu button toggles once per press.
+// re-trigger the combo; the menu button too, once per press (it pauses).
 func TestTouchJustPressedButtons(t *testing.T) {
 	tc := NewTouchControls(1360, 768)
 	held := []image.Point{touchCenter(tc, TouchSpecial1), touchCenter(tc, TouchSpecial2), touchCenter(tc, TouchSpecial4), touchCenter(tc, TouchMenu)}
@@ -92,19 +92,20 @@ func TestTouchJustPressedButtons(t *testing.T) {
 		t.Fatalf("first frame: K=%v L=%v O=%v menu=%v, want all true", in.Skills.SpecialAttack1, in.Skills.SpecialAttack2, in.Skills.SpecialAttack4, in.Menu)
 	}
 
-	in.Skills = Skills{}
+	in = InputState{} // HandleInput rewrites every field each frame
 	tc.Update(held)
 	tc.Apply(&in)
-	if in.Skills.SpecialAttack1 || in.Skills.SpecialAttack2 || in.Skills.SpecialAttack4 || !in.Menu {
-		t.Fatalf("held: K=%v L=%v O=%v menu=%v, want K/L/O false and menu still open", in.Skills.SpecialAttack1, in.Skills.SpecialAttack2, in.Skills.SpecialAttack4, in.Menu)
+	if in.Skills.SpecialAttack1 || in.Skills.SpecialAttack2 || in.Skills.SpecialAttack4 || in.Menu {
+		t.Fatalf("held: K=%v L=%v O=%v menu=%v, want all false", in.Skills.SpecialAttack1, in.Skills.SpecialAttack2, in.Skills.SpecialAttack4, in.Menu)
 	}
 
+	in = InputState{}
 	tc.Update(nil)
 	tc.Apply(&in)
 	tc.Update(held[3:])
 	tc.Apply(&in)
-	if in.Menu {
-		t.Error("second menu press should close the menu")
+	if !in.Menu {
+		t.Error("second menu press: menu=false, want true (each press pauses or resumes)")
 	}
 }
 

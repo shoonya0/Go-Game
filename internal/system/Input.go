@@ -48,9 +48,7 @@ func HandleInput(inputState *core.InputState) {
 	inputState.SmugFace = ebiten.IsKeyPressed(ebiten.KeyF)
 
 	// ---------------- menu ----------------
-	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		inputState.Menu = !inputState.Menu
-	}
+	inputState.Menu = inpututil.IsKeyJustPressed(ebiten.KeyEscape)
 
 	// ---------------- debug ----------------
 	inputState.ToggleHitboxes = inpututil.IsKeyJustPressed(ebiten.KeyF3)

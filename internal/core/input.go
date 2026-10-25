@@ -15,7 +15,7 @@ type InputState struct {
 	JumpHeld         bool     // jump button currently held
 	DashJustPressed  bool     // dash button pressed this frame
 	RunJustPressed   bool     // run modifier pressed this frame
-	Menu             bool     // menu toggled
+	Menu             bool     // Esc or the touch menu button pressed this frame: pauses (main-menu D7)
 	SmugFace         bool     // taunt button pressed
 	ToggleHitboxes   bool     // debug hitbox overlay toggled this frame
 	Interact         bool     // use button (E) pressed this frame: saves the portal the player stands in
