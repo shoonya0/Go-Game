@@ -10,7 +10,7 @@
       longer saves; a prompt shows at the portal and a short "saved" note after
       → check: `TestPortalSavesOnlyOnInteract`, `TestTapOnPortalSaves`, manual look
 - [x] 3a. The saved portal is drawn golden (D6) → check: `TestOnlySavedPortalIsGolden`, manual look
-- [ ] 4. Death respawns at the saved portal → check: `TestRespawnAtSavedPortal`
+- [x] 4. Death respawns at the saved portal → check: `TestRespawnAtSavedPortal`
 
 ## Increment 2: enemies come back
 

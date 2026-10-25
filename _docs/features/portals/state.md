@@ -1,11 +1,10 @@
 # Portals: state
 
-## Now (updated 2026-10-25 at `83ed262`)
+## Now (updated 2026-10-25 at `9171359`)
 
-- **Status:** 🟡 in progress; increment 1
-- **Current task:** 3 (save with E or a tap) committed (`01de9a3`..`83ed262`), reviewed (no blockers);
-  waits for the user's look in game, as does task 1 (gold, ground, `portalLift` = -10). Then tick
-  both and do 4 (`TestRespawnAtSavedPortal`; respawn already uses `StandPos`)
+- **Status:** 🟡 in progress; increment 1 code complete (tasks 2–4 done), waiting for the user's look
+  in game at tasks 1 and 3 (gold, ground, `portalLift` = -10, E/tap prompt); then increment 2,
+  task 5 (`Boss` flag) in [tasks.md](./tasks.md)
 - **Stopped at:** `updatePortals(portals, in)` (moved out of `updateCombat` into `UpdatePlayer`) saves
   only on `InputState.Interact` (E) or a `Tapped` screen point inside `Portal.tapArea` (doorway + half
   a tile). `TouchControls.Started` turns a just-pressed touch off every button into a one-frame tap.
@@ -18,6 +17,12 @@
   grid. Code 9 is non-solid. The game has no font: UI symbols are vector icons (`touch_icons.go`)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-25: task 4, respawn at the saved portal
+
+- Changed: `TestRespawnAtSavedPortal` only (behavior came with `00454fe`)
+- Verified: passes; fails when the respawn point is mutated back to the cell corner; `verify.mjs` 5/5
+- Docs touched: tasks, state
 
 ### 2026-10-25: task 3, save with E or a tap
 
