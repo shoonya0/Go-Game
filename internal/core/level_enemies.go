@@ -124,6 +124,24 @@ func spawnPos(bp *EnemyBlueprint, x, y int) Position {
 	}
 }
 
+// RespawnEnemies returns a level's enemies after the player respawns: a fresh
+// enemy at every non-boss spawn, killed or not, and each living boss as it is.
+// A killed boss is no longer in enemies, so it stays dead.
+func RespawnEnemies(spawns []EnemySpawn, enemies []*EnemyRuntime) []*EnemyRuntime {
+	revived := make([]*EnemyRuntime, 0, len(spawns))
+	for _, e := range enemies {
+		if e.bp.Boss {
+			revived = append(revived, e)
+		}
+	}
+	for _, s := range spawns {
+		if !blueprintFor(s.Kind).Boss {
+			revived = append(revived, NewEnemy(s.Kind, s.Pos))
+		}
+	}
+	return revived
+}
+
 // SpawnEnemies creates one enemy per spawn.
 func SpawnEnemies(spawns []EnemySpawn) []*EnemyRuntime {
 	enemies := make([]*EnemyRuntime, 0, len(spawns))

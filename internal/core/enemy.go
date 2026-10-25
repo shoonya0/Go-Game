@@ -58,6 +58,7 @@ type EnemyClip struct {
 type EnemyBlueprint struct {
 	Name       string
 	Marker     string // 1-2 character level-grid code that spawns this kind (e.g. @ or @%)
+	Boss       bool   // never revived: once killed, it stays dead (portals D4)
 	BodyWidth  float64
 	BodyHeight float64
 	Scale      float64  // render scale of the sprite
