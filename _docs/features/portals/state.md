@@ -1,23 +1,29 @@
 # Portals: state
 
-## Now (updated 2026-10-25 at `00454fe`)
+## Now (updated 2026-10-25 at `83ed262`)
 
 - **Status:** 🟡 in progress; increment 1
-- **Current task:** the saved portal is golden (D6, `00454fe`); the user fixed the blinking stone in
-  `portal.png` (`09eb174`). Waiting on the user's look in game (gold, ground, stone); then tick
-  task 1 and start 3 (save with E or a tap) in [tasks.md](./tasks.md)
-- **Stopped at:** `Portal.SavedBy(respawn)` picks the golden one; touching a portal now saves its
-  `StandPos` (as the start does), so death already respawns the player standing in it; task 4 still
-  needs `TestRespawnAtSavedPortal`. Loop plays at 5 fps; portal 2 tiles tall, 1 wide; the user
-  tunes `portalLift` (portal.go) by eye to set the art's height above the ground (user's calls)
+- **Current task:** 3 (save with E or a tap) committed (`01de9a3`..`83ed262`), reviewed (no blockers);
+  waits for the user's look in game, as does task 1 (gold, ground, `portalLift` = -10). Then tick
+  both and do 4 (`TestRespawnAtSavedPortal`; respawn already uses `StandPos`)
+- **Stopped at:** `updatePortals(portals, in)` (moved out of `updateCombat` into `UpdatePlayer`) saves
+  only on `InputState.Interact` (E) or a `Tapped` screen point inside `Portal.tapArea` (doorway + half
+  a tile). `TouchControls.Started` turns a just-pressed touch off every button into a one-frame tap.
+  `PortalSprite.DrawPrompt`: icons, not text (user's choice 2026-10-25): gold button with E or a tap
+  ring over the portal the player stands in, a fading check after a save
 - **Open questions / blockers:** D3 (E saves and opens the menu in one press) to confirm in play.
   `portal.png` is 3.6 MB but drawn 150 px tall (asset change, ask the user).
   `_asset_backups/` (untracked) is the user's own folder: never commit it
-- **Don't forget:** the portal sheet's cells drift (a few px per frame; row 2 sits 33 px higher),
-  so frames must be cropped to their art, not to the grid. Code 9 is non-solid. The art's base is
-  a stone disc with a rounded bottom: if it still looks like it floats, sink it a few px
+- **Don't forget:** the portal sheet's cells drift, so frames are cropped to their art, not to the
+  grid. Code 9 is non-solid. The game has no font: UI symbols are vector icons (`touch_icons.go`)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-25: task 3, save with E or a tap
+
+- Changed: `InputState.Interact/Tapped/TapAt`, E in system/Input.go, touch taps, `updatePortals(…, in)`, `AABB.Contains`, `DrawPrompt` icons
+- Verified: `TestPortalSavesOnlyOnInteract`, `TestTapOnPortalSaves`, `TestTouchTapOffButtons` failed first (build); `verify.mjs --full` 8/8; `code-reviewer`: no blockers, 3 notes fixed (just-pressed taps, tap area over the prompt, 2 tests)
+- Docs touched: state
 
 ### 2026-10-25: golden saved portal
 
