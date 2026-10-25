@@ -19,8 +19,13 @@ const (
 	portalFPS              = 5
 	portalAlphaMin         = 40 // fainter pixels aren't art (a glow fringe, the sheet's corner mark)
 
-	portalHeight = 2.5 * LevelTileHeight // drawn height of the art, and of its area
-	portalWidth  = 1.5 * LevelTileWidth  // the doorway the player stands in
+	portalHeight = 2 * LevelTileHeight // drawn height of the art, and of its area
+	portalWidth  = 1 * LevelTileWidth  // the doorway the player stands in
+
+	// portalLift raises the drawn art above the ground, in px (negative sinks it
+	// in). Only the picture moves: the doorway and where the player stands stay
+	// on the ground.
+	portalLift = 0.0
 )
 
 // savedPortalTint draws the saved portal golden: the blue art is turned gray,
@@ -67,7 +72,7 @@ func (s *PortalSprite) Draw(screen *ebiten.Image, portals []Portal, respawn, cam
 		b := p.Bounds()
 		var geo ebiten.GeoM
 		geo.Scale(s.scale, s.scale)
-		geo.Translate(centerX(b)-w/2-cam.X, b.Y+b.Height-h-cam.Y)
+		geo.Translate(centerX(b)-w/2-cam.X, b.Y+b.Height-h-portalLift-cam.Y)
 		if p.SavedBy(respawn) {
 			colorm.DrawImage(screen, frame, savedPortalTint, &colorm.DrawImageOptions{GeoM: geo})
 			continue
