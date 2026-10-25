@@ -198,3 +198,31 @@ func TestTapOnPortalSaves(t *testing.T) {
 		t.Errorf("tap on the portal: respawn %v, want its StandPos %v", p.RespawnPos, level.Portals[1].StandPos())
 	}
 }
+
+// TestRespawnAtSavedPortal: after dying, the player is back standing in the
+// last saved portal, not the start one, with full health and power.
+func TestRespawnAtSavedPortal(t *testing.T) {
+	withDeath(t, false)
+	level, p := twoPortals(t)
+	p.Pos = level.Portals[1].StandPos()
+	p.updatePortals(level.Portals, &InputState{Interact: true})
+
+	p.Pos = Position{X: 2.5 * LevelTileWidth, Y: 0} // wander off, then die there
+	p.Combat.Power = 0
+	p.ApplyDamage(p.Combat.Health)
+	p.updateCombat(nil, true)
+	for i := 0; i < 5*int(tps()) && p.State.IsDying(); i++ {
+		p.UpdateAnimation()
+		p.PreviousState = p.State
+	}
+
+	if p.State.IsDying() {
+		t.Fatal("still dying after 5 s")
+	}
+	if want := level.Portals[1].StandPos(); p.Pos != want {
+		t.Errorf("respawned at %v, want standing in the saved portal at %v", p.Pos, want)
+	}
+	if p.Combat.Health != p.Combat.MaxHealth || p.Combat.Power != p.Combat.MaxPower {
+		t.Errorf("health %d/%d power %v/%v, want both full", p.Combat.Health, p.Combat.MaxHealth, p.Combat.Power, p.Combat.MaxPower)
+	}
+}
