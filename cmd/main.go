@@ -29,6 +29,8 @@ type Game struct {
 	backgroundPath string // the asset background was loaded from
 	tileset        *ebiten.Image
 	portals        *core.PortalSprite
+	travel         *core.TravelMenu // opened by holding E (or a touch) at a portal
+	view           *ebiten.Image    // scratch screen for drawing a portal's thumbnail
 
 	showHitboxes bool // debug overlay, toggled with F3
 }
@@ -55,6 +57,8 @@ func NewGame() *Game {
 		tileset: core.LoadImage(core.Tileset),
 		touch:   touch,
 		portals: core.NewPortalSprite(),
+		travel:  core.NewTravelMenu(screenWidth, screenHeight),
+		view:    ebiten.NewImage(screenWidth, screenHeight),
 	}
 	g.syncBackground()
 	return g
@@ -75,6 +79,16 @@ func (g *Game) Update() error {
 	if g.input.ToggleHitboxes {
 		g.showHitboxes = !g.showHitboxes
 	}
+	if g.travel.Open { // the game is paused while the travel menu is open
+		if ref, ok := g.travel.Update(&g.input); ok {
+			if err := g.world.Travel(g.player, ref); err != nil {
+				log.Printf("travel: %v", err)
+			}
+			g.syncBackground()
+		}
+		g.portals.Update()
+		return nil
+	}
 
 	core.UpdatePlayer(g.player, &g.input, g.world.Quadtree, g.world.Level.Portals)
 	g.player.UpdateAnimation()
@@ -84,10 +98,15 @@ func (g *Game) Update() error {
 
 	if g.player.Respawns != g.respawns {
 		g.respawns = g.player.Respawns
-		g.world.Enemies = core.RespawnEnemies(g.world.Level.Enemies, g.world.Enemies)
+		g.world.Respawned(g.player)
+		g.syncBackground()
 	}
 	g.updateEnemies()
 	g.portals.Update()
+	g.captureThumbs()
+	if g.player.TravelAsked() {
+		g.travel.OpenFor(g.player)
+	}
 
 	return nil
 }
@@ -104,6 +123,27 @@ func (g *Game) updateEnemies() {
 		}
 	}
 	g.world.Enemies = live
+}
+
+// captureThumbs gives each portal that just became active its thumbnail for
+// the travel menu: the level around it, drawn once into the scratch screen.
+func (g *Game) captureThumbs() {
+	for _, c := range g.world.Level.Portals {
+		ref := c.Ref()
+		if g.player.PortalLook(c) == core.PortalInactive || g.travel.HasThumb(ref) {
+			continue
+		}
+		cam := g.player.Camera
+		b := c.Bounds()
+		g.player.Camera.Pos = core.Position{X: b.X + b.Width/2 - screenWidth/2, Y: b.Y + b.Height/2 - screenHeight/2}
+		g.view.Clear()
+		g.player.DrawParallaxBackground(g.view, g.background, screenWidth, screenHeight, g.world.Def.Width)
+		g.player.DrawLevel(g.view, g.world.Quadtree, screenWidth, screenHeight, g.tileset)
+		g.portals.Draw(g.view, []core.Portal{c}, g.player)
+		g.player.DrawWater(g.view, g.world.Quadtree, screenWidth, screenHeight, g.tileset)
+		g.player.Camera = cam
+		g.travel.SetThumb(ref, g.view)
+	}
 }
 
 // Draw renders one frame: background, level, then player.
@@ -128,6 +168,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	} else {
 		g.player.DrawHUD(screen)
 	}
+	g.travel.Draw(screen)
 	g.touch.Draw(screen)
 }
 

@@ -254,21 +254,27 @@ func (p *PlayerRuntime) applyFallDamage(onGround, inWater bool) {
 
 // respawn returns the player to the active portal with full pools.
 func (p *PlayerRuntime) respawn() {
-	p.Pos = p.RespawnPos
+	p.placeAt(p.RespawnPos)
 	p.Respawns++
 	p.Combat.Health = p.Combat.MaxHealth
 	p.Combat.Power = p.Combat.MaxPower
+	p.exhausted = false
+	p.damageFlash = 0
+}
+
+// placeAt puts the player at pos standing still and idle, as if just arrived:
+// no fall, hazard or push carries over.
+func (p *PlayerRuntime) placeAt(pos Position) {
+	p.Pos = pos
 	p.Physics.VelX = 0
 	p.Physics.VelY = 0
 	p.State.SetPlayerState(int(PlayerStateIdle))
-	p.fallPeakY = p.RespawnPos.Y
+	p.fallPeakY = pos.Y
 	p.groundedPrev = false
 	p.wasInLarva = false
 	p.waterDamageAccum = 0
 	p.inWater = false
 	p.running = false
-	p.exhausted = false
-	p.damageFlash = 0
 	p.knockTicks = 0
 }
 

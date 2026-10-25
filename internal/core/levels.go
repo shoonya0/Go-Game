@@ -1,6 +1,9 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 // LevelDef says where a named level comes from: the JSON bundle and key its
 // grid is read from, its background image and its size in world pixels.
@@ -72,4 +75,33 @@ func (w *World) SwitchLevel(name string) error {
 
 	w.Name, w.Def, w.Level, w.Quadtree, w.Enemies = name, def, level, qt, enemies
 	return nil
+}
+
+// Travel takes p to the portal ref, standing in it, switching level first
+// when the portal is in another one.
+func (w *World) Travel(p *PlayerRuntime, ref PortalRef) error {
+	if ref.Level != w.Name {
+		if err := w.SwitchLevel(ref.Level); err != nil {
+			return err
+		}
+	}
+	for _, c := range w.Level.Portals {
+		if c.Ref() == ref {
+			p.placeAt(c.StandPos())
+			return nil
+		}
+	}
+	return fmt.Errorf("no portal at %v in level %q", ref.Cell, ref.Level)
+}
+
+// Respawned follows a player respawn: back to the checkpoint's level when it
+// is another one (respawn placed p at RespawnPos), and the level's non-boss
+// enemies revived.
+func (w *World) Respawned(p *PlayerRuntime) {
+	if p.Checkpoint.Level != w.Name {
+		if err := w.Travel(p, p.Checkpoint); err != nil {
+			log.Printf("respawn: %v", err)
+		}
+	}
+	w.Enemies = RespawnEnemies(w.Level.Enemies, w.Enemies)
 }
