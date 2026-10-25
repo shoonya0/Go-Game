@@ -139,6 +139,35 @@ func TestTravelMakesDestinationCheckpoint(t *testing.T) {
 	}
 }
 
+// TestTravelRevivesEnemies: after any travel, also inside the same level,
+// the level's non-boss enemies are back fresh at their spawns (D11).
+func TestTravelRevivesEnemies(t *testing.T) {
+	WorldInit()
+	w, err := NewWorld(StartLevel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := InitPlayer(nil)
+	p.StartAt(w.Level)
+	w.Enemies[1].TakeDamage(1)
+	w.Enemies[1].Pos.X += 200
+	w.Enemies = w.Enemies[1:] // the first was killed and culled
+
+	if err := w.Travel(p, w.Level.Portals[len(w.Level.Portals)-1].Ref()); err != nil {
+		t.Fatal(err)
+	}
+	if len(w.Enemies) != len(w.Level.Enemies) {
+		t.Fatalf("after travel: %d enemies, want all %d revived", len(w.Enemies), len(w.Level.Enemies))
+	}
+	for i, e := range w.Enemies {
+		want := NewEnemy(w.Level.Enemies[i].Kind, w.Level.Enemies[i].Pos)
+		if e.bp != want.bp || e.Pos != want.Pos || e.Health != want.Health || e.State != EnemyPatrol {
+			t.Errorf("enemy %d: %s at %v, health %d, state %d; want a fresh %s at %v, health %d, patrolling",
+				i, e.bp.Name, e.Pos, e.Health, e.State, want.bp.Name, want.Pos, want.Health)
+		}
+	}
+}
+
 // TestRespawnInCheckpointLevel: dying in another level than the checkpoint's
 // brings the player back to the checkpoint's level, standing in it, with that
 // level's enemies revived.

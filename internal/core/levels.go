@@ -81,7 +81,8 @@ func (w *World) SwitchLevel(name string) error {
 }
 
 // Travel takes p to the portal ref, standing in it, switching level first
-// when the portal is in another one. That portal becomes the checkpoint (D10).
+// when the portal is in another one. That portal becomes the checkpoint (D10)
+// and the level's non-boss enemies revive, also inside the same level (D11).
 func (w *World) Travel(p *PlayerRuntime, ref PortalRef) error {
 	if ref.Level != w.Name {
 		if err := w.SwitchLevel(ref.Level); err != nil {
@@ -92,6 +93,7 @@ func (w *World) Travel(p *PlayerRuntime, ref PortalRef) error {
 		if c.Ref() == ref {
 			p.placeAt(c.StandPos())
 			p.activatePortal(c)
+			w.Enemies = RespawnEnemies(w.Level.Enemies, w.Enemies)
 			return nil
 		}
 	}

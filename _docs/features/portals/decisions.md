@@ -70,3 +70,10 @@
   checkpoint (gold, the respawn point). The portal left from stays active.
 - **Why:** the user asked for it: after a teleport the player respawns where they went, not
   where they came from.
+
+## D11. Every travel revives the level's enemies (2026-10-25, user)
+
+- **Decision:** after a teleport the non-boss enemies of the level arrived in are back at
+  their spawns, also when the portal is in the same level. Killed bosses stay dead (D4).
+- **Why:** the user asked for it: a teleport refreshes the area like a respawn does.
+- **Extends:** D4 (which revived only on death and on entering another level).

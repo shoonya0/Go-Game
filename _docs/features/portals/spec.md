@@ -18,7 +18,8 @@ passage to other levels, open-world enemy revival). Their answers are in
   and makes it the checkpoint (D10); closing the menu stays put.
 - When the player **dies**, they respawn at the saved portal and every non-boss enemy of
   that level is back at its spawn point with full health.
-- **Entering a level** through a portal brings back all its non-boss enemies too.
+- **Entering a level** through a portal, and any teleport inside a level (D11), brings back
+  all its non-boss enemies too.
   Bosses that were killed stay dead.
 
 ## Acceptance criteria
@@ -29,7 +30,7 @@ passage to other levels, open-world enemy revival). Their answers are in
    makes it the checkpoint. Inactive portals draw one still frame, active ones the loop in
    their own colors, the checkpoint the loop in gold.
 4. Death respawns the player at the last saved portal with full health and power.
-5. Death respawn and entering a level reset every non-boss enemy of that level to its spawn
+5. Death respawn, entering a level and any teleport reset every non-boss enemy of that level to its spawn
    (alive, full health, patrolling); a killed boss stays dead.
 6. Holding E (or a long press) 0.5 s at a portal opens the travel menu. It lists exactly
    the active portals, as thumbnails in a column, and moves the player to the one picked,
