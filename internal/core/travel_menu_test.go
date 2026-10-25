@@ -169,3 +169,27 @@ func TestHoldSavesThePortal(t *testing.T) {
 		t.Errorf("asked=%v checkpoint %v, want the menu asked and %v saved", p.TravelAsked(), p.Checkpoint, level.Portals[1].Ref())
 	}
 }
+
+// TestTravelMenuWaitRelease: after WaitRelease, an E already held when the
+// game starts (it picked the title menu item) doesn't open the menu at the
+// start portal; once let go, a new hold does.
+func TestTravelMenuWaitRelease(t *testing.T) {
+	level, p := twoPortals(t)
+	hold := travelHoldTicks()
+	p.Pos = level.Portals[1].StandPos()
+	m := NewTravelMenu(1360, 768)
+	m.WaitRelease()
+
+	in := &InputState{InteractTicks: hold}
+	p.updatePortals(level.Portals, in)
+	m.MaybeOpen(p, in)
+	if m.Open {
+		t.Fatal("E held since the title menu opened the travel menu")
+	}
+	m.MaybeOpen(p, &InputState{}) // let go
+	p.updatePortals(level.Portals, in)
+	m.MaybeOpen(p, in)
+	if !m.Open {
+		t.Error("a new hold after letting go did not open the travel menu")
+	}
+}

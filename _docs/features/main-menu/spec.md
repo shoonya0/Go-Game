@@ -11,7 +11,8 @@ Asked by the user 2026-10-25. Levels (a second level) are a separate, later feat
   a save exists it first asks to confirm (Yes / No) ([D4](./decisions.md)).
 - **Continue** starts at the saved checkpoint portal (in its level), standing in it, with
   full health and power, and every portal used before still active. Drawn grayed and
-  skipped by the pick when there is no save.
+  skipped by the pick when there is no save. With a save the pick starts on Continue, and
+  the game behind the title shows where Continue starts.
 - **Settings** opens the settings screen. **Quit** closes the game on desktop; on the web it
   isn't shown ([D6](./decisions.md)).
 

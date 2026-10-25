@@ -11,7 +11,8 @@ import (
 )
 
 // uiFont is the menus' pixel font, Press Start 2P (main-menu D1), parsed on
-// first use.
+// first use. The fonts package's other font isn't referenced, so the linker
+// leaves it out of the binary.
 var uiFont *text.GoTextFaceSource
 
 func uiFace(size float64) *text.GoTextFace {

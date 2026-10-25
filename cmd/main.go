@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"log"
+	"runtime"
 
 	"player/internal/core"
 	"player/internal/system"
@@ -17,13 +19,14 @@ const (
 
 // Game wires the engine's subsystems together and satisfies ebiten.Game.
 type Game struct {
-	state core.GameState
-	input core.InputState
-	touch *core.TouchControls // on-screen buttons for touch screens
+	screens *core.Screens // the menus over the game; ScreenNone while playing
+	input   core.InputState
+	touch   *core.TouchControls // on-screen buttons for touch screens
 
-	player   *core.PlayerRuntime
-	world    *core.World // the current level: platforms, portals, enemies
-	respawns int         // player respawns already handled (enemies revived)
+	player      *core.PlayerRuntime
+	playerSheet *ebiten.Image
+	world       *core.World // the current level: platforms, portals, enemies
+	respawns    int         // player respawns already handled (enemies revived)
 
 	background     *ebiten.Image
 	backgroundPath string // the asset background was loaded from
@@ -37,50 +40,81 @@ type Game struct {
 	showHitboxes bool // debug overlay, toggled with F3
 }
 
-// NewGame loads assets, builds the level and returns a ready-to-run Game.
+// NewGame loads assets and returns a Game on its title screen.
 func NewGame() *Game {
 	core.WorldInit()
-
-	world, err := core.NewWorld(core.StartLevel)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	touch := core.NewTouchControls(screenWidth, screenHeight)
 	touch.Enabled = system.IsTouchDevice()
 
-	player := core.InitPlayer(core.LoadImage(playerSpriteSheetPath))
-	player.StartAt(world.Level)
-	continueSave(world, player) // until the title screen's Continue exists
-
 	g := &Game{
-		state:   core.ModeMenu,
-		player:  player,
-		world:   world,
-		tileset: core.LoadImage(core.Tileset),
-		touch:   touch,
-		portals: core.NewPortalSprite(),
-		travel:  core.NewTravelMenu(screenWidth, screenHeight),
-		view:    ebiten.NewImage(screenWidth, screenHeight),
+		screens:     core.NewScreens(screenWidth, screenHeight, runtime.GOOS != "js"), // a page can't close its tab (D6)
+		playerSheet: core.LoadImage(playerSpriteSheetPath),
+		tileset:     core.LoadImage(core.Tileset),
+		touch:       touch,
+		portals:     core.NewPortalSprite(),
+		view:        ebiten.NewImage(screenWidth, screenHeight),
 	}
-	g.syncBackground()
+	g.openTitle()
 	return g
 }
 
-// continueSave puts the player where the stored save left off. A missing or
-// unreadable save leaves the new game as it is.
-func continueSave(world *core.World, player *core.PlayerRuntime) {
-	data, ok := system.LoadRecord(core.SaveKey)
-	if !ok {
-		return
-	}
-	s, err := core.DecodeSave(data)
+// openTitle shows the title screen over the stored save's game, ready for
+// Continue, or over a new game when there is no save it can use.
+func (g *Game) openTitle() {
+	s, err := loadSave()
 	if err == nil {
-		err = world.Continue(player, s)
+		err = g.startRun(&s)
 	}
 	if err != nil {
-		log.Printf("save ignored: %v", err)
+		if !errors.Is(err, errNoSave) {
+			log.Printf("save ignored: %v", err)
+		}
+		_ = g.startRun(nil)
 	}
+	g.screens.OpenTitle(err == nil)
+}
+
+var errNoSave = errors.New("no save")
+
+// loadSave reads the stored save.
+func loadSave() (core.SaveData, error) {
+	data, ok := system.LoadRecord(core.SaveKey)
+	if !ok {
+		return core.SaveData{}, errNoSave
+	}
+	return core.DecodeSave(data)
+}
+
+// startRun sets up a fresh run: a new game standing in the start portal, or,
+// given a save, standing in its checkpoint with its portals active.
+func (g *Game) startRun(save *core.SaveData) error {
+	world, err := core.NewWorld(core.StartLevel)
+	if err != nil {
+		log.Fatal(err)
+	}
+	player := core.InitPlayer(g.playerSheet)
+	player.StartAt(world.Level)
+	if save != nil {
+		if err := world.Continue(player, *save); err != nil {
+			return err
+		}
+	}
+	player.UpdateCamera(screenWidth, screenHeight, world.Def.Width, world.Def.Height) // the menus show the player behind them
+	g.world, g.player, g.respawns = world, player, 0
+	g.travel = core.NewTravelMenu(screenWidth, screenHeight)
+	g.travel.WaitRelease() // the E or tap that picked the menu item can't open it
+	g.autosave = core.Autosave{}
+	g.syncBackground()
+	return nil
+}
+
+// newGame wipes the save and starts in the start portal.
+func (g *Game) newGame() {
+	if err := system.DeleteRecord(core.SaveKey); err != nil {
+		log.Printf("wipe save: %v", err)
+	}
+	_ = g.startRun(nil)
 }
 
 // saveProgress stores the player's progress when it changed since the last write.
@@ -113,6 +147,17 @@ func (g *Game) Update() error {
 	system.HandleTouch(&g.input, g.touch)
 	if g.input.ToggleHitboxes {
 		g.showHitboxes = !g.showHitboxes
+	}
+	if g.screens.Current != core.ScreenNone { // the game waits behind the menus
+		switch g.screens.Update(&g.input) {
+		case core.ActionNewGame:
+			g.newGame()
+		case core.ActionQuit:
+			return ebiten.Termination
+		}
+		// ActionContinue: the save's game is already set up behind the title.
+		g.portals.Update()
+		return nil
 	}
 	if g.travel.Open { // the game is paused while the travel menu is open
 		if ref, ok := g.travel.Update(&g.input); ok {
@@ -193,6 +238,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.player.DrawGroundWaves(screen)
 	// Water is drawn after the player so the player appears submerged in it.
 	g.player.DrawWater(screen, g.world.Quadtree, screenWidth, screenHeight, g.tileset)
+	if g.screens.Current != core.ScreenNone {
+		g.screens.Draw(screen)
+		return
+	}
 	g.portals.DrawPrompt(screen, g.world.Level.Portals, g.player, g.touch.Enabled)
 	if g.showHitboxes {
 		g.drawHitboxes(screen)
