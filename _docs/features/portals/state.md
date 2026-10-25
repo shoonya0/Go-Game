@@ -4,7 +4,7 @@
 
 - **Status:** 🟡 in progress; user's redesign (D7–D9) built: tasks 7, 8a, 8b, 8d done, 8c (menu
   thumbnails) waits for the user's look. Next: user's look in game, then task 9 in [tasks.md](./tasks.md)
-- **Stopped at:** looks by `PlayerRuntime.PortalLook` (inactive = frame 0, active = loop,
+- **Stopped at:** looks by `PlayerRuntime.PortalLook` (inactive = frame 0 in dark gray, `inactivePortalTint`; active = loop,
   checkpoint = gold); E/tap `activatePortal` (adds to `ActivePortals`, sets `Checkpoint`).
   `TravelAsked()` fires once when `InputState.InteractTicks` or a `TouchHoldTicks` on the portal
   reaches `travelHoldTicks()` (0.5 s); main opens `TravelMenu` and pauses. Thumbnails: main's

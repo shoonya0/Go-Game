@@ -43,7 +43,8 @@
 
 ## D7. Three looks: inactive, active, checkpoint (2026-10-25, user)
 
-- **Decision:** a portal the player never used is one still frame (inactive). Using it
+- **Decision:** a portal the player never used is one still frame in a dull dark gray
+  (inactive; gray added 2026-10-25, user). Using it
   activates it: animated, in the art's own colors. The checkpoint (respawn point) is the gold
   one (D6). Only one portal is the checkpoint; the others the player used stay active.
 - **Why:** the player sees at a glance which portals they found and which one they respawn at.

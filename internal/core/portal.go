@@ -66,6 +66,13 @@ var savedPortalTint = func() colorm.ColorM {
 	return cm
 }()
 
+// inactivePortalTint draws a portal never used dull: gray and darkened (D7).
+var inactivePortalTint = func() colorm.ColorM {
+	var cm colorm.ColorM
+	cm.ChangeHSV(0, 0, 0.4)
+	return cm
+}()
+
 // PortalSprite draws every portal of a level with one shared animation.
 type PortalSprite struct {
 	img    *ebiten.Image
@@ -100,8 +107,8 @@ func NewPortalSprite() *PortalSprite {
 func (s *PortalSprite) Update() { s.t += deltaTime() }
 
 // Draw draws each portal centered on its cell with its base on the ground, as
-// player sees it (PortalLook): an inactive one still on the first frame, an
-// active one looping, the checkpoint looping in gold.
+// player sees it (PortalLook): an inactive one still on the first frame in dark
+// gray, an active one looping, the checkpoint looping in gold.
 func (s *PortalSprite) Draw(screen *ebiten.Image, portals []Portal, player *PlayerRuntime) {
 	cam := player.Camera.Pos
 	loop := int(s.t*portalFPS) % len(s.frames)
@@ -117,11 +124,14 @@ func (s *PortalSprite) Draw(screen *ebiten.Image, portals []Portal, player *Play
 		var geo ebiten.GeoM
 		geo.Scale(s.scale, s.scale)
 		geo.Translate(centerX(b)-w/2-cam.X, b.Y+b.Height-h-portalLift-cam.Y)
-		if look == PortalCheckpoint {
+		switch look {
+		case PortalCheckpoint:
 			colorm.DrawImage(screen, frame, savedPortalTint, &colorm.DrawImageOptions{GeoM: geo})
-			continue
+		case PortalInactive:
+			colorm.DrawImage(screen, frame, inactivePortalTint, &colorm.DrawImageOptions{GeoM: geo})
+		default:
+			screen.DrawImage(frame, &ebiten.DrawImageOptions{GeoM: geo})
 		}
-		screen.DrawImage(frame, &ebiten.DrawImageOptions{GeoM: geo})
 	}
 }
 

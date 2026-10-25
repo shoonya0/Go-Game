@@ -22,9 +22,9 @@
 
 - [x] 7. Levels by name: the game holds the current level and can switch to another
       (platforms, portals, enemies, background) → check: `TestSwitchLevel`
-- [x] 8a. Portal looks (D7): inactive = one still frame, active = loop, checkpoint = gold;
+- [x] 8a. Portal looks (D7): inactive = one still frame in dark gray, active = loop, checkpoint = gold;
       E/tap activates and makes it the checkpoint; active portals remembered by level + cell
-      → check: `TestPortalActivatesOnInteract`, `TestPortalLooks`, manual look
+      → check: `TestPortalActivatesOnInteract`, `TestPortalLooks`, `TestInactivePortalIsDullGray`, manual look
 - [x] 8b. Hold E 0.5 s, or a long press on the portal, opens the travel menu (D8); up/down
       pick, E/Enter travel, Esc or a tap outside closes; the game pauses while it is open
       → check: `TestHoldEOpensTravelMenu`, `TestTravelMenuListsActivePortals`, `TestTouchHoldFollowsTheFinger`

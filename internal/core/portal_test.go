@@ -274,3 +274,17 @@ func TestPortalLooks(t *testing.T) {
 		t.Errorf("same cell in another level: look %v, want inactive", got)
 	}
 }
+
+// TestInactivePortalIsDullGray: the inactive tint turns the portal's blue art
+// into a dark gray, darker than the art itself (D7).
+func TestInactivePortalIsDullGray(t *testing.T) {
+	blue := color.NRGBA{R: 60, G: 140, B: 230, A: 255}
+	r, g, b, _ := inactivePortalTint.Apply(blue).RGBA()
+	r8, g8, b8 := int(r>>8), int(g>>8), int(b>>8)
+	if spread := max(r8, g8, b8) - min(r8, g8, b8); spread > 12 {
+		t.Errorf("tinted %d,%d,%d: channels %d apart, want a gray (≤ 12)", r8, g8, b8, spread)
+	}
+	if max(r8, g8, b8) >= int(blue.B)/2 {
+		t.Errorf("tinted %d,%d,%d: want dark, under half the art's brightest channel %d", r8, g8, b8, blue.B)
+	}
+}
