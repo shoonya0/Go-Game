@@ -25,7 +25,7 @@ const (
 	// portalLift raises the drawn art above the ground, in px (negative sinks it
 	// in). Only the picture moves: the doorway and where the player stands stay
 	// on the ground.
-	portalLift = 0.0
+	portalLift = -10.0
 )
 
 // savedPortalTint draws the saved portal golden: the blue art is turned gray,
