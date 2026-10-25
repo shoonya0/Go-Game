@@ -11,7 +11,7 @@
 
 ## Increment 2: title screen
 
-- [ ] 4. Font: `go get` for `text/v2` (D1), a small text-drawing helper → check: `node scripts/verify.mjs --full`
+- [x] 4. Font: `go get` for `text/v2` (D1), a small text-drawing helper → check: `node scripts/verify.mjs --full`
 - [ ] 5. Main menu screen (items, keys / tap / mouse, Continue grayed without a save); the game
   opens on it → check: `go test ./internal/core -run TestMenu -v`
 - [ ] 6. New Game (confirm when a save exists, D4) and Continue → check: tests + `go run ./cmd`

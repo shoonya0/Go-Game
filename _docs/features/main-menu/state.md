@@ -3,7 +3,7 @@
 ## Now (updated 2026-10-25 at `aaa849c`)
 
 - **Status:** 🟡 in progress
-- **Current task:** 4 (font) in [tasks.md](./tasks.md)
+- **Current task:** 5 (main menu screen) in [tasks.md](./tasks.md); task 4 done (`internal/core/text.go`, `TestTextSize`)
 - **Stopped at:** increment 1 done: the game autosaves to `%AppData%\PirateAdventure\save.json`
   and, until the title screen exists, continues from it on startup (`continueSave` in
   `cmd/main.go`; task 6 moves it under Continue). Checked by a restart with a hand-written save. Branch `feature/main-menu`
