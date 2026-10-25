@@ -1,24 +1,28 @@
 # Portals: state
 
-## Now (updated 2026-10-24 at `3f3b728`)
+## Now (updated 2026-10-25 at `00454fe`)
 
 - **Status:** 🟡 in progress; increment 1
-- **Current task:** user looked in game: start at the portal confirmed (D5 ✓); floating portal fixed
-  (`3f3b728`), to recheck in game. Task 1 stays open for the flickering rock (below); next 3 (save
-  with E or a tap) in [tasks.md](./tasks.md)
-- **Stopped at:** a portal's base and `StandPos` sit on the ground's solid top: `Portal.FloorDrop`
-  (26.6 px under grass, sand, water) set by `BuildLevel`. Touching any portal still saves (until
-  task 3), but at the cell's top-left, not `StandPos`
-- **Open questions / blockers:** the arch's top-left stone is missing from the source art in
-  frames 2–4, 6 and 9–11 (not a crop bug), so it flickers: ask the user to fix the asset, or play
-  only the 7 frames that have it. D3 (E saves and opens the menu in one press) to confirm in play.
-  `portal.png` is 5.6 MB but drawn 150 px tall (asset change, ask the user)
+- **Current task:** the saved portal is golden (D6, `00454fe`); the user fixed the blinking stone in
+  `portal.png` (`09eb174`). Waiting on the user's look in game (gold, ground, stone); then tick
+  task 1 and start 3 (save with E or a tap) in [tasks.md](./tasks.md)
+- **Stopped at:** `Portal.SavedBy(respawn)` picks the golden one; touching a portal now saves its
+  `StandPos` (as the start does), so death already respawns the player standing in it; task 4 still
+  needs `TestRespawnAtSavedPortal`. Loop plays at 5 fps (user's call)
+- **Open questions / blockers:** D3 (E saves and opens the menu in one press) to confirm in play.
+  `portal.png` is 3.6 MB but drawn 150 px tall (asset change, ask the user).
+  `_asset_backups/` (untracked) is the user's own folder: never commit it
 - **Don't forget:** the portal sheet's cells drift (a few px per frame; row 2 sits 33 px higher),
-  so frames must be cropped to their art, not to the grid. `updatePortals` must save
-  `cp.StandPos()`, not `cp.Pos` (task 3 or 4). Code 9 is non-solid. The art's base is a stone
-  disc with a rounded bottom: if it still looks like it floats, sink it a few px
+  so frames must be cropped to their art, not to the grid. Code 9 is non-solid. The art's base is
+  a stone disc with a rounded bottom: if it still looks like it floats, sink it a few px
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-25: golden saved portal
+
+- Changed: `savedPortalTint` + `Draw(…, respawn, …)` (portal.go), `Portal.SavedBy`, `updatePortals` saves `StandPos`; user's `portal.png` fix committed
+- Verified: `TestOnlySavedPortalIsGolden` failed first (build); `verify.mjs --full` 8/8; gold previewed offline
+- Docs touched: decisions (D6), tasks, state
 
 ### 2026-10-24: user's look in game; floating portal fixed
 

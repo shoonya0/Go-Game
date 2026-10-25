@@ -9,6 +9,7 @@
 - [ ] 3. Save with E, or a tap on the portal (touch), while overlapping it; touching alone no
       longer saves; a prompt shows at the portal and a short "saved" note after
       → check: `TestPortalSavesOnlyOnInteract`, `TestTapOnPortalSaves`, manual look
+- [x] 3a. The saved portal is drawn golden (D6) → check: `TestOnlySavedPortalIsGolden`, manual look
 - [ ] 4. Death respawns at the saved portal → check: `TestRespawnAtSavedPortal`
 
 ## Increment 2: enemies come back
@@ -31,6 +32,6 @@
 
 - [ ] Keep saved portals across game restarts (file on Windows, browser storage on the web)
 - [ ] A second level to travel to
-- [ ] `portal.png` is 5.6 MB but drawn 150 px tall: a 3× smaller copy would cut the web download
+- [ ] `portal.png` is 3.6 MB (was 5.6) but drawn 150 px tall: a 3× smaller copy would cut the web download
 - [ ] `portal.png` has an AI sparkle mark in its bottom-right corner (inside the last frame's
       cell): crop it out of the asset

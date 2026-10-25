@@ -27,9 +27,16 @@
   to their spawns. Bosses never revive; a blueprint says whether it is one.
 - **Why:** open-world loop: cleared areas fill up again, bosses are one-time.
 
-## D5. The start portal is the first code 9 in reading order (2026-10-24, my call)
+## D5. The start portal is the first code 9 in reading order (2026-10-24, my call; user confirmed in play 2026-10-24)
 
 - **Decision:** a new game starts at the level's first 9 (top row first, then left to right),
   already saved, instead of the hard-coded (100, 100).
 - **Why:** the user asked to spawn the player with a portal; moving a 9 in the grid moves the
   start. Change it if level 1's top-left portal is the wrong start.
+
+## D6. The saved portal is golden (2026-10-25, user)
+
+- **Decision:** the portal holding the respawn point is drawn gold; the others keep the blue art.
+- **Why:** the user wants to see which portal is their checkpoint. Done with a color matrix
+  (gray, then scaled toward gold), not a second sheet: plain RGB scaling can't turn blue art
+  gold, and a tinted copy would double the 3194×1344 texture.
