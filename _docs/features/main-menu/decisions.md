@@ -9,8 +9,11 @@
 
 ## D2. A save holds portals and settings only (2026-10-25)
 
-- **Decision:** active portals, checkpoint, settings. No position, health or enemies:
-  Continue starts in the checkpoint like a respawn, matching "spawn at the last portal".
+- **Decision:** the save holds the active portals and the checkpoint, nothing else. No
+  position, health or enemies: Continue starts in the checkpoint like a respawn, matching
+  "spawn at the last portal". Settings are a second record, so New Game wipes the save and
+  keeps them. Portals of the save that no longer exist (a level edited) are dropped; a
+  missing checkpoint makes the save unreadable.
 - **Why:** an Ori-style open world where the portal is the save point; fewer fields to keep
   compatible.
 

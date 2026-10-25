@@ -2,7 +2,7 @@
 
 ## Increment 1: save that survives restarts (spec: [spec.md](./spec.md) "Save")
 
-- [ ] 1. `core.SaveData` (portals, checkpoint, settings) with snapshot from the player and
+- [x] 1. `core.SaveData` (portals, checkpoint; settings kept apart, D2) with snapshot from the player and
   restore into world + player (checkpoint level, standing in it); bad data → error →
   check: `go test ./internal/core -run TestSave -v`
 - [ ] 2. Storage in `internal/system`: file on desktop, `localStorage` on the web (build

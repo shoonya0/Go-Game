@@ -17,7 +17,7 @@ Asked by the user 2026-10-25. Levels (a second level) are a separate, later feat
 
 ## Save
 
-- Holds the active portals, the checkpoint and the settings ([D2](./decisions.md)).
+- Holds the active portals and the checkpoint; settings are kept apart and survive New Game ([D2](./decisions.md)).
 - Written when a portal is saved, after a travel and when a setting changes ([D3](./decisions.md)).
 - Windows: a JSON file in the user's config folder. Web: browser `localStorage`.
 - A save that can't be read (corrupt, unknown level or portal) counts as no save; it never
