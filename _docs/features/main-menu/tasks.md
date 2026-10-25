@@ -19,7 +19,7 @@
 
 ## Increment 3: settings and pause
 
-- [ ] 8. Settings screen: volume 0–10, saved (D5) → check: `go test ./internal/core -run TestSettings -v`
+- [x] 8. Settings screen: volume 0–10, saved (D5) → check: `go test ./internal/core -run TestSettings -v`
 - [ ] 9. Pause menu on Esc / touch menu button (D7) → check: tests
 - [ ] 10. Web check (title, Continue after reload) with agent-browser; update docs → check:
   screenshot in `_docs/evidence/`, `node scripts/verify.mjs --full`

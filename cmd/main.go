@@ -55,8 +55,34 @@ func NewGame() *Game {
 		portals:     core.NewPortalSprite(),
 		view:        ebiten.NewImage(screenWidth, screenHeight),
 	}
+	g.screens.SetSettings(loadSettings())
 	g.openTitle()
 	return g
+}
+
+// loadSettings reads the stored settings; none or unreadable ones give the
+// defaults.
+func loadSettings() core.Settings {
+	data, ok := system.LoadRecord(core.SettingsKey)
+	if !ok {
+		return core.DefaultSettings()
+	}
+	s, err := core.DecodeSettings(data)
+	if err != nil {
+		log.Printf("settings ignored: %v", err)
+	}
+	return s
+}
+
+// saveSettings stores the settings shown on the settings screen.
+func (g *Game) saveSettings() {
+	data, err := core.EncodeSettings(g.screens.Settings)
+	if err == nil {
+		err = system.StoreRecord(core.SettingsKey, data)
+	}
+	if err != nil {
+		log.Printf("save settings: %v", err)
+	}
 }
 
 // openTitle shows the title screen over the stored save's game, ready for
@@ -154,6 +180,8 @@ func (g *Game) Update() error {
 			g.newGame()
 		case core.ActionQuit:
 			return ebiten.Termination
+		case core.ActionSettingsChanged:
+			g.saveSettings()
 		}
 		// ActionContinue: the save's game is already set up behind the title.
 		g.portals.Update()
