@@ -20,7 +20,7 @@
 
 ## Increment 3: travel
 
-- [ ] 7. Levels by name: the game holds the current level and can switch to another
+- [x] 7. Levels by name: the game holds the current level and can switch to another
       (platforms, portals, enemies, background) → check: `TestSwitchLevel`
 - [ ] 8. Travel menu: using a portal lists the saved portals (all levels); E/Esc or a tap
       outside closes it; picking one travels there → check: `TestTravelMenuListsSavedPortals`,

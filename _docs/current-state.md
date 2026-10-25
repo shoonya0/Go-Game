@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-25)
 
-Snapshot at `87b3c60` (`feature/portals`, not pushed; `main` at `f6a311a`, PR #21 merged). One page. Details live in each increment's entry in
+Snapshot at `6a3446e` (`feature/portals`, not pushed; `main` at `f6a311a`, PR #21 merged). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -10,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [portals](./features/portals/state.md) · started 2026-10-24, high priority; increments 1–2 code complete, increment 3 (travel) next
+- **Feature:** [portals](./features/portals/state.md) · started 2026-10-24, high priority; increments 1–2 code complete, increment 3 (travel): task 7 done
 - **Branch:** `feature/portals`, from `main` at `f6a311a` plus the enemy-types docs commit `f3cb97f`
-- **Next step:** user's look in game (gold portal on the ground, E/tap prompt, enemies back after a death), then increment 3, task 7 (levels by name) in [tasks.md](./features/portals/tasks.md). Paused: enemy-types (low priority; increments 1–5 merged, task 25 waits for ranged art). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Next step:** user's look in game (gold portal on the ground, E/tap prompt, enemies back after a death); task 8 (travel menu) in [tasks.md](./features/portals/tasks.md). Paused: enemy-types (low priority; increments 1–5 merged, task 25 waits for ranged art). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2

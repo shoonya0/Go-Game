@@ -1,6 +1,6 @@
 ---
 kind: feature
-scope: [internal/core/portal*.go, internal/core/world.go, internal/core/combat.go, assets/levels/portal.png]
+scope: [internal/core/portal*.go, internal/core/world.go, internal/core/levels*.go, internal/core/combat.go, assets/levels/portal.png]
 status: active
 ---
 # Portals: docs index
@@ -25,6 +25,7 @@ Up: [project docs index](../../README.md) · Code: `internal/core/portal*.go` (p
 | Path | Why start here |
 |---|---|
 | `internal/core/world.go` | `CheckpointCode` (9), `Checkpoint`, `BuildLevel`: today's invisible checkpoints, which become portals |
+| `internal/core/levels.go` | `Levels` (levels by name) and `World` (the current level, `SwitchLevel`) |
 | `internal/core/combat.go` | `updateCheckpoints` (touch to save, replaced by interact) and `respawn` |
 | `internal/core/level_enemies.go` | `EnemySpawn`, `SpawnEnemies`: the spawn list enemies are revived from |
 | `internal/core/touch_controls.go` | On-screen buttons, for the tap-to-save on touch screens |
