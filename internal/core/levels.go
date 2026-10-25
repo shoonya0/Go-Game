@@ -33,7 +33,7 @@ type World struct {
 	Quadtree *DynamicQuadtree
 	Enemies  []*EnemyRuntime
 
-	left map[string][]*EnemyRuntime // enemies of each level left, as they were
+	left map[string][]*EnemyRuntime // enemies of each level left, as they were (for its bosses)
 }
 
 // NewWorld loads the named level with fresh enemies. WorldInit must be called
@@ -47,8 +47,9 @@ func NewWorld(name string) (*World, error) {
 }
 
 // SwitchLevel makes the named level the current one: its platforms, portals,
-// background and size. A level visited before gets back its enemies as the
-// player left them; a new one spawns them fresh. The player is not moved.
+// background and size. Entering a level brings back its non-boss enemies
+// fresh at their spawns (D4); bosses of a level visited before stay as the
+// player left them, killed ones dead. The player is not moved.
 func (w *World) SwitchLevel(name string) error {
 	def, ok := Levels[name]
 	if !ok {
@@ -68,7 +69,9 @@ func (w *World) SwitchLevel(name string) error {
 	}
 
 	enemies, visited := w.left[name]
-	if !visited {
+	if visited {
+		enemies = RespawnEnemies(level.Enemies, enemies)
+	} else {
 		enemies = SpawnEnemies(level.Enemies)
 	}
 	delete(w.left, name)

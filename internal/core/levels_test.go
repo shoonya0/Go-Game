@@ -36,7 +36,6 @@ func TestSwitchLevel(t *testing.T) {
 	}
 	firstQT := w.Quadtree
 	w.Enemies = w.Enemies[1:] // one enemy killed and culled
-	left := len(w.Enemies)
 
 	if err := w.SwitchLevel(second); err != nil {
 		t.Fatal(err)
@@ -57,8 +56,8 @@ func TestSwitchLevel(t *testing.T) {
 	if err := w.SwitchLevel(StartLevel); err != nil {
 		t.Fatal(err)
 	}
-	if w.Name != StartLevel || len(w.Enemies) != left {
-		t.Errorf("back in %q: %d enemies, want the %d left there", w.Name, len(w.Enemies), left)
+	if w.Name != StartLevel || len(w.Enemies) != len(w.Level.Enemies) {
+		t.Errorf("back in %q: %d enemies, want all %d (non-bosses revive on entering, D4)", w.Name, len(w.Enemies), len(w.Level.Enemies))
 	}
 
 	if err := w.SwitchLevel("noSuchLevel"); err == nil || w.Name != StartLevel {
@@ -156,5 +155,39 @@ func TestRespawnWithoutCheckpointStays(t *testing.T) {
 	w.Respawned(p)
 	if w.Name != StartLevel || len(w.Enemies) != len(w.Level.Enemies) {
 		t.Errorf("in %q with %d of %d enemies, want %q with all revived", w.Name, len(w.Enemies), len(w.Level.Enemies), StartLevel)
+	}
+}
+
+// TestEnteringLevelRevivesEnemies: coming back into a level brings back its
+// non-boss enemies fresh at their spawns, killed ones included (D4).
+func TestEnteringLevelRevivesEnemies(t *testing.T) {
+	WorldInit()
+	second := testSecondLevel(t)
+	w, err := NewWorld(StartLevel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(w.Enemies) < 2 {
+		t.Fatalf("level %q has %d enemies, want at least 2", StartLevel, len(w.Enemies))
+	}
+	w.Enemies[1].TakeDamage(1)
+	w.Enemies[1].Pos.X += 200
+	w.Enemies = w.Enemies[1:] // the first was killed and culled
+
+	if err := w.SwitchLevel(second); err != nil {
+		t.Fatal(err)
+	}
+	if err := w.SwitchLevel(StartLevel); err != nil {
+		t.Fatal(err)
+	}
+	if len(w.Enemies) != len(w.Level.Enemies) {
+		t.Fatalf("back in %q: %d enemies, want all %d revived", StartLevel, len(w.Enemies), len(w.Level.Enemies))
+	}
+	for i, e := range w.Enemies {
+		want := NewEnemy(w.Level.Enemies[i].Kind, w.Level.Enemies[i].Pos)
+		if e.bp != want.bp || e.Pos != want.Pos || e.Health != want.Health || e.State != EnemyPatrol {
+			t.Errorf("enemy %d: %s at %v, health %d, state %d; want a fresh %s at %v, health %d, patrolling",
+				i, e.bp.Name, e.Pos, e.Health, e.State, want.bp.Name, want.Pos, want.Health)
+		}
 	}
 }
