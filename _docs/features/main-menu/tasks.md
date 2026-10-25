@@ -27,4 +27,6 @@
 ## Later (not planned yet)
 
 - [ ] Real audio (music, effects) once sound files exist
+- [ ] Each title visit rebuilds the run (levels parsed again, travel thumbnails dropped and
+  redrawn on the next played tick): reuse the World's levels and keep thumbnails (code review 2026-10-25)
 - [ ] A second level (own feature)

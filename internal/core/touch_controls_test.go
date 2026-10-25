@@ -181,3 +181,20 @@ func TestTouchTapOffButtons(t *testing.T) {
 		t.Error("a button press counted as a tap")
 	}
 }
+
+// TestTouchHiddenButtons: while a menu hides the buttons, a touch where a
+// button would be is a tap at that point and presses nothing (an unseen
+// down arrow used to move the menu's pick).
+func TestTouchHiddenButtons(t *testing.T) {
+	tc := NewTouchControls(1360, 768)
+	tc.Enabled, tc.Hidden = true, true
+	at := touchCenter(tc, TouchDown)
+	tc.Update([]image.Point{at})
+	tc.Started([]image.Point{at})
+	var in InputState
+	tc.Apply(&in)
+	if in.DownJustPressed || in.Direction.UpDown != 0 || !in.Tapped || in.TapAt != (Position{X: float64(at.X), Y: float64(at.Y)}) {
+		t.Errorf("touch on the hidden down button: down=%v updown=%d tapped=%v at %v; want only a tap at %v",
+			in.DownJustPressed, in.Direction.UpDown, in.Tapped, in.TapAt, at)
+	}
+}

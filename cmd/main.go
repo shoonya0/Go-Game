@@ -129,7 +129,6 @@ func (g *Game) startRun(save *core.SaveData) error {
 	player.UpdateCamera(screenWidth, screenHeight, world.Def.Width, world.Def.Height) // the menus show the player behind them
 	g.world, g.player, g.respawns = world, player, 0
 	g.travel = core.NewTravelMenu(screenWidth, screenHeight)
-	g.travel.WaitRelease() // the E or tap that picked the menu item can't open it
 	g.autosave = core.Autosave{}
 	g.syncBackground()
 	return nil
@@ -143,12 +142,29 @@ func (g *Game) newGame() {
 	_ = g.startRun(nil)
 }
 
+// toTitle leaves the game for the title screen, Continue ready at the run's
+// progress. That progress is stored now but not read back, so a write that
+// fails (browser storage blocked) doesn't lose the run.
+func (g *Game) toTitle() {
+	s := g.player.Snapshot()
+	g.storeProgress(s)
+	err := g.startRun(&s)
+	if err != nil {
+		log.Printf("back to title: %v", err)
+		_ = g.startRun(nil)
+	}
+	g.screens.OpenTitle(err == nil)
+}
+
 // saveProgress stores the player's progress when it changed since the last write.
 func (g *Game) saveProgress() {
-	s, due := g.autosave.Due(g.player)
-	if !due {
-		return
+	if s, due := g.autosave.Due(g.player); due {
+		g.storeProgress(s)
 	}
+}
+
+// storeProgress writes save s.
+func (g *Game) storeProgress(s core.SaveData) {
 	data, err := core.EncodeSave(s)
 	if err == nil {
 		err = system.StoreRecord(core.SaveKey, data)
@@ -170,6 +186,7 @@ func (g *Game) syncBackground() {
 // Update advances the simulation one tick (runs at ~60 TPS).
 func (g *Game) Update() error {
 	system.HandleInput(&g.input)
+	g.touch.Hidden = g.screens.Current != core.ScreenNone
 	system.HandleTouch(&g.input, g.touch)
 	if g.input.ToggleHitboxes {
 		g.showHitboxes = !g.showHitboxes
@@ -183,9 +200,12 @@ func (g *Game) Update() error {
 		case core.ActionSettingsChanged:
 			g.saveSettings()
 		case core.ActionToTitle:
-			g.openTitle() // the progress is already saved (autosave)
+			g.toTitle()
 		}
 		// ActionContinue: the save's game is already set up behind the title.
+		if g.screens.Current == core.ScreenNone {
+			g.travel.WaitRelease() // the E or touch that left the menus can't open the travel menu
+		}
 		g.portals.Update()
 		return nil
 	}
@@ -199,6 +219,7 @@ func (g *Game) Update() error {
 				log.Printf("travel: %v", err)
 			}
 			g.syncBackground()
+			g.saveProgress() // the checkpoint moved: store it now, not on the next played tick
 		}
 		g.portals.Update()
 		return nil

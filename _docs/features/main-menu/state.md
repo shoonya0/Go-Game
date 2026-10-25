@@ -3,15 +3,19 @@
 ## Now (updated 2026-10-25 at `0d5bd4b`)
 
 - **Status:** ✅ done on the branch, not pushed: all tasks 1–10 ticked
-- **Current task:** none. Next: `/code-review` (touches `cmd`, core, system, ~900 lines), then
-  push + PR; merging deploys to Render, so ask the user first
+- **Current task:** none. `/code-review` ran; its bugs are fixed (resting cursor picked Yes,
+  Main Menu re-read storage, Resume press opening the travel menu, a travel not saved before
+  the pause, hidden touch buttons still pressing). Next: push + PR; merging deploys to Render,
+  so ask the user first
 - **Stopped at:** web build checked in agent-browser (title with and without a save, Continue
   after reload, New Game confirm + wipe, settings kept after reload, pause → Main Menu);
   screenshots `_docs/evidence/main-menu-title.png`, `main-menu-pause.png` (untracked, like the
   portals evidence). The native window was not checked by hand
 - **Open questions / blockers:** D4 (confirm before wiping) and D7 (pause menu) are my calls;
   the user can veto
-- **Don't forget:** the title screen builds the save's game behind it, so a save that fails
+- **Don't forget:** Main Menu builds the title from the run in memory (`toTitle`), never from
+  storage, so blocked storage loses nothing until the tab closes. The travel menu's
+  `WaitRelease` is armed in one place: whenever `Update` leaves the menus. The title screen builds the save's game behind it, so a save that fails
   `Continue` counts as no save (Continue grayed). In agent-browser, focus the canvas by script
   (`canvas.tabIndex=0; canvas.focus()`): a click lands on the middle menu item. `text/v2`
   made the WASM ~5 MB bigger (28 → 33 MB, shaping library; the unused M+ font is dropped by
