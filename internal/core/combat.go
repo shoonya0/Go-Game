@@ -132,13 +132,13 @@ func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, portals []Portal, onGr
 	}
 }
 
-// updatePortals promotes the last portal the player is overlapping to the
-// active respawn point.
+// updatePortals saves the last portal the player is overlapping: the player
+// respawns standing in it.
 func (p *PlayerRuntime) updatePortals(portals []Portal) {
 	body := p.GetBounds()
 	for _, cp := range portals {
 		if body.Intersects(cp.Bounds()) {
-			p.RespawnPos = cp.Pos
+			p.RespawnPos = cp.StandPos()
 		}
 	}
 }

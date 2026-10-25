@@ -75,6 +75,10 @@ type Portal struct {
 // floorY is the world y of the ground the portal stands on.
 func (c Portal) floorY() float64 { return c.Pos.Y + LevelTileHeight + c.FloorDrop }
 
+// SavedBy reports whether this is the saved portal: the one the player's
+// respawn point stands in.
+func (c Portal) SavedBy(respawn Position) bool { return c.StandPos() == respawn }
+
 // Bounds returns the portal's area: its doorway, centered on its grid cell
 // (Pos is the cell's top-left) and standing on the ground below it.
 func (c Portal) Bounds() AABB {

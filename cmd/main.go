@@ -102,7 +102,7 @@ func (g *Game) updateEnemies() {
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.player.DrawParallaxBackground(screen, g.background, screenWidth, screenHeight)
 	g.player.DrawLevel(screen, g.quadtree, screenWidth, screenHeight, g.tileset)
-	g.portals.Draw(screen, g.level.Portals, g.player.Camera.Pos)
+	g.portals.Draw(screen, g.level.Portals, g.player.RespawnPos, g.player.Camera.Pos)
 	for _, e := range g.enemies {
 		e.DrawEnemyAnimation(screen, g.player.Camera)
 		e.DrawHealthBar(screen, g.player.Camera)

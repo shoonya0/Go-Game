@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/colorm"
 )
 
 // The portal art is one sheet, a 7×2 grid of a looping swirl:
@@ -15,12 +16,21 @@ import (
 const (
 	portalSheet            = "../assets/levels/portal.png"
 	portalCols, portalRows = 7, 2
-	portalFPS              = 10
+	portalFPS              = 5
 	portalAlphaMin         = 40 // fainter pixels aren't art (a glow fringe, the sheet's corner mark)
 
 	portalHeight = 2.5 * LevelTileHeight // drawn height of the art, and of its area
 	portalWidth  = 1.5 * LevelTileWidth  // the doorway the player stands in
 )
+
+// savedPortalTint draws the saved portal golden: the blue art is turned gray,
+// then scaled toward gold (scaling the blue art's RGB alone can't make gold).
+var savedPortalTint = func() colorm.ColorM {
+	var cm colorm.ColorM
+	cm.ChangeHSV(0, 0, 1)
+	cm.Scale(1.5, 1.15, 0.4, 1)
+	return cm
+}()
 
 // PortalSprite draws every portal of a level with one shared animation.
 type PortalSprite struct {
@@ -48,17 +58,21 @@ func NewPortalSprite() *PortalSprite {
 func (s *PortalSprite) Update() { s.t += deltaTime() }
 
 // Draw draws the current frame at each portal, centered on its cell with its
-// base on the cell's floor.
-func (s *PortalSprite) Draw(screen *ebiten.Image, portals []Portal, cam Position) {
+// base on the ground; the portal saved at respawn is golden.
+func (s *PortalSprite) Draw(screen *ebiten.Image, portals []Portal, respawn, cam Position) {
 	r := s.frames[int(s.t*portalFPS)%len(s.frames)]
 	frame := s.img.SubImage(r).(*ebiten.Image)
 	w, h := float64(r.Dx())*s.scale, float64(r.Dy())*s.scale
 	for _, p := range portals {
 		b := p.Bounds()
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Scale(s.scale, s.scale)
-		op.GeoM.Translate(centerX(b)-w/2-cam.X, b.Y+b.Height-h-cam.Y)
-		screen.DrawImage(frame, op)
+		var geo ebiten.GeoM
+		geo.Scale(s.scale, s.scale)
+		geo.Translate(centerX(b)-w/2-cam.X, b.Y+b.Height-h-cam.Y)
+		if p.SavedBy(respawn) {
+			colorm.DrawImage(screen, frame, savedPortalTint, &colorm.DrawImageOptions{GeoM: geo})
+			continue
+		}
+		screen.DrawImage(frame, &ebiten.DrawImageOptions{GeoM: geo})
 	}
 }
 

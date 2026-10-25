@@ -107,3 +107,26 @@ func TestPortalStandsOnTheGround(t *testing.T) {
 		}
 	}
 }
+
+// TestOnlySavedPortalIsGolden: the saved portal (drawn golden) is the start
+// portal at first, then whichever portal the player saved last.
+func TestOnlySavedPortalIsGolden(t *testing.T) {
+	WorldInit()
+	level := BuildLevel([][]int{
+		{9, 0, 0, 9},
+		{4, 4, 4, 4},
+	})
+	p := InitPlayer(nil)
+	p.StartAt(level)
+	if !level.Portals[0].SavedBy(p.RespawnPos) || level.Portals[1].SavedBy(p.RespawnPos) {
+		t.Fatalf("after start: saved = %v, %v; want only the start portal",
+			level.Portals[0].SavedBy(p.RespawnPos), level.Portals[1].SavedBy(p.RespawnPos))
+	}
+
+	p.Pos = level.Portals[1].StandPos()
+	p.updatePortals(level.Portals)
+	if level.Portals[0].SavedBy(p.RespawnPos) || !level.Portals[1].SavedBy(p.RespawnPos) {
+		t.Errorf("after saving the second: saved = %v, %v; want only the second",
+			level.Portals[0].SavedBy(p.RespawnPos), level.Portals[1].SavedBy(p.RespawnPos))
+	}
+}
