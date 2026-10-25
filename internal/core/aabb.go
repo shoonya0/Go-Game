@@ -6,6 +6,11 @@ type AABB struct {
 }
 
 // Intersects checks if two AABBs intersect
+// Contains reports whether the point (x, y) lies inside the box.
+func (a AABB) Contains(x, y float64) bool {
+	return x >= a.X && x < a.X+a.Width && y >= a.Y && y < a.Y+a.Height
+}
+
 func (a AABB) Intersects(b AABB) bool {
 	return a.X < b.X+b.Width &&
 		a.X+a.Width > b.X &&

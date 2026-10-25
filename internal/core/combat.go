@@ -131,14 +131,25 @@ func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, onGround bool) {
 	}
 }
 
-// updatePortals saves the last portal the player is overlapping: the player
-// respawns standing in it.
-func (p *PlayerRuntime) updatePortals(portals []Portal) {
+// updatePortals finds the portal the player stands in and saves it when the
+// player uses it: E, or a tap on it (touch screens). Walking past saves
+// nothing. A saved portal is where the player respawns, standing in it.
+func (p *PlayerRuntime) updatePortals(portals []Portal, in *InputState) {
+	p.savedNote = max(0, p.savedNote-deltaTime())
+	p.atPortal = -1
 	body := p.GetBounds()
-	for _, cp := range portals {
+	for i, cp := range portals {
 		if body.Intersects(cp.Bounds()) {
-			p.RespawnPos = cp.StandPos()
+			p.atPortal = i
 		}
+	}
+	if p.atPortal < 0 {
+		return
+	}
+	cp := portals[p.atPortal]
+	if in.Interact || (in.Tapped && cp.tapArea().Contains(in.TapAt.X+p.Camera.Pos.X, in.TapAt.Y+p.Camera.Pos.Y)) {
+		p.RespawnPos = cp.StandPos()
+		p.savedNote = portalSavedSeconds
 	}
 }
 

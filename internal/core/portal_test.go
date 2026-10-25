@@ -124,9 +124,77 @@ func TestOnlySavedPortalIsGolden(t *testing.T) {
 	}
 
 	p.Pos = level.Portals[1].StandPos()
-	p.updatePortals(level.Portals)
+	p.updatePortals(level.Portals, &InputState{Interact: true})
 	if level.Portals[0].SavedBy(p.RespawnPos) || !level.Portals[1].SavedBy(p.RespawnPos) {
 		t.Errorf("after saving the second: saved = %v, %v; want only the second",
 			level.Portals[0].SavedBy(p.RespawnPos), level.Portals[1].SavedBy(p.RespawnPos))
+	}
+}
+
+// twoPortals is a level with a portal at each end of a rock floor, and a
+// player who started at the first one.
+func twoPortals(t *testing.T) (Level, *PlayerRuntime) {
+	t.Helper()
+	WorldInit()
+	level := BuildLevel([][]int{
+		{9, 0, 0, 0, 0, 9},
+		{4, 4, 4, 4, 4, 4},
+	})
+	p := InitPlayer(nil)
+	p.StartAt(level)
+	return level, p
+}
+
+// TestPortalSavesOnlyOnInteract: standing in a portal saves nothing until E is
+// pressed; E away from every portal saves nothing either.
+func TestPortalSavesOnlyOnInteract(t *testing.T) {
+	level, p := twoPortals(t)
+	start := p.RespawnPos
+
+	p.Pos = Position{X: 2.5 * LevelTileWidth, Y: level.Portals[1].StandPos().Y} // between the portals
+	p.updatePortals(level.Portals, &InputState{Interact: true})
+	if p.RespawnPos != start {
+		t.Fatalf("E away from portals moved the respawn to %v", p.RespawnPos)
+	}
+
+	p.Pos = level.Portals[1].StandPos()
+	p.updatePortals(level.Portals, &InputState{})
+	if p.RespawnPos != start {
+		t.Fatalf("standing in a portal saved it without E (respawn %v)", p.RespawnPos)
+	}
+
+	p.updatePortals(level.Portals, &InputState{Interact: true})
+	if !level.Portals[1].SavedBy(p.RespawnPos) {
+		t.Errorf("E in the second portal: respawn %v, want its StandPos %v", p.RespawnPos, level.Portals[1].StandPos())
+	}
+	if p.savedNote <= 0 {
+		t.Error("saving should show the saved note")
+	}
+}
+
+// TestTapOnPortalSaves: on touch screens, a tap on the portal the player
+// stands in saves it; a tap anywhere else does not. Taps are screen points.
+func TestTapOnPortalSaves(t *testing.T) {
+	level, p := twoPortals(t)
+	start := p.RespawnPos
+	p.Pos = level.Portals[1].StandPos()
+	p.Camera.Pos = Position{X: 100, Y: -40}
+	b := level.Portals[1].Bounds()
+	onPortal := Position{X: centerX(b) - p.Camera.Pos.X, Y: b.Y + b.Height/2 - p.Camera.Pos.Y}
+
+	p.updatePortals(level.Portals, &InputState{Tapped: true, TapAt: Position{X: onPortal.X + 4*LevelTileWidth, Y: onPortal.Y}})
+	if p.RespawnPos != start {
+		t.Fatalf("a tap beside the portal saved it (respawn %v)", p.RespawnPos)
+	}
+	p.Pos = level.Portals[0].StandPos() // standing in the other portal
+	p.updatePortals(level.Portals, &InputState{Tapped: true, TapAt: onPortal})
+	if p.RespawnPos != start {
+		t.Fatalf("a tap on a portal the player isn't in saved it (respawn %v)", p.RespawnPos)
+	}
+
+	p.Pos = level.Portals[1].StandPos()
+	p.updatePortals(level.Portals, &InputState{Tapped: true, TapAt: onPortal})
+	if !level.Portals[1].SavedBy(p.RespawnPos) {
+		t.Errorf("tap on the portal: respawn %v, want its StandPos %v", p.RespawnPos, level.Portals[1].StandPos())
 	}
 }

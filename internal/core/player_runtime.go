@@ -58,6 +58,8 @@ type PlayerRuntime struct {
 	exhausted        bool    // power ran out while running; running is blocked until it recovers
 	damageFlash      float64 // seconds of red damage flash left
 	knockTicks       int     // ticks of heavy-hit push left
+	atPortal         int     // index of the portal the player stands in, -1 for none
+	savedNote        float64 // seconds the "saved" check stays up
 	knockVelX        float64 // push velocity (px/s) while knockTicks last
 
 	struck      []*EnemyRuntime // enemies already hit by the current hit of the swing (HitEnemies)

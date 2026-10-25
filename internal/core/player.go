@@ -64,6 +64,7 @@ func InitPlayer(img *ebiten.Image) *PlayerRuntime {
 		},
 		Combat:       newCombat(),
 		CheckpointID: "default",
+		atPortal:     -1,
 	}
 }
 
@@ -146,7 +147,7 @@ func UpdatePlayer(player *PlayerRuntime, in *InputState, qt *DynamicQuadtree, po
 
 	player.updateStamina()
 	player.updateCombat(qt, onGround)
-	player.updatePortals(portals)
+	player.updatePortals(portals, in)
 
 	if qt != nil {
 		qt.Update(player)
