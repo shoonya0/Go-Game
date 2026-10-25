@@ -111,6 +111,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.player.DrawGroundWaves(screen)
 	// Water is drawn after the player so the player appears submerged in it.
 	g.player.DrawWater(screen, g.quadtree, screenWidth, screenHeight, g.tileset)
+	g.portals.DrawPrompt(screen, g.level.Portals, g.player, g.touch.Enabled)
 	if g.showHitboxes {
 		g.drawHitboxes(screen)
 	}
