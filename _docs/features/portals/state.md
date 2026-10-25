@@ -1,11 +1,13 @@
 # Portals: state
 
-## Now (updated 2026-10-25 at `9171359`)
+## Now (updated 2026-10-25 at `aab21cb`)
 
-- **Status:** 🟡 in progress; increment 1 code complete (tasks 2–4 done), waiting for the user's look
-  in game at tasks 1 and 3 (gold, ground, `portalLift` = -10, E/tap prompt); then increment 2,
-  task 5 (`Boss` flag) in [tasks.md](./tasks.md)
-- **Stopped at:** `updatePortals(portals, in)` (moved out of `updateCombat` into `UpdatePlayer`) saves
+- **Status:** 🟡 in progress; increments 1 and 2 code complete (tasks 2–6). Waiting for the user's
+  look in game: tasks 1 and 3 (gold, ground, `portalLift` = -10, E/tap prompt) and enemies coming
+  back after a death. Next: increment 3, task 7 (levels by name) in [tasks.md](./tasks.md)
+- **Stopped at:** `RespawnEnemies` (level_enemies.go) on `PlayerRuntime.Respawns` changing (main.go):
+  fresh non-boss enemies at their spawns, living bosses kept, killed bosses stay dead. No boss kind yet.
+  Before that: `updatePortals(portals, in)` (moved out of `updateCombat` into `UpdatePlayer`) saves
   only on `InputState.Interact` (E) or a `Tapped` screen point inside `Portal.tapArea` (doorway + half
   a tile). `TouchControls.Started` turns a just-pressed touch off every button into a one-frame tap.
   `PortalSprite.DrawPrompt`: icons, not text (user's choice 2026-10-25): gold button with E or a tap
@@ -17,6 +19,12 @@
   grid. Code 9 is non-solid. The game has no font: UI symbols are vector icons (`touch_icons.go`)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-25: tasks 5–6, enemies come back
+
+- Changed: `EnemyBlueprint.Boss`, `RespawnEnemies`, `PlayerRuntime.Respawns`, main.go revives on change
+- Verified: `TestRespawnRevivesEnemies`, `TestKilledBossStaysDead` failed first (build); `verify.mjs --full` 8/8
+- Docs touched: tasks, state, enemy-types state
 
 ### 2026-10-25: task 4, respawn at the saved portal
 
@@ -41,21 +49,3 @@
 - Changed: `Portal.FloorDrop` (world.go), test `TestPortalStandsOnTheGround`; probed the sheet (rock missing in 7 frames' art)
 - Verified: new test failed first (base at 60, ground at 86.6), then `verify.mjs` 5/5
 - Docs touched: state
-
-### 2026-10-24: task 2, start at the first portal
-
-- Changed: `Portal.StandPos` (world.go), `PlayerRuntime.StartAt` (player.go), `NewGame` calls it
-- Verified: `TestPlayerStartsAtFirstPortal` failed first (build), then `verify.mjs` 5/5
-- Docs touched: tasks, state
-
-### 2026-10-24: task 1, portal sprite
-
-- Changed: `Checkpoint` → `Portal` (8 files, one rename); `portal.go` (`PortalSprite`, `artFrames`), `Portal.Bounds` doorway, `cmd/main.go` draws it
-- Verified: new tests failed first (build); `verify.mjs --full` 8/8; frame scan 0.17 s with the PNG decode
-- Docs touched: state
-
-### 2026-10-24: feature started
-
-- Changed: docs only (`_docs/features/portals/`), registry row, Active work
-- Verified: `node scripts/docs-check.mjs`
-- Docs touched: README, spec, decisions, tasks, state

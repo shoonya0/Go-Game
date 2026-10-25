@@ -12,7 +12,7 @@ and /feature-docs update. -->
 
 - **Feature:** [portals](./features/portals/state.md) · started 2026-10-24, high priority; increment 1 (see, start at, save at a portal)
 - **Branch:** `feature/portals`, from `main` at `f6a311a` plus the enemy-types docs commit `f3cb97f`
-- **Next step:** increment 1 code complete (2026-10-25): user's look in game at tasks 1 and 3, then increment 2 (task 5, `Boss` flag) in [tasks.md](./features/portals/tasks.md). Paused: enemy-types (low priority; increments 1–5 merged, task 25 waits for ranged art). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Next step:** increments 1–2 code complete (2026-10-25): user's look in game (portal, E prompt, enemies back after death), then increment 3 (task 7, levels by name) in [tasks.md](./features/portals/tasks.md). Paused: enemy-types (low priority; increments 1–5 merged, task 25 waits for ranged art). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2

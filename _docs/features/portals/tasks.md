@@ -14,8 +14,8 @@
 
 ## Increment 2: enemies come back
 
-- [ ] 5. `Boss` flag on enemy blueprints (no boss yet) → check: `TestBlueprintsValid`
-- [ ] 6. Death respawn resets every non-boss enemy of the level to its spawn; killed bosses
+- [x] 5. `Boss` flag on enemy blueprints (no boss yet) → check: `TestBlueprintsValid`
+- [x] 6. Death respawn resets every non-boss enemy of the level to its spawn; killed bosses
       stay dead → check: `TestRespawnRevivesEnemies`, `TestKilledBossStaysDead`
 
 ## Increment 3: travel
