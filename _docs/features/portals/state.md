@@ -6,8 +6,9 @@
 - **Stopped at:** feature complete. Leftovers are in [tasks.md](./tasks.md) "Later" (saved portals
   across restarts, a second level, one wrong camera frame after a cross-level travel, the sparkle mark)
 - **Open questions / blockers:** none. `_asset_backups/` is the user's: never commit it
-- **Don't forget:** Esc both closes the menu (`Back`) and toggles `InputState.Menu` (no menu
-  reads it yet). A thumbnail is taken once, so it shows the portal as it looked then. Level
+- **Don't forget:** Esc both closes the travel menu (`Back`) and sets `InputState.Menu`, which
+  pauses (main-menu D7); `cmd` skips the pause while the travel menu is open. `WaitRelease`
+  keeps the press that picked a title menu item from opening the travel menu. A thumbnail is taken once, so it shows the portal as it looked then. Level
   sizes come from `LevelDef`, not the grid. Code 9 is non-solid. No font: UI symbols are vector
   icons (`touch_icons.go`)
 

@@ -25,7 +25,10 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 | Module | Path | Responsibility | Owns state? |
 |---|---|---|---|
 | Entry / game loop | `cmd/main.go` | Wires subsystems; implements `ebiten.Game` (Update/Draw/Layout) | `Game` struct: player, enemies, level, quadtree |
-| Input | `internal/system/Input.go`, `touch.go`, `touch_js.go` / `touch_other.go` | Polls keyboard and touch points → `core.InputState`; `IsTouchDevice` asks the browser (`navigator.maxTouchPoints`), false on desktop builds | no (writes caller's struct) |
+| Input | `internal/system/Input.go`, `touch.go`, `touch_js.go` / `touch_other.go` | Polls keyboard, mouse and touch points → `core.InputState`; `IsTouchDevice` asks the browser (`navigator.maxTouchPoints`), false on desktop builds | no (writes caller's struct) |
+| Storage | `internal/system/save_other.go` / `save_js.go` | Keeps named records (`save`, `settings`): a JSON file per key in the user's config folder on desktop, `localStorage` on the web | on disk / in the browser |
+| Menus | `internal/core/menu.go`, `menu_screens.go`, `text.go` | A menu widget (keys, tap, mouse) and the screens over the game: title, overwrite confirm, settings, pause; `Screens.Update` returns an action for `cmd`; text in Press Start 2P (`text/v2`) | `Game.screens` |
+| Save / settings | `internal/core/save.go`, `settings.go` | Snapshot of the player's portals and checkpoint, `World.Continue` back into it, `Autosave` (write on change); the volume setting. (De)serialize only: storage is `internal/system` | `Game.autosave` |
 | Touch controls | `internal/core/touch_controls.go`, `touch_icons.go` | On-screen buttons for touch screens: layout, hit-testing, merging into `InputState` (a touch starting on no button is a world tap), drawing (sprites from `UIButtons.png`, symbols drawn with `ebiten/vector`) | `Game.touch` |
 | Player | `internal/core/player.go`, `player_runtime.go`, `playerState.go`, `player_attack.go`, `player_hurt.go`, `ground_wave.go` | Movement, gravity/jump, AABB collision resolution, state enum; `HitEnemies` damages enemies inside the attack's damage box, once per hit window; `player_hurt.go` handles heavy-hit knockback, the out-of-stamina kneel and the two deaths; `UpdateGroundWaves` runs U's ground wave along the floor; `attack_step.go` moves the player during some attacks (table `attackSteps`) | `PlayerRuntime` |
 | Combat | `internal/core/combat.go`, `skills.go` | Damage, power regen, hazards (water/larva), fall damage, saving a portal (E / tap), respawn | inside `PlayerRuntime` |
@@ -57,8 +60,10 @@ battler sheets into enemy strips, enemy-types D7); they stay stdlib-only too.
 
 ## Main flows
 
-1. **Startup**: `main` → `NewGame` → `core.WorldInit` → `core.LoadLevel(LevelFile)` →
-   insert platforms into `DynamicQuadtree` → `InitPlayer(LoadImage(...))` → `SpawnEnemies(level.Enemies)` (markers from the grid) (`cmd/main.go:33`).
+1. **Startup**: `main` → `NewGame` → `core.WorldInit` → load settings → `openTitle`: read the save and
+   `startRun` (a `World` via `core.NewWorld`, `InitPlayer`, `StartAt`, then `World.Continue` when the save is usable),
+   so the title screen shows the game Continue would start. While `Game.screens.Current` isn't `ScreenNone`,
+   `Update` runs only the menus and `Draw` puts the menu over the scene (`cmd/main.go`).
 2. **Tick (~60 TPS)**: `Game.Update` → `system.HandleInput` → `core.UpdatePlayer`
    (movement → gravity/jump → resolveHorizontal/Vertical via quadtree → `updateCombat`) →
    `UpdateAnimation` → `HitEnemies` → `UpdateGroundWaves` → `UpdateCamera` → `updateEnemies` (AI, anim, cull `Removable`) (`cmd/main.go:58`).
@@ -68,7 +73,9 @@ battler sheets into enemy strips, enemy-types D7); they stay stdlib-only too.
 
 ## Data and state
 
-- All runtime state is in memory, owned by `Game` in `cmd/main.go`. No persistence, no save files.
+- Runtime state is in memory, owned by `Game` in `cmd/main.go`. Two records persist (main-menu feature):
+  the progress (`save`: used portals + checkpoint, written on change) and the settings (`settings`: volume),
+  in `%AppData%\PirateAdventure\*.json` on Windows and `localStorage` (`pirateAdventure.*`) on the web.
 - Level data: `assets/levels/deepForest/level_1.json` (embedded). Assets are addressed by base file name only, so
   **two assets with the same file name in different folders collide** (`internal/core/image.go:20`).
 - Single-threaded: no goroutines/channels in the current code.

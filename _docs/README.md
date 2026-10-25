@@ -27,7 +27,7 @@ One row per feature that has its own docs folder. Status: ⏳ planned · 🟡 in
 |---|---|---|---|---|
 | enemy-types | [index](./features/enemy-types/README.md) | `internal/core/enemy*.go`, `assets/enemy/`, `tools/battler2strip/` | 🟡 | Ground/flying enemies from the strip packs in `assets/enemy/`, built from movement + attack parts (low priority now) |
 | portals | [index](./features/portals/README.md) | `internal/core/portal*.go`, `world.go`, `combat.go` | ✅ | Portals: start, save point (E / tap), travel menu; non-boss enemies revive on death, on entering a level and on every teleport |
-| main-menu | [index](./features/main-menu/README.md) | `cmd/main.go`, `internal/core/menu*.go`, `save*.go`, `internal/system/save*.go` | ⏳ | Title screen (New Game, Continue, Settings, Quit), pause menu, save across restarts, volume setting |
+| main-menu | [index](./features/main-menu/README.md) | `cmd/main.go`, `internal/core/menu*.go`, `save*.go`, `internal/system/save*.go` | 🟡 | Title screen (New Game, Continue, Settings, Quit), pause menu, save across restarts, volume setting |
 
 <!-- Example row. Most features here live in the flat internal/core package, so their docs
 go in _docs/features/<feature>/ and the index lists the feature's files in "scope:".
