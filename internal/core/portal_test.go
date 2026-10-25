@@ -118,16 +118,16 @@ func TestOnlySavedPortalIsGolden(t *testing.T) {
 	})
 	p := InitPlayer(nil)
 	p.StartAt(level)
-	if !level.Portals[0].SavedBy(p.RespawnPos) || level.Portals[1].SavedBy(p.RespawnPos) {
-		t.Fatalf("after start: saved = %v, %v; want only the start portal",
-			level.Portals[0].SavedBy(p.RespawnPos), level.Portals[1].SavedBy(p.RespawnPos))
+	if p.PortalLook(level.Portals[0]) != PortalCheckpoint || p.PortalLook(level.Portals[1]) == PortalCheckpoint {
+		t.Fatalf("after start: looks %v, %v; want only the start portal golden",
+			p.PortalLook(level.Portals[0]), p.PortalLook(level.Portals[1]))
 	}
 
 	p.Pos = level.Portals[1].StandPos()
 	p.updatePortals(level.Portals, &InputState{Interact: true})
-	if level.Portals[0].SavedBy(p.RespawnPos) || !level.Portals[1].SavedBy(p.RespawnPos) {
-		t.Errorf("after saving the second: saved = %v, %v; want only the second",
-			level.Portals[0].SavedBy(p.RespawnPos), level.Portals[1].SavedBy(p.RespawnPos))
+	if p.PortalLook(level.Portals[0]) == PortalCheckpoint || p.PortalLook(level.Portals[1]) != PortalCheckpoint {
+		t.Errorf("after saving the second: looks %v, %v; want only the second golden",
+			p.PortalLook(level.Portals[0]), p.PortalLook(level.Portals[1]))
 	}
 }
 
@@ -164,7 +164,7 @@ func TestPortalSavesOnlyOnInteract(t *testing.T) {
 	}
 
 	p.updatePortals(level.Portals, &InputState{Interact: true})
-	if !level.Portals[1].SavedBy(p.RespawnPos) {
+	if p.RespawnPos != level.Portals[1].StandPos() || p.PortalLook(level.Portals[1]) != PortalCheckpoint {
 		t.Errorf("E in the second portal: respawn %v, want its StandPos %v", p.RespawnPos, level.Portals[1].StandPos())
 	}
 	if p.savedNote <= 0 {
@@ -194,7 +194,7 @@ func TestTapOnPortalSaves(t *testing.T) {
 
 	p.Pos = level.Portals[1].StandPos()
 	p.updatePortals(level.Portals, &InputState{Tapped: true, TapAt: onPortal})
-	if !level.Portals[1].SavedBy(p.RespawnPos) {
+	if p.RespawnPos != level.Portals[1].StandPos() || p.PortalLook(level.Portals[1]) != PortalCheckpoint {
 		t.Errorf("tap on the portal: respawn %v, want its StandPos %v", p.RespawnPos, level.Portals[1].StandPos())
 	}
 }
@@ -224,5 +224,53 @@ func TestRespawnAtSavedPortal(t *testing.T) {
 	}
 	if p.Combat.Health != p.Combat.MaxHealth || p.Combat.Power != p.Combat.MaxPower {
 		t.Errorf("health %d/%d power %v/%v, want both full", p.Combat.Health, p.Combat.MaxHealth, p.Combat.Power, p.Combat.MaxPower)
+	}
+}
+
+// TestPortalActivatesOnInteract: E in a portal activates it and makes it the
+// checkpoint; the old checkpoint stays active. Active portals are listed once
+// each, in the order they were activated, by level and cell.
+func TestPortalActivatesOnInteract(t *testing.T) {
+	level, p := twoPortals(t)
+	start := level.Portals[0].Ref()
+	if len(p.ActivePortals) != 1 || p.ActivePortals[0] != start || p.Checkpoint != start {
+		t.Fatalf("after start: active %v, checkpoint %v; want only the start portal %v", p.ActivePortals, p.Checkpoint, start)
+	}
+
+	p.Pos = level.Portals[1].StandPos()
+	p.updatePortals(level.Portals, &InputState{Interact: true})
+	p.updatePortals(level.Portals, &InputState{Interact: true}) // a second press adds nothing
+	second := level.Portals[1].Ref()
+	if len(p.ActivePortals) != 2 || p.ActivePortals[0] != start || p.ActivePortals[1] != second {
+		t.Errorf("active %v, want [%v %v]", p.ActivePortals, start, second)
+	}
+	if p.Checkpoint != second {
+		t.Errorf("checkpoint %v, want the second portal %v", p.Checkpoint, second)
+	}
+}
+
+// TestPortalLooks: a portal never used is inactive, one used is active, and
+// the checkpoint is golden. The same cell in another level is another portal.
+func TestPortalLooks(t *testing.T) {
+	WorldInit()
+	level := BuildLevel([][]int{
+		{9, 0, 9, 0, 9},
+		{4, 4, 4, 4, 4},
+	})
+	p := InitPlayer(nil)
+	p.StartAt(level)
+	p.Pos = level.Portals[1].StandPos()
+	p.updatePortals(level.Portals, &InputState{Interact: true})
+
+	want := []PortalLook{PortalActive, PortalCheckpoint, PortalInactive}
+	for i, c := range level.Portals {
+		if got := p.PortalLook(c); got != want[i] {
+			t.Errorf("portal %d: look %v, want %v", i, got, want[i])
+		}
+	}
+	elsewhere := level.Portals[0]
+	elsewhere.Level = "otherLevel"
+	if got := p.PortalLook(elsewhere); got != PortalInactive {
+		t.Errorf("same cell in another level: look %v, want inactive", got)
 	}
 }

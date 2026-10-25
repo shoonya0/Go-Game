@@ -44,10 +44,11 @@ type PlayerRuntime struct {
 	Camera  Camera
 
 	// Progression.
-	Combat       Combat
-	CheckpointID string
-	RespawnPos   Position // where respawn() places the player (active checkpoint)
-	Respawns     int      // times the player has respawned; the game revives enemies when it changes
+	Combat        Combat
+	ActivePortals []PortalRef // portals the player has used, in the order they were activated
+	Checkpoint    PortalRef   // the portal the player respawns at (drawn gold)
+	RespawnPos    Position    // where respawn() places the player: standing in the checkpoint
+	Respawns      int         // times the player has respawned; the game revives enemies when it changes
 
 	// Combat bookkeeping (not for external use).
 	fallPeakY        float64 // highest point (min Y) reached during the current fall

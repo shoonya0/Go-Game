@@ -22,9 +22,16 @@
 
 - [x] 7. Levels by name: the game holds the current level and can switch to another
       (platforms, portals, enemies, background) → check: `TestSwitchLevel`
-- [ ] 8. Travel menu: using a portal lists the saved portals (all levels); E/Esc or a tap
-      outside closes it; picking one travels there → check: `TestTravelMenuListsSavedPortals`,
-      `TestTravelMovesPlayer`, manual look (PC and touch)
+- [ ] 8a. Portal looks (D7): inactive = one still frame, active = loop, checkpoint = gold;
+      E/tap activates and makes it the checkpoint; active portals remembered by level + cell
+      → check: `TestPortalActivatesOnInteract`, `TestPortalLooks`, manual look
+- [ ] 8b. Hold E 0.5 s, or a long press on the portal, opens the travel menu (D8); up/down
+      pick, E/Enter travel, Esc or a tap outside closes; the game pauses while it is open
+      → check: `TestHoldEOpensTravelMenu`, `TestTravelMenuListsActivePortals`
+- [ ] 8c. Menu draws a column of thumbnails (D9), captured when a portal is activated; the
+      checkpoint framed gold → check: manual look (PC and touch)
+- [ ] 8d. Picking a portal travels there (switching level if needed); death respawns in the
+      checkpoint's level → check: `TestTravelMovesPlayer`, `TestRespawnInCheckpointLevel`
 - [ ] 9. Entering a level revives its non-boss enemies → check: `TestEnteringLevelRevivesEnemies`
 - [ ] 10. `verify.mjs --full`, web smoke check, `/code-review`, docs update, PR (ask before merge)
 

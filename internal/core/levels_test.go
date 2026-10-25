@@ -29,6 +29,11 @@ func TestSwitchLevel(t *testing.T) {
 		t.Fatalf("new world: level %q, %d portals, %d of %d enemies; want %q with portals and every enemy",
 			w.Name, len(w.Level.Portals), len(w.Enemies), len(w.Level.Enemies), StartLevel)
 	}
+	for _, c := range w.Level.Portals {
+		if c.Level != StartLevel {
+			t.Fatalf("portal at %v belongs to level %q, want %q", c.Pos, c.Level, StartLevel)
+		}
+	}
 	firstQT := w.Quadtree
 	w.Enemies = w.Enemies[1:] // one enemy killed and culled
 	left := len(w.Enemies)

@@ -65,19 +65,25 @@ type Platform struct {
 	DrawOffsetY         float64 // this is the draw offset for the tile
 }
 
-// Portal is a respawn point (and, later, a gateway to other levels) the
-// player activates by touching it.
+// Portal is a respawn point and a gateway to the other active portals. The
+// player activates it by using it (E or a tap).
 type Portal struct {
 	Pos       Position
 	FloorDrop float64 // how far the ground's solid top sits below the cell (a top tile's margin)
+	Level     string  // name of the level it stands in (set by World)
 }
+
+// PortalRef names a portal across levels: its level and its cell.
+type PortalRef struct {
+	Level string
+	Cell  Position // the portal's Pos
+}
+
+// Ref returns the name of this portal across levels.
+func (c Portal) Ref() PortalRef { return PortalRef{Level: c.Level, Cell: c.Pos} }
 
 // floorY is the world y of the ground the portal stands on.
 func (c Portal) floorY() float64 { return c.Pos.Y + LevelTileHeight + c.FloorDrop }
-
-// SavedBy reports whether this is the saved portal: the one the player's
-// respawn point stands in.
-func (c Portal) SavedBy(respawn Position) bool { return c.StandPos() == respawn }
 
 // Bounds returns the portal's area: its doorway, centered on its grid cell
 // (Pos is the cell's top-left) and standing on the ground below it.

@@ -62,21 +62,21 @@ func InitPlayer(img *ebiten.Image) *PlayerRuntime {
 			CoyoteMs:     CoyoteMs,
 			AirJumpsLeft: AirJumpsLeft,
 		},
-		Combat:       newCombat(),
-		CheckpointID: "default",
-		atPortal:     -1,
+		Combat:   newCombat(),
+		atPortal: -1,
 	}
 }
 
 // StartAt places the player in the level's start portal, its first in reading
-// order (BuildLevel scans top row first), and saves it as the respawn point.
-// A level without portals keeps the default spawn.
+// order (BuildLevel scans top row first), activated and saved as the
+// checkpoint. A level without portals keeps the default spawn.
 func (player *PlayerRuntime) StartAt(level Level) {
 	if len(level.Portals) == 0 {
 		return
 	}
-	player.Pos = level.Portals[0].StandPos()
-	player.RespawnPos = player.Pos
+	start := level.Portals[0]
+	player.Pos = start.StandPos()
+	player.activatePortal(start)
 	player.fallPeakY = player.Pos.Y
 }
 

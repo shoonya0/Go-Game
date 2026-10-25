@@ -99,18 +99,25 @@ func NewPortalSprite() *PortalSprite {
 // Update advances the animation one tick.
 func (s *PortalSprite) Update() { s.t += deltaTime() }
 
-// Draw draws the current frame at each portal, centered on its cell with its
-// base on the ground; the portal saved at respawn is golden.
-func (s *PortalSprite) Draw(screen *ebiten.Image, portals []Portal, respawn, cam Position) {
-	r := s.frames[int(s.t*portalFPS)%len(s.frames)]
-	frame := s.img.SubImage(r).(*ebiten.Image)
-	w, h := float64(r.Dx())*s.scale, float64(r.Dy())*s.scale
+// Draw draws each portal centered on its cell with its base on the ground, as
+// player sees it (PortalLook): an inactive one still on the first frame, an
+// active one looping, the checkpoint looping in gold.
+func (s *PortalSprite) Draw(screen *ebiten.Image, portals []Portal, player *PlayerRuntime) {
+	cam := player.Camera.Pos
+	loop := int(s.t*portalFPS) % len(s.frames)
 	for _, p := range portals {
+		look := player.PortalLook(p)
+		r := s.frames[loop]
+		if look == PortalInactive {
+			r = s.frames[0]
+		}
+		frame := s.img.SubImage(r).(*ebiten.Image)
+		w, h := float64(r.Dx())*s.scale, float64(r.Dy())*s.scale
 		b := p.Bounds()
 		var geo ebiten.GeoM
 		geo.Scale(s.scale, s.scale)
 		geo.Translate(centerX(b)-w/2-cam.X, b.Y+b.Height-h-portalLift-cam.Y)
-		if p.SavedBy(respawn) {
+		if look == PortalCheckpoint {
 			colorm.DrawImage(screen, frame, savedPortalTint, &colorm.DrawImageOptions{GeoM: geo})
 			continue
 		}
@@ -128,7 +135,7 @@ func (s *PortalSprite) DrawPrompt(screen *ebiten.Image, portals []Portal, p *Pla
 	}
 	if p.savedNote > 0 {
 		for i, cp := range portals {
-			if cp.SavedBy(p.RespawnPos) {
+			if p.PortalLook(cp) == PortalCheckpoint {
 				icon, at, alpha = s.check, i, float32(min(1, p.savedNote/0.4)) // fades out at the end
 			}
 		}

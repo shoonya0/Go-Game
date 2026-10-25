@@ -56,6 +56,9 @@ func (w *World) SwitchLevel(name string) error {
 	}
 
 	level := LoadLevel(def.File, def.Key)
+	for i := range level.Portals {
+		level.Portals[i].Level = name
+	}
 	qt := NewDynamicQuadtree(AABB{Width: def.Width, Height: def.Height})
 	for i := range level.Platforms {
 		qt.Insert(&level.Platforms[i])

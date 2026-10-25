@@ -1,6 +1,9 @@
 package core
 
-import "math"
+import (
+	"math"
+	"slices"
+)
 
 // ------------------------ combat constants ------------------------
 const (
@@ -131,9 +134,9 @@ func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, onGround bool) {
 	}
 }
 
-// updatePortals finds the portal the player stands in and saves it when the
-// player uses it: E, or a tap on it (touch screens). Walking past saves
-// nothing. A saved portal is where the player respawns, standing in it.
+// updatePortals finds the portal the player stands in and, when the player
+// uses it (E, or a tap on it on touch screens), activates it and makes it the
+// checkpoint. Walking past does nothing.
 func (p *PlayerRuntime) updatePortals(portals []Portal, in *InputState) {
 	p.savedNote = max(0, p.savedNote-deltaTime())
 	p.atPortal = -1
@@ -148,9 +151,40 @@ func (p *PlayerRuntime) updatePortals(portals []Portal, in *InputState) {
 	}
 	cp := portals[p.atPortal]
 	if in.Interact || (in.Tapped && cp.tapArea().Contains(in.TapAt.X+p.Camera.Pos.X, in.TapAt.Y+p.Camera.Pos.Y)) {
-		p.RespawnPos = cp.StandPos()
+		p.activatePortal(cp)
 		p.savedNote = portalSavedSeconds
 	}
+}
+
+// activatePortal adds c to the active portals (once) and makes it the
+// checkpoint: the player respawns standing in it.
+func (p *PlayerRuntime) activatePortal(c Portal) {
+	ref := c.Ref()
+	if !slices.Contains(p.ActivePortals, ref) {
+		p.ActivePortals = append(p.ActivePortals, ref)
+	}
+	p.Checkpoint = ref
+	p.RespawnPos = c.StandPos()
+}
+
+// PortalLook is how a portal is drawn: still, swirling, or golden (D7).
+type PortalLook int
+
+const (
+	PortalInactive   PortalLook = iota // never used: one still frame
+	PortalActive                       // used: the loop in its own colors
+	PortalCheckpoint                   // the respawn point: the loop in gold
+)
+
+// PortalLook returns how portal c looks to this player.
+func (p *PlayerRuntime) PortalLook(c Portal) PortalLook {
+	switch ref := c.Ref(); {
+	case len(p.ActivePortals) > 0 && ref == p.Checkpoint:
+		return PortalCheckpoint
+	case slices.Contains(p.ActivePortals, ref):
+		return PortalActive
+	}
+	return PortalInactive
 }
 
 // scanHazards reports whether the player is touching water or larva tiles. The

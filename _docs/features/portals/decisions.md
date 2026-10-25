@@ -13,7 +13,7 @@
   respawn point and does **not** revive enemies.
 - **Why:** passing by shouldn't move the respawn point.
 
-## D3. Travel is a menu of saved portals (2026-10-24, user)
+## D3. Travel is a menu of saved portals (2026-10-24, user; superseded by D8)
 
 - **Decision:** using a portal opens a list of every saved portal, in any level (fast travel).
   E at a portal saves it and opens the menu in one press (my call; change it if the double
@@ -40,3 +40,25 @@
 - **Why:** the user wants to see which portal is their checkpoint. Done with a color matrix
   (gray, then scaled toward gold), not a second sheet: plain RGB scaling can't turn blue art
   gold, and a tinted copy would double the 3194×1344 texture.
+
+## D7. Three looks: inactive, active, checkpoint (2026-10-25, user)
+
+- **Decision:** a portal the player never used is one still frame (inactive). Using it
+  activates it: animated, in the art's own colors. The checkpoint (respawn point) is the gold
+  one (D6). Only one portal is the checkpoint; the others the player used stay active.
+- **Why:** the player sees at a glance which portals they found and which one they respawn at.
+
+## D8. Tap E activates and saves; hold E opens the travel menu (2026-10-25, user)
+
+- **Decision:** a press of E (a tap on touch) activates the portal and makes it the
+  checkpoint. Holding E (a long press on touch) for 0.5 s opens the travel menu, which lists
+  every **active** portal in all levels, in a column; picking one travels there. The hold
+  starts with a press, so it also saves (my call: a hold that skipped the save would make a
+  short press wait for the release).
+- **Replaces:** D3 (the menu listed saved portals and opened on the same press as the save).
+
+## D9. Menu rows are thumbnails of the level around each portal (2026-10-25, user)
+
+- **Decision:** each row is a small picture of the level around that portal, the checkpoint's
+  row framed gold. No text: the game has no font, and adding one is a new dependency.
+- **Why:** places are easy to recognise; no dependency.
