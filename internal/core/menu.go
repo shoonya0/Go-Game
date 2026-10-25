@@ -43,16 +43,41 @@ type Menu struct {
 	Selected int
 
 	screenW, screenH int
+	boxW             int      // width of every item box: the widest label's, measured when labels change
 	pointer          Position // the mouse cursor last tick, to see it move
+	pointerSeen      bool     // false until the first tick after Open: a resting cursor doesn't pick
 }
 
 // NewMenu lays a menu out for a logical screen of w×h pixels.
 func NewMenu(w, h int, title string, labels ...string) *Menu {
-	m := &Menu{Title: title, screenW: w, screenH: h, pointer: Position{X: -1, Y: -1}}
+	m := &Menu{Title: title, screenW: w, screenH: h}
 	for _, l := range labels {
 		m.Items = append(m.Items, MenuItem{Label: l})
 	}
+	m.measure()
 	return m
+}
+
+// Open shows the menu with item sel picked. The mouse picks an item only once
+// it moves: one resting where the last screen had its pick would otherwise
+// move this pick (onto Yes of the overwrite question, say).
+func (m *Menu) Open(sel int) {
+	m.Selected, m.pointerSeen = sel, false
+}
+
+// SetLabel changes item i's text.
+func (m *Menu) SetLabel(i int, label string) {
+	m.Items[i].Label = label
+	m.measure()
+}
+
+// measure sizes the item boxes to the widest label.
+func (m *Menu) measure() {
+	var w float64
+	for _, it := range m.Items {
+		w = max(w, textWidth(it.Label, menuItemSize))
+	}
+	m.boxW = int(w) + 2*menuItemPadX
 }
 
 // SetDisabled enables or disables item i, moving the pick off it if needed.
@@ -79,20 +104,18 @@ func (m *Menu) step(i, dir int) int {
 // Update applies one tick of input. It returns the item chosen this tick, or
 // -1, and whether Esc asked to go back.
 func (m *Menu) Update(in *InputState) (chosen int, back bool) {
-	if in.Pointer != m.pointer {
-		m.pointer = in.Pointer
+	moved := m.pointerSeen && in.Pointer != m.pointer
+	m.pointer, m.pointerSeen = in.Pointer, true
+	if moved {
 		if i := m.itemAt(in.Pointer); i >= 0 {
 			m.Selected = i
 		}
 	}
+	at, pressed := in.PressAt()
 	switch {
 	case in.Back:
 		return -1, true
-	case in.Tapped || in.Clicked:
-		at := in.TapAt
-		if in.Clicked {
-			at = in.Pointer
-		}
+	case pressed:
 		if i := m.itemAt(at); i >= 0 {
 			m.Selected = i
 			return i, false
@@ -123,11 +146,7 @@ func (m *Menu) itemAt(p Position) int {
 // ItemRect returns the screen box of item i. Every box is as wide as the
 // widest label, and the title and the column are centered together.
 func (m *Menu) ItemRect(i int) image.Rectangle {
-	var w float64
-	for _, it := range m.Items {
-		w = max(w, textWidth(it.Label, menuItemSize))
-	}
-	boxW, boxH := int(w)+2*menuItemPadX, menuItemSize+2*menuItemPadY
+	boxW, boxH := m.boxW, menuItemSize+2*menuItemPadY
 	n := len(m.Items)
 	column := n*boxH + (n-1)*menuItemGap
 	top := (m.screenH-column)/2 + (menuTitleSize+menuTitleGap)/2

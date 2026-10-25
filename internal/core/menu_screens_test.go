@@ -1,6 +1,9 @@
 package core
 
-import "testing"
+import (
+	"image"
+	"testing"
+)
 
 func choose(s *Screens, label string) MenuAction {
 	m := s.title
@@ -102,5 +105,39 @@ func TestMenuScreensPause(t *testing.T) {
 	s.Update(&InputState{DownJustPressed: true})
 	if a := s.Update(&InputState{Confirm: true}); a != ActionToTitle {
 		t.Errorf("Main Menu: %v, want to the title", a)
+	}
+}
+
+// TestMenuScreensRestingCursorKeepsDefault: a mouse resting where the last
+// screen's pick was doesn't move the next screen's default pick. Settings
+// and Yes share a row, so a resting cursor once made Enter wipe the save.
+func TestMenuScreensRestingCursorKeepsDefault(t *testing.T) {
+	s := NewScreens(1360, 768, true)
+	s.OpenTitle(true)
+	rest := center(s.title, 2) // on Settings, the row Yes takes on the confirm screen
+	if yes := s.confirm.ItemRect(1); !(image.Point{X: int(rest.X), Y: int(rest.Y)}).In(yes) {
+		t.Fatalf("test setup: cursor %v is not on Yes %v", rest, yes)
+	}
+	s.Update(&InputState{Pointer: Position{X: 1, Y: 1}})
+	s.Update(&InputState{Pointer: rest})                      // the cursor moves onto Settings
+	s.Update(&InputState{Pointer: rest, UpJustPressed: true}) // keys up to Continue
+	s.Update(&InputState{Pointer: rest, UpJustPressed: true}) // and New Game
+	s.Update(&InputState{Pointer: rest, Confirm: true})       // the confirm screen opens
+	if a := s.Update(&InputState{Pointer: rest, Confirm: true}); a != ActionNone || s.Current != ScreenTitle {
+		t.Errorf("Enter on the confirm screen with the cursor resting on Yes: %v on %v; want No: back to the title", a, s.Current)
+	}
+
+	s.Update(&InputState{Pointer: rest, Confirm: true}) // the pause menu, opened over a resting cursor:
+	s.OpenPause()
+	s.Update(&InputState{Pointer: center(s.pause, 2)}) // resting on Main Menu when it opens
+	if a := s.Update(&InputState{Pointer: center(s.pause, 2), Confirm: true}); a != ActionNone || s.Current != ScreenNone {
+		t.Errorf("Enter on the pause menu with the cursor resting on Main Menu: %v on %v; want Resume", a, s.Current)
+	}
+
+	s.OpenPause()
+	s.Update(&InputState{Pointer: Position{X: 1, Y: 1}})
+	s.Update(&InputState{Pointer: center(s.pause, 2)}) // a moving cursor still picks
+	if s.pause.Selected != 2 {
+		t.Errorf("cursor moved onto Main Menu: pick %d, want 2", s.pause.Selected)
 	}
 }

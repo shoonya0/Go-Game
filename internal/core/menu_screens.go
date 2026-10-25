@@ -61,18 +61,20 @@ func NewScreens(w, h int, canQuit bool) *Screens {
 
 // OpenPause pauses the game under the pause menu, its pick on Resume.
 func (s *Screens) OpenPause() {
-	s.Current, s.pause.Selected = ScreenPause, 0
+	s.Current = ScreenPause
+	s.pause.Open(0)
 }
 
 // SetSettings shows s on the settings screen.
 func (s *Screens) SetSettings(st Settings) {
 	s.Settings = st
-	s.settings.Items[0].Label = volumeLabel(st.Volume)
+	s.settings.SetLabel(0, volumeLabel(st.Volume))
 }
 
 // openSettings shows the settings screen, returning to back when it closes.
 func (s *Screens) openSettings(back Screen) {
-	s.Current, s.back, s.settings.Selected = ScreenSettings, back, 0
+	s.Current, s.back = ScreenSettings, back
+	s.settings.Open(0)
 }
 
 // OpenTitle shows the title screen, with Continue grayed when there is no
@@ -80,10 +82,11 @@ func (s *Screens) openSettings(back Screen) {
 func (s *Screens) OpenTitle(hasSave bool) {
 	s.Current = ScreenTitle
 	s.title.SetDisabled(1, !hasSave)
-	s.title.Selected = 0
+	sel := 0
 	if hasSave {
-		s.title.Selected = 1
+		sel = 1
 	}
+	s.title.Open(sel)
 }
 
 // HasSave reports whether the title screen offers Continue.
@@ -101,7 +104,8 @@ func (s *Screens) Update(in *InputState) MenuAction {
 		switch s.title.Items[i].Label {
 		case labelNewGame:
 			if s.HasSave() {
-				s.Current, s.confirm.Selected = ScreenConfirmNew, 0
+				s.Current = ScreenConfirmNew
+				s.confirm.Open(0)
 				return ActionNone
 			}
 			return s.play(ActionNewGame)
@@ -141,16 +145,13 @@ func (s *Screens) Update(in *InputState) MenuAction {
 // it down, on its right half up. Back or Esc returns.
 func (s *Screens) updateSettings(in *InputState) MenuAction {
 	i, back := s.settings.Update(in)
+	at, pressed := in.PressAt() // Enter on the volume changes nothing
 	step := 0
 	switch {
 	case back || i == 1:
 		s.Current = s.back
 		return ActionNone
-	case i == 0 && (in.Tapped || in.Clicked):
-		at := in.TapAt
-		if in.Clicked {
-			at = in.Pointer
-		}
+	case i == 0 && pressed:
 		r := s.settings.ItemRect(0)
 		step = 1
 		if int(at.X) < (r.Min.X+r.Max.X)/2 {

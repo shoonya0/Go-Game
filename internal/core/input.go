@@ -33,3 +33,15 @@ type InputState struct {
 	Back             bool     // Escape pressed this frame: closes a menu
 	Skills           Skills
 }
+
+// PressAt returns the screen point pressed this frame by a mouse click or a
+// touch off the on-screen buttons (a click wins), and whether there was one.
+func (in *InputState) PressAt() (Position, bool) {
+	switch {
+	case in.Clicked:
+		return in.Pointer, true
+	case in.Tapped:
+		return in.TapAt, true
+	}
+	return Position{}, false
+}

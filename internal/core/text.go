@@ -15,7 +15,13 @@ import (
 // leaves it out of the binary.
 var uiFont *text.GoTextFaceSource
 
+// uiFaces keeps one face per size: menus measure and draw every frame.
+var uiFaces = map[float64]*text.GoTextFace{}
+
 func uiFace(size float64) *text.GoTextFace {
+	if f := uiFaces[size]; f != nil {
+		return f
+	}
 	if uiFont == nil {
 		src, err := text.NewGoTextFaceSource(bytes.NewReader(fonts.PressStart2P_ttf))
 		if err != nil {
@@ -23,7 +29,9 @@ func uiFace(size float64) *text.GoTextFace {
 		}
 		uiFont = src
 	}
-	return &text.GoTextFace{Source: uiFont, Size: size}
+	f := &text.GoTextFace{Source: uiFont, Size: size}
+	uiFaces[size] = f
+	return f
 }
 
 // TextSize returns the width and height of s drawn at size px.
