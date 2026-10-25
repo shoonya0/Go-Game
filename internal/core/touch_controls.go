@@ -66,6 +66,10 @@ type TouchControls struct {
 	rects      [touchButtonCount]image.Rectangle
 	held, prev [touchButtonCount]bool
 
+	// A touch that starts on no button is a tap on the game world (e.g. a portal).
+	tapped bool        // a tap started this frame
+	tapAt  image.Point // where
+
 	sprites *touchSprites
 }
 
@@ -115,6 +119,7 @@ func (tc *TouchControls) Update(points []image.Point) {
 	}
 	tc.prev = tc.held
 	tc.held = [touchButtonCount]bool{}
+	tc.tapped = false
 	for _, p := range points {
 		for b, r := range tc.rects {
 			if p.In(r) {
@@ -124,13 +129,33 @@ func (tc *TouchControls) Update(points []image.Point) {
 	}
 }
 
+// Started records the touches that began this frame (call it after Update):
+// the first one on no button is a tap at that point. A finger that slides off
+// a button, or rests off the buttons, is not.
+func (tc *TouchControls) Started(points []image.Point) {
+	for _, p := range points {
+		onButton := false
+		for _, r := range tc.rects {
+			onButton = onButton || p.In(r)
+		}
+		if !onButton {
+			tc.tapped, tc.tapAt = true, p
+			return
+		}
+	}
+}
+
 func (tc *TouchControls) justPressed(b TouchButton) bool { return tc.held[b] && !tc.prev[b] }
 
 // Apply merges the touch buttons into in, on top of the keyboard input already
 // there. W also jumps, since the keyboard's jump key (Space) has no button.
 func (tc *TouchControls) Apply(in *InputState) {
+	in.Tapped = false
 	if !tc.Enabled {
 		return
+	}
+	if tc.tapped {
+		in.Tapped, in.TapAt = true, Position{X: float64(tc.tapAt.X), Y: float64(tc.tapAt.Y)}
 	}
 	h := &tc.held
 

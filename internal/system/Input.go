@@ -54,6 +54,7 @@ func HandleInput(inputState *core.InputState) {
 
 	// ---------------- debug ----------------
 	inputState.ToggleHitboxes = inpututil.IsKeyJustPressed(ebiten.KeyF3)
+	inputState.Interact = inpututil.IsKeyJustPressed(ebiten.KeyE)
 
 	// ---------------- skills ----------------
 	inputState.Skills.WeakAttack = ebiten.IsKeyPressed(ebiten.KeyJ)
