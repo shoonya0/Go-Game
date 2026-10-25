@@ -2,7 +2,7 @@
 
 ## Increment 1: see a portal, start at it, save at it (spec: [spec.md](./spec.md))
 
-- [ ] 1. Portal sprite: 14-frame loop from `portal.png` (7×2 grid, ~456×672 cells), scaled to
+- [ ] 1. Portal sprite: 14-frame loop from `portal.png` (7×2 grid, ~228×336 cells), scaled to
       about 2 tiles tall, drawn at every code-9 cell with its base on the cell floor
       → check: `TestBuildLevelPortals`, `TestPortalSheetFrames`, `TestPortalStandsOnItsCell`, manual look
 - [x] 2. A new game starts at the first portal (D5), saved → check: `TestPlayerStartsAtFirstPortal`
@@ -39,6 +39,6 @@
 
 - [ ] Keep saved portals across game restarts (file on Windows, browser storage on the web)
 - [ ] A second level to travel to (add it to `Levels` in levels.go; its background needs a unique file name)
-- [ ] `portal.png` is 3.6 MB (was 5.6) but drawn 150 px tall: a 3× smaller copy would cut the web download
+- [x] `portal.png` halved to 1597×672 (3.6 MB → 1.0 MB; cells 336 px tall, ~2.8× the drawn 120 px)
 - [ ] `portal.png` has an AI sparkle mark in its bottom-right corner (inside the last frame's
       cell): crop it out of the asset

@@ -10,7 +10,7 @@
   `TravelAsked()` after a 0.5 s hold opens `TravelMenu`; `World.Travel` / `World.Respawned` (levels.go)
 - **Open questions / blockers:** web check: synthetic key events don't reach the game in
   agent-browser, so the menu was not seen there. Only one level exists, so cross-level travel
-  is tested with `testSecondLevel` only. `portal.png` is 3.6 MB (ask the user). `_asset_backups/`
+  is tested with `testSecondLevel` only. `portal.png` halved to 1.0 MB (original in git history). `_asset_backups/`
   is the user's: never commit it
 - **Don't forget:** Esc both closes the menu (`Back`) and toggles `InputState.Menu` (no menu
   reads it yet). A thumbnail is taken once, so it shows the portal as it looked then. Level
@@ -18,6 +18,12 @@
   icons (`touch_icons.go`)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-25: smaller portal sheet
+
+- Changed: `assets/levels/portal.png` halved (Catmull-Rom, scratch tool, no project code)
+- Verified: portal tests pass; `verify.mjs --full` 8/8; sheet looked at, detail kept
+- Docs touched: tasks, state
 
 ### 2026-10-25: task 9, entering a level revives its enemies
 
@@ -42,9 +48,3 @@
 - Changed: `EnemyBlueprint.Boss`, `RespawnEnemies`, `PlayerRuntime.Respawns`, main.go revives on change
 - Verified: `TestRespawnRevivesEnemies`, `TestKilledBossStaysDead` failed first (build); `verify.mjs --full` 8/8
 - Docs touched: tasks, state, enemy-types state
-
-### 2026-10-25: task 4, respawn at the saved portal
-
-- Changed: `TestRespawnAtSavedPortal` only (behavior came with `00454fe`)
-- Verified: passes; fails when the respawn point is mutated back to the cell corner; `verify.mjs` 5/5
-- Docs touched: tasks, state
