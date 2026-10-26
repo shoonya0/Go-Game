@@ -1,10 +1,10 @@
 # Enemy types: state
 
-## Now (updated 2026-10-26 at `4c520d0`)
+## Now (updated 2026-10-26 at `8c2093e`)
 
 - **Status:** 🟡 playtest fixes on `fix/30-enemy-playtest-bugs` (issues #30-#35, D11), committed locally, not pushed; task 25 still waits for ranged art
-- **Current task:** task 33: the user plays the fixes, then push and PR (ask before merge)
-- **Stopped at:** tasks 28-32 done, one commit per issue; `verify.mjs --full` 8/8. Not played in game or checked in the web build yet
+- **Current task:** task 34: the user plays the redone knockdown (#33) and the doubled detection; then push and PR (ask before merge)
+- **Stopped at:** playtest: #30-#32, #34, #35 fine. #33 redone (heavy hit turns the player toward the source); DetectRange doubled (600-760 px). `verify.mjs --full` 8/8. Wider detection may wake enemies placed 6+ columns from portals (levels state): check on arrival
 - **Traps:** behaviour tests use `testEnemyBlueprint` (enemy_test.go), not a game enemy: change the roster freely; flyer tests use `testFlyerBlueprint` (enemy_fly_test.go). Ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
   `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
   `GuardChance` in [0,1] with a guard clip. No strip pack has a `guard` clip. The mushroom
