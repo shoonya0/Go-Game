@@ -47,3 +47,12 @@
   entry portal is its first portal in reading order. The order is the [spec](./spec.md)
   table, day before night: deepForest day → deepForest night → aquaticAbyss day → … →
   rustyRefinery night, which is last and opens nothing.
+
+## D6. Every level is walled in by an invisible border (2026-10-26, user's call)
+
+- **Decision:** each level is closed on all four sides by walls that block like rock but are
+  never drawn, so the player (and enemies) can't leave it.
+- **How (my call):** the engine adds them, not the grid: `World` puts four solid walls of the
+  `Border` tile type just outside the level's edges when it loads a level (`levelBorder`,
+  `internal/core/world.go`), and drawing skips that type. No grid needs a rock frame, so a
+  level whose tiles don't include rock (rustyRefinery) is walled in too.

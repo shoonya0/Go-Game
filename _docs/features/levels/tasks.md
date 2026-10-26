@@ -10,6 +10,7 @@
 - [x] 5. Each `LevelDef` lists its tiles (`Tiles`, `KeepApart` for larva/grass in boulderBastion); a test checks every level grid; deepForest's larva pit became water → check: `go test ./internal/core -run TestLevelTiles`
 - [x] 6. Day and night sub-levels in order (D1, D5): `LevelOrder`; deepForest night grid (`deepForest_night.json`, 3 portals, climbs ≤ 3 tiles) → check: `TestLevelPortals`, `TestLevelTiles`, `TestLevelEnemiesKeepTheirGround`; web screenshot `_docs/evidence/levels-night-start.png`
 - [x] 7. Saving the last unused portal teleports to the next sub-level's entry portal, once (D5) → check: `go test ./internal/core -run TestLastPortal`; in game: not yet (the user plays it)
+- [x] 9. Invisible border around every level (D6) → check: `go test ./internal/core -run TestLevelBorderKeepsPlayerIn`
 - [ ] 8. Update docs: state.md "Now", spec.md, current-state.md
 
 ## Later (not planned yet)

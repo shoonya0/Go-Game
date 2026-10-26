@@ -1,10 +1,10 @@
 # Levels: state
 
-## Now (updated 2026-10-26 at `db13caf`)
+## Now (updated 2026-10-26 at `68bd015`)
 
 - **Status:** 🟡 in progress
 - **Current task:** 8. update docs, then the user plays deepForest night ([tasks.md](./tasks.md) "Later")
-- **Stopped at:** tasks 6 and 7 done: deepForest night (`deepForest_night.json`, key `night`)
+- **Stopped at:** task 9 done (invisible border, D6). Tasks 6 and 7 done: deepForest night (`deepForest_night.json`, key `night`)
   follows day in `LevelOrder`; saving day's last unused portal opens it. Checked by tests and a
   throwaway web build that started in the night level; not played through
 - **Open questions / blockers:** (user) is the night layout right; who draws levels 2–8
@@ -16,6 +16,12 @@
   the level name: `deepForest1` stays the day sub-level's name
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: invisible border around every level (task 9, D6)
+
+- Changed: `Border` tile type, `levelBorder`, `Level.Width/Height` (`world.go`); `World.border` (`levels.go`); `TestLevelBorderKeepsPlayerIn`
+- Verified: `node scripts/verify.mjs --full` → 8/8; the test failed first (player walked out at x = -1.1)
+- Docs touched: levels decisions D6, spec, tasks, state; portals session
 
 ### 2026-10-26: deepForest night, last portal opens the next level (tasks 6, 7)
 
@@ -40,12 +46,6 @@
 - Changed: `internal/core/image.go` imports `image/jpeg`; `TestBackgroundsDecode` in `image_test.go`
 - Verified: `node scripts/verify.mjs` → 5/5 pass; the test decodes all 16 backgrounds locally
 - Docs touched: levels tasks, state
-
-### 2026-10-26: the user's level rules (D1–D5)
-
-- Changed: docs only: decisions.md D1–D5, spec rules, tasks 2–8
-- Verified: `node scripts/docs-check.mjs` → 0 errors
-- Docs touched: levels decisions, spec, tasks, state; enemy-types D10; current-state
 
 ## Known issues
 

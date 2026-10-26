@@ -14,7 +14,8 @@ The user's rules for every level (2026-10-26). Grid codes for the tile types are
 5. Saving the last unused portal of a sub-level teleports the player to the next sub-level's
    entry portal, in the order of the table below, day before night ([D5](./decisions.md)).
 6. Backgrounds stay full quality; the web build downloads only the one being played ([D4](./decisions.md)).
-7. Tile amounts are how much of the level each tile makes up: most > medium > less > very less.
+7. Every level is walled in on all sides by an invisible border; the grid doesn't draw it ([D6](./decisions.md)).
+8. Tile amounts are how much of the level each tile makes up: most > medium > less > very less.
 
 ## Levels
 
@@ -38,3 +39,4 @@ The user's rules for every level (2026-10-26). Grid codes for the tile types are
 - Saving the last unused portal of a sub-level lands the player in the next one, and the
   travel menu then lists that portal; saving it again later does not teleport.
 - `game.wasm` holds no level background.
+- A player pushing into any edge of any level stays inside it (`TestLevelBorderKeepsPlayerIn`).

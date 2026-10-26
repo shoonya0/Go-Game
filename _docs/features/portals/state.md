@@ -14,6 +14,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: touched by levels (task 9)
+
+- Changed: `world.go` / `levels.go`: an invisible `Border` wall around every level ([levels](../levels/state.md)); portals unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this entry only
+
 ### 2026-10-26: touched by levels (tasks 6, 7)
 
 - Changed: saving a level's last unused portal opens the next level (`combat.go` `savePortal`, `levels.go` `OpenNextLevel`) ([levels](../levels/state.md)); this feature's behaviour unchanged
@@ -36,10 +42,4 @@
 
 - Changed: `Background_1` in `world.go` now `deepForest_day.png` ([levels](../levels/state.md)); portals unchanged
 - Verified: `node scripts/verify.mjs` → 5/5 pass
-- Docs touched: this entry only
-
-### 2026-10-26: reskinned by ui-buttons
-
-- Changed: the travel menu's scroll arrows now drawn from `assets/UI/UIButtons.png` ([ui-buttons](../ui-buttons/state.md), PR #27); behaviour unchanged
-- Verified: `node scripts/verify.mjs --full` → 8/8 pass (on the ui-buttons branch)
 - Docs touched: this entry only
