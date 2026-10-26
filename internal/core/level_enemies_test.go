@@ -89,26 +89,34 @@ func TestLevelFileSpawnsEnemies(t *testing.T) {
 	}
 }
 
-// TestLevelEnemiesKeepTheirGround spawns level 1 as the game does and lets every
-// enemy patrol for 20 seconds with the player far away: each registered kind
-// must be in the level, and each enemy must still stand on the ground it
-// spawned on, not fall off a platform or through the floor. A flyer has no
-// ground: it must still fly at the height it spawned at.
+// TestLevelEnemiesKeepTheirGround spawns each level as the game does and lets
+// every enemy patrol for 20 seconds with the player far away: each enemy must
+// still stand on the ground it spawned on, not fall off a platform or through
+// the floor. A flyer has no ground: it must still fly at the height it spawned
+// at. Level 1 must also hold every registered kind.
 func TestLevelEnemiesKeepTheirGround(t *testing.T) {
 	WorldInit()
-	level := LoadLevel(LevelFile, DefaultLevelName)
-	qt := NewDynamicQuadtree(AABB{Width: float64(Level_1_Width), Height: float64(Level_1_Height)})
+	for name, def := range Levels {
+		t.Run(name, func(t *testing.T) { levelEnemiesKeepTheirGround(t, name, def) })
+	}
+}
+
+func levelEnemiesKeepTheirGround(t *testing.T, name string, def LevelDef) {
+	level := LoadLevel(def.File, def.Key)
+	qt := NewDynamicQuadtree(AABB{Width: def.Width, Height: def.Height})
 	for i := range level.Platforms {
 		qt.Insert(&level.Platforms[i])
 	}
 
-	placed := map[EnemyKind]bool{}
-	for _, s := range level.Enemies {
-		placed[s.Kind] = true
-	}
-	for kind, bp := range enemyBlueprints {
-		if !placed[kind] {
-			t.Errorf("%s (marker %q) is not placed in level_1.json", bp.Name, bp.Marker)
+	if name == StartLevel {
+		placed := map[EnemyKind]bool{}
+		for _, s := range level.Enemies {
+			placed[s.Kind] = true
+		}
+		for kind, bp := range enemyBlueprints {
+			if !placed[kind] {
+				t.Errorf("%s (marker %q) is not placed in level_1.json", bp.Name, bp.Marker)
+			}
 		}
 	}
 
