@@ -1,6 +1,6 @@
 # Main menu: state
 
-## Now (updated 2026-10-25 at `0d5bd4b`)
+## Now (updated 2026-10-26 at `7549120`)
 
 - **Status:** ✅ done on the branch, not pushed: all tasks 1–10 ticked
 - **Current task:** none. `/code-review` ran; its bugs are fixed (resting cursor picked Yes,
@@ -22,6 +22,12 @@
   the linker). The travel menu only has thumbnails for portals of levels visited this run
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-25: code review fixes
+
+- Changed: `menu.go`, `menu_screens.go`, `input.go`, `text.go`, `touch_controls.go`, `cmd/main.go`
+- Verified: `node scripts/verify.mjs` → pass; web build: blocked storage still offers Continue
+- Docs touched: state, tasks ("Later"), current-state
 
 ### 2026-10-25: tasks 1–10
 
