@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-26)
 
-Snapshot at `7549120` (`feature/main-menu`, 12 commits ahead of `main` at `aaa849c`, not pushed). One page. Details live in each increment's entry in
+Snapshot at `6a8cc90` (`main`; PR #25 main menu merged). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -10,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [main-menu](./features/main-menu/state.md) · all tasks done; `/code-review` ran and its bugs are fixed (2026-10-25). Not pushed. Next after it: more levels (own feature). Paused: enemy-types (low priority; task 25 waits for ranged art)
-- **Branch:** `feature/main-menu` at `7549120`, 12 commits on `main` at `aaa849c`
-- **Next step:** user checks the native window (`go run ./cmd`), then push and open a PR; ask before merging (deploys to Render). After it: more levels (own feature). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Feature:** none active. Last done: [main-menu](./features/main-menu/state.md), merged 2026-10-26 (PR #25). Paused: enemy-types (low priority; task 25 waits for ranged art)
+- **Branch:** `main` at `6a8cc90`
+- **Next step:** more levels (the user's next focus; level content still undecided, see "Next task"). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -26,7 +26,7 @@ and /feature-docs update. -->
 - Fight six enemy types in level 1, each placed by a grid marker (one or two punctuation characters): the skeleton in white (`@`) and yellow (`#`), the mushroom (`&`) the White Golem (`%`, slow and heavy; checked by the user in game) and the Flying Demon (`^`, flies within 4 tiles of its spawn and bites; checked by the user in game) and the Smasher (`*`, hangs over you and dives down; checked by the user in game). All patrol, chase and attack; while patrolling they turn at walls and platform edges (chasing ones can still run off); they hit only when your body is inside their attack box. Each deals damage on the frame the weapon connects; the skeleton alternates two attacks. (The succubus and the goblin were removed: their animation didn't look good.) Between swings an enemy stands idle until its cooldown is ready, so no swing misses. Each shows 2 health bars above its head and regenerates 0.1 bar/s; sprites bob, lean and shake when hit (draw-time motion). Skeleton/mushroom checked by the user in game; hit timing not yet. Your attacks hurt it (J/I 0.5 bar, jump + I 1.5 and its spin hits behind you too, K 0.5 + 1, L 1 + 2, O 1 + 2); K, L and O stop halfway unless pressed again (O after sprite 9); U sends a ground wave along the floor that hurts it too (only enemies on the ground). Attacks move the player (`internal/core/attack_step.go`): J steps 45 px back, I and U 45 px forward, K's second part 15 px and O's 45 px forward; L doesn't move. Taking damage makes the player blink red for 1 s; a hit of 2+ hearts knocks them down 1.5 tiles back, 3+ hearts plays the full knockdown and 2 tiles; at 0 HP one of two death animations plays before respawn. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go`, tests pass)
 - Enemies are built from parts, not one Go type per species: a blueprint (stats, clips from one strip pack) plus a movement part (`groundMover`) and an attack part (`meleeAttack`). What an enemy can do is the clips it has (`bp.Has`); `go test ./internal/core -run TestEnemyCapabilities -v` prints the table. A guard trait exists (blocks hits from the front) but no current enemy has guard art. VERIFIED (`internal/core/enemy_types.go`, `enemy_guard.go`)
 - On a touch screen, buttons for every key: arrows bottom-left, attack symbols and a bigger sprint button bottom-right, a menu button top-left (the HUD moves right of it). Idle buttons are half see-through and stay out of the middle third of the screen. VERIFIED (tests; web build with simulated touches; not on a real device)
-- Main menu (branch `feature/main-menu`): the game opens on a title screen (New Game, Continue, Settings, Quit; Press Start 2P font), picked with W/S + Enter/E, a tap or a mouse click. Progress (used portals, checkpoint) autosaves to `%AppData%\PirateAdventure\save.json` on Windows and `localStorage` on the web; Continue starts standing in the saved portal, New Game asks before wiping a save. Settings holds a saved volume 0–10 (no audio yet). Quit is desktop only. Esc or the touch menu button pauses (Resume, Settings, Main Menu). VERIFIED (tests; web build in agent-browser, `_docs/evidence/main-menu-*.png`; native window not checked by hand)
+- Main menu (merged, PR #25): the game opens on a title screen (New Game, Continue, Settings, Quit; Press Start 2P font), picked with W/S + Enter/E, a tap or a mouse click. Progress (used portals, checkpoint) autosaves to `%AppData%\PirateAdventure\save.json` on Windows and `localStorage` on the web; Continue starts standing in the saved portal, New Game asks before wiping a save. Settings holds a saved volume 0–10 (no audio yet). Quit is desktop only. Esc or the touch menu button pauses (Resume, Settings, Main Menu). VERIFIED (tests; web build in agent-browser, `_docs/evidence/main-menu-*.png`; native window not checked by hand)
 
 ## How to build, run, test
 
@@ -35,14 +35,14 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `7549120`, Windows, go1.26.7)
+## Test baseline (at `7549120`, merged unchanged as `6a8cc90`; Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
 | `go test ./...` | ✅ 183/183 top-level tests pass: 172 in `internal/core`, 2 in `internal/system`, 9 in `tools/battler2strip` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
-| GitHub CI | `main` at `10b430d` (PR #22): merged by the user | — |
+| GitHub CI | `main` at `6a8cc90` (PR #25): merged by the user | — |
 
 Compare runs **by test name**: `go test ./internal/core -v | grep "^--- "` lists them. Added since the last
 baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAttackSteps`,
@@ -80,7 +80,6 @@ enemy health / level marker tests, and on `feature/enemy-types` the characterisa
 | 1 | Untrack `game.exe` | `git rm --cached game.exe` / keep | user | no |
 | 2 | Keep or delete `tools/battler2strip` (nothing left to bake, enemy-types D9) | keep / delete | user | no |
 | 3 | Keep main-menu D4 (New Game asks before wiping a save) and D7 (Esc pause menu), both my calls | keep / drop | user | no |
-| 4 | Push `feature/main-menu` and open the PR | yes / not yet | user | yes, for merging |
 
 ## Next task
 

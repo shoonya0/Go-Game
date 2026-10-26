@@ -1,18 +1,14 @@
 # Main menu: state
 
-## Now (updated 2026-10-26 at `7549120`)
+## Now (updated 2026-10-26 at `6a8cc90`)
 
-- **Status:** ✅ done on the branch, not pushed: all tasks 1–10 ticked
-- **Current task:** none. `/code-review` ran; its bugs are fixed (resting cursor picked Yes,
-  Main Menu re-read storage, Resume press opening the travel menu, a travel not saved before
-  the pause, hidden touch buttons still pressing). Next: push + PR; merging deploys to Render,
-  so ask the user first
-- **Stopped at:** web build checked in agent-browser (title with and without a save, Continue
-  after reload, New Game confirm + wipe, settings kept after reload, pause → Main Menu);
-  screenshots `_docs/evidence/main-menu-title.png`, `main-menu-pause.png` (untracked, like the
-  portals evidence). The native window was not checked by hand
-- **Open questions / blockers:** D4 (confirm before wiping) and D7 (pause menu) are my calls;
-  the user can veto
+- **Status:** ✅ done, merged to `main` in PR #25 (`6a8cc90`), branch deleted. All tasks 1–10 done
+- **Current task:** none. Leftovers are in [tasks.md](./tasks.md) "Later" (real audio, the run
+  rebuilt on each title visit, a second level)
+- **Stopped at:** feature complete; web build checked in agent-browser. The native window was
+  not checked by hand before the merge
+- **Open questions / blockers:** D4 (confirm before wiping) and D7 (pause menu) were my calls;
+  the user can still veto
 - **Don't forget:** Main Menu builds the title from the run in memory (`toTitle`), never from
   storage, so blocked storage loses nothing until the tab closes. The travel menu's
   `WaitRelease` is armed in one place: whenever `Update` leaves the menus. The title screen builds the save's game behind it, so a save that fails
@@ -22,6 +18,12 @@
   the linker). The travel menu only has thumbnails for portals of levels visited this run
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: merged
+
+- Changed: nothing in code; PR #25 merged by the user
+- Verified: `git log origin/main` → `6a8cc90`
+- Docs touched: state, registry, current-state
 
 ### 2026-10-25: code review fixes
 
