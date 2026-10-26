@@ -15,7 +15,7 @@ const (
 	MaxSpeed     = 200
 	MaxRunSpeed  = 500
 	MaxFallSpeed = 700
-	JumpForce    = 700
+	JumpForce    = 605 // the feet rise just over 3 tiles: a 3-tile step is climbable, 4 is not
 	GravityScale = 10
 	TerminalVelY = 10
 	CoyoteMs     = 1
