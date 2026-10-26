@@ -170,22 +170,24 @@ func (p *PlayerRuntime) updatePortals(portals []Portal, in *InputState) {
 }
 
 // savePortal is the player using portal c of a level with these portals: it
-// activates c, and when c was the level's last unused portal the level is done
-// (LevelDone). Arriving by teleport activates a portal without this, so it
-// never finishes a level (levels decision D5).
+// activates c, and when every portal of the level is used and the next level
+// isn't open yet, the level is done (LevelDone). That is the save of its last
+// unused portal, or any save in a level a save from before levels D5 left
+// finished. Arriving by teleport activates a portal without this, so it never
+// finishes a level (levels decision D5).
 func (p *PlayerRuntime) savePortal(c Portal, portals []Portal) {
-	if slices.Contains(p.ActivePortals, c.Ref()) {
-		p.activatePortal(c)
-		return
-	}
 	p.activatePortal(c)
-	p.levelDone = !slices.ContainsFunc(portals, func(o Portal) bool {
+	allUsed := !slices.ContainsFunc(portals, func(o Portal) bool {
 		return !slices.Contains(p.ActivePortals, o.Ref())
+	})
+	next := nextLevel(c.Level)
+	p.levelDone = allUsed && next != "" && !slices.ContainsFunc(p.ActivePortals, func(r PortalRef) bool {
+		return r.Level == next
 	})
 }
 
-// LevelDone reports whether the player saved the last unused portal of the
-// level this tick: the next level opens (levels decision D5).
+// LevelDone reports whether a save this tick finished the level (savePortal):
+// the next level opens (levels decision D5).
 func (p *PlayerRuntime) LevelDone() bool { return p.levelDone }
 
 // standingIn returns the portal the player stands in, or nil.

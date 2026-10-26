@@ -388,6 +388,70 @@ func TestLastPortalOpensNextLevel(t *testing.T) {
 	}
 }
 
+// TestOldSaveOpensNextLevel: a save from before levels D5 can hold every
+// portal of a sub-level as used without the next sub-level open. Saving any
+// of them again opens it, once (code review of PR #28: the player was stuck).
+func TestOldSaveOpensNextLevel(t *testing.T) {
+	WorldInit()
+	w, err := NewWorld(StartLevel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := InitPlayer(nil)
+	p.StartAt(w.Level)
+	for _, c := range w.Level.Portals { // as Continue restores them
+		p.activatePortal(c)
+	}
+	save := func(c Portal) {
+		p.Pos = c.StandPos()
+		p.updatePortals(w.Level.Portals, &InputState{Interact: true})
+	}
+
+	first := w.Level.Portals[0]
+	save(first)
+	if !p.LevelDone() {
+		t.Fatal("every portal used, next level not open: saving one didn't open it")
+	}
+	if opened, err := w.OpenNextLevel(p); err != nil || !opened {
+		t.Fatalf("OpenNextLevel = %v, %v; want true, nil", opened, err)
+	}
+	if err := w.Travel(p, first.Ref()); err != nil {
+		t.Fatal(err)
+	}
+	save(first)
+	if p.LevelDone() {
+		t.Error("the next level is open: saving again opened it a second time")
+	}
+}
+
+// TestOpenNextLevelWithoutPortalKeepsWorld: when the next level has no portal
+// to arrive at, OpenNextLevel reports an error and leaves the world and the
+// player as they were, not in the next level at the old coordinates.
+func TestOpenNextLevelWithoutPortalKeepsWorld(t *testing.T) {
+	WorldInit()
+	const empty = "testNoPortals"
+	Levels[empty] = Levels[StartLevel]
+	levelPortals[empty] = []Position{} // its grid read as having no portal
+	order := LevelOrder
+	LevelOrder = []string{StartLevel, empty}
+	t.Cleanup(func() { delete(Levels, empty); delete(levelPortals, empty); LevelOrder = order })
+
+	w, err := NewWorld(StartLevel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := InitPlayer(nil)
+	p.StartAt(w.Level)
+	pos, qt := p.Pos, w.Quadtree
+	if opened, err := w.OpenNextLevel(p); opened || err == nil {
+		t.Fatalf("OpenNextLevel = %v, %v; want false and an error", opened, err)
+	}
+	if w.Name != StartLevel || w.Quadtree != qt || p.Pos != pos {
+		t.Errorf("after the failed open: in %q at %v (quadtree changed: %v); want %q at %v, unchanged",
+			w.Name, p.Pos, w.Quadtree != qt, StartLevel, pos)
+	}
+}
+
 // TestLevelSizeFromGrid: a level is as big as its grid, so the camera and the
 // quadtree cover every row and column (deepForest's grids are 36 rows, more
 // than the 34 the other levels have).

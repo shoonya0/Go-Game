@@ -110,25 +110,40 @@ var LevelOrder = []string{
 	RustyRefineryDay, RustyRefineryNight,
 }
 
-// levelPortals caches each level's portal cells in reading order, read once
-// for portalNumber.
+// levelPortals caches each level's portal cells in reading order (portalCells).
 var levelPortals = map[string][]Position{}
 
-// portalNumber is ref's place among its level's portals in reading order,
-// from 1 (1 is the entry portal), or 0 when ref's level isn't in Levels.
-func portalNumber(ref PortalRef) int {
-	cells, ok := levelPortals[ref.Level]
+// portalCells returns the named level's portal cells in reading order, read
+// once; none for a level not in Levels.
+func portalCells(name string) []Position {
+	cells, ok := levelPortals[name]
 	if !ok {
-		def, known := Levels[ref.Level]
+		def, known := Levels[name]
 		if !known {
-			return 0
+			return nil
 		}
 		for _, c := range LoadLevel(def.File, def.Key).Portals {
 			cells = append(cells, c.Pos)
 		}
-		levelPortals[ref.Level] = cells
+		levelPortals[name] = cells
 	}
-	return slices.Index(cells, ref.Cell) + 1
+	return cells
+}
+
+// portalNumber is ref's place among its level's portals in reading order,
+// from 1 (1 is the entry portal), or 0 when ref's level isn't in Levels.
+func portalNumber(ref PortalRef) int {
+	return slices.Index(portalCells(ref.Level), ref.Cell) + 1
+}
+
+// nextLevel is the level after name in LevelOrder, or "" when name is the
+// last or not in it.
+func nextLevel(name string) string {
+	i := slices.Index(LevelOrder, name)
+	if i < 0 || i+1 >= len(LevelOrder) {
+		return ""
+	}
+	return LevelOrder[i+1]
 }
 
 // World is the level the player is in: its platforms (indexed in Quadtree)
@@ -214,20 +229,18 @@ func (w *World) Travel(p *PlayerRuntime, ref PortalRef) error {
 
 // OpenNextLevel takes p to the first portal of the level after the current
 // one in LevelOrder, which becomes used and the checkpoint (levels decision
-// D5). It reports false when the current level is the last.
+// D5). It reports false when the current level is the last. On an error the
+// world and p stay as they were.
 func (w *World) OpenNextLevel(p *PlayerRuntime) (bool, error) {
-	i := slices.Index(LevelOrder, w.Name)
-	if i < 0 || i+1 >= len(LevelOrder) {
+	next := nextLevel(w.Name)
+	if next == "" {
 		return false, nil
 	}
-	next := LevelOrder[i+1]
-	if err := w.SwitchLevel(next); err != nil {
-		return false, err
-	}
-	if len(w.Level.Portals) == 0 {
+	cells := portalCells(next)
+	if len(cells) == 0 {
 		return false, fmt.Errorf("level %q has no portal to arrive at", next)
 	}
-	return true, w.Travel(p, w.Level.Portals[0].Ref())
+	return true, w.Travel(p, PortalRef{Level: next, Cell: cells[0]})
 }
 
 // Respawned follows a player respawn: back to the checkpoint's level when it
