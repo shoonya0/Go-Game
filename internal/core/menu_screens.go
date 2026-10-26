@@ -13,8 +13,9 @@ const (
 	ScreenNone       Screen = iota // playing: no menu
 	ScreenTitle                    // the main screen the game opens on
 	ScreenConfirmNew               // New Game with a save: overwrite it? (main-menu D4)
-	ScreenSettings                 // the volume (D5)
+	ScreenSettings                 // the volume (D5) and How to Play
 	ScreenPause                    // Esc while playing: the game paused underneath (D7)
+	ScreenHelp                     // How to Play, opened from the settings
 )
 
 // MenuAction is what a menu choice asks the game to do.
@@ -31,10 +32,18 @@ const (
 
 // The title screen's labels; Quit is left out where the game can't close (D6).
 const (
-	labelNewGame  = "New Game"
-	labelContinue = "Continue"
-	labelSettings = "Settings"
-	labelQuit     = "Quit"
+	labelNewGame   = "New Game"
+	labelContinue  = "Continue"
+	labelSettings  = "Settings"
+	labelQuit      = "Quit"
+	labelHowToPlay = "How to Play"
+)
+
+// The settings screen's items, in order.
+const (
+	settingsVolume = iota
+	settingsHelp
+	settingsBack
 )
 
 // Screens runs the menus: which one is up, and what a choice in it means.
@@ -43,6 +52,7 @@ type Screens struct {
 	Settings Settings
 
 	title, confirm, settings, pause *Menu
+	help                            *HelpScreen
 	back                            Screen // the screen the settings return to
 }
 
@@ -57,14 +67,15 @@ func NewScreens(w, h int, canQuit bool) *Screens {
 		Current:  ScreenTitle,
 		title:    NewMenu(w, h, "PIRATE ADVENTURE", labels...),
 		confirm:  NewMenu(w, h, "OVERWRITE SAVE?", "No", "Yes"),
-		settings: NewMenu(w, h, "SETTINGS", "", "Back"),
+		settings: NewMenu(w, h, "SETTINGS", "", labelHowToPlay, "Back"),
 		pause:    NewMenu(w, h, "PAUSED", "Resume", labelSettings, "Main Menu"),
+		help:     NewHelpScreen(w, h),
 	}
 	s.title.SetIcons(uiRestartRect, uiRightRect, uiSettingsRect, uiCrossRect)
 	s.confirm.SetIcons(uiCrossRect, uiCheckRect)
-	s.settings.SetIcons(image.Rectangle{}, uiLeftRect) // the volume's is set with it
+	s.settings.SetIcons(image.Rectangle{}, uiRightRect, uiLeftRect) // the volume's is set with it
 	s.pause.SetIcons(uiRightRect, uiSettingsRect, uiHomeRect)
-	s.settings.Items[0].Bar = true
+	s.settings.Items[settingsVolume].Bar = true
 	s.SetSettings(DefaultSettings())
 	return s
 }
@@ -79,13 +90,13 @@ func (s *Screens) OpenPause() {
 // speaker crossed out at 0.
 func (s *Screens) SetSettings(st Settings) {
 	s.Settings = st
-	vol := &s.settings.Items[0]
+	vol := &s.settings.Items[settingsVolume]
 	vol.Fill = float64(st.Volume) / MaxVolume
 	vol.Icon = uiSoundRect
 	if st.Volume == 0 {
 		vol.Icon = uiMuteRect
 	}
-	s.settings.SetLabel(0, volumeLabel(st.Volume))
+	s.settings.SetLabel(settingsVolume, volumeLabel(st.Volume))
 }
 
 // openSettings shows the settings screen, returning to back when it closes.
@@ -143,6 +154,11 @@ func (s *Screens) Update(in *InputState) MenuAction {
 		}
 	case ScreenSettings:
 		return s.updateSettings(in)
+	case ScreenHelp:
+		if s.help.Update(in) {
+			s.Current = ScreenSettings
+			s.settings.Open(settingsHelp)
+		}
 	case ScreenPause:
 		i, back := s.pause.Update(in)
 		switch {
@@ -159,24 +175,29 @@ func (s *Screens) Update(in *InputState) MenuAction {
 
 // updateSettings runs the settings screen: left/right (or A/D) change the
 // volume while it is picked; a tap or click on the volume's left half turns
-// it down, on its right half up. Back or Esc returns.
+// it down, on its right half up. How to Play opens the help; Back or Esc
+// returns.
 func (s *Screens) updateSettings(in *InputState) MenuAction {
 	i, back := s.settings.Update(in)
 	at, pressed := in.PressAt() // Enter on the volume changes nothing
 	step := 0
 	switch {
-	case back || i == 1:
+	case back || i == settingsBack:
 		s.Current = s.back
 		return ActionNone
-	case i == 0 && pressed:
-		r := s.settings.ItemRect(0)
+	case i == settingsHelp:
+		s.Current = ScreenHelp
+		s.help.Page = 0
+		return ActionNone
+	case i == settingsVolume && pressed:
+		r := s.settings.ItemRect(settingsVolume)
 		step = 1
 		if int(at.X) < (r.Min.X+r.Max.X)/2 {
 			step = -1
 		}
-	case s.settings.Selected == 0 && in.LeftJustPressed:
+	case s.settings.Selected == settingsVolume && in.LeftJustPressed:
 		step = -1
-	case s.settings.Selected == 0 && in.RightJustPressed:
+	case s.settings.Selected == settingsVolume && in.RightJustPressed:
 		step = 1
 	}
 	v := min(MaxVolume, max(0, s.Settings.Volume+step))
@@ -204,5 +225,7 @@ func (s *Screens) Draw(screen *ebiten.Image) {
 		s.settings.Draw(screen)
 	case ScreenPause:
 		s.pause.Draw(screen)
+	case ScreenHelp:
+		s.help.Draw(screen)
 	}
 }
