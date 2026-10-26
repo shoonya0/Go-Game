@@ -24,6 +24,9 @@ const StartLevel = "deepForest1"
 // DeepForestNight is deepForest's night sub-level (levels decision D1).
 const DeepForestNight = "deepForestNight"
 
+// AquaticAbyssDay is level 2's day sub-level.
+const AquaticAbyssDay = "aquaticAbyssDay"
+
 // Levels lists every level by name. Travel between portals switches by name.
 var Levels = map[string]LevelDef{
 	StartLevel: {
@@ -39,11 +42,18 @@ var Levels = map[string]LevelDef{
 		Width:      Level_1_Width, Height: Level_1_Height,
 		Tiles: []TileType{Grass, Water, Rock},
 	},
+	AquaticAbyssDay: {
+		Title: "Aquatic Abyss", Time: "Day",
+		File: "../assets/levels/aquaticAbyss/aquaticAbyss_day.json", Key: "day",
+		Background: "../assets/levels/aquaticAbyss/background/aquaticAbyss_day.png",
+		Width:      Level_1_Width, Height: Level_1_Height,
+		Tiles: []TileType{Water, Rock, Grass},
+	},
 }
 
 // LevelOrder is the order levels open in: saving the last unused portal of
 // one takes the player to the next (levels decision D5).
-var LevelOrder = []string{StartLevel, DeepForestNight}
+var LevelOrder = []string{StartLevel, DeepForestNight, AquaticAbyssDay}
 
 // levelPortals caches each level's portal cells in reading order, read once
 // for portalNumber.
