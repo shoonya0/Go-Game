@@ -1,21 +1,27 @@
 # Levels: state
 
-## Now (updated 2026-10-26 at `72c83e5`)
+## Now (updated 2026-10-26 at `db13caf`)
 
 - **Status:** 🟡 in progress
-- **Current task:** 6. day and night sub-levels in order, deepForest night first ([tasks.md](./tasks.md))
-- **Stopped at:** task 5 done: `LevelDef.Tiles` / `KeepApart`, `TestLevelTiles`. deepForest's
-  larva pit (rows 31–35, columns 48–83) is now water (the user's call); not looked at in game yet
-- **Open questions / blockers:** none. The deepForest night grid needs content: the user's
-  layout, or a first draft from me (ask before task 6)
-- **Don't forget:** water drains 2 HP/s and cancels fall damage, larva hits 10 HP per entry, so
-  the old pit is gentler now. `//go:embed` takes untracked files: the exe carries all ~110 MB
-  of backgrounds (the web build none) while CI and Render get only committed ones; commit a
-  level's backgrounds with its grid. A new kind of file in a level folder needs its own pattern
-  in `assets/embed.go` (`levels/*.png levels/*/*.json`). Saves store the level name
-  (`deepForest1`): renaming it for the day/night split breaks old saves' checkpoint
+- **Current task:** 8. update docs, then the user plays deepForest night ([tasks.md](./tasks.md) "Later")
+- **Stopped at:** tasks 6 and 7 done: deepForest night (`deepForest_night.json`, key `night`)
+  follows day in `LevelOrder`; saving day's last unused portal opens it. Checked by tests and a
+  throwaway web build that started in the night level; not played through
+- **Open questions / blockers:** (user) is the night layout right; who draws levels 2–8
+- **Don't forget:** climbs are at most 3 tiles (the user: the jump reaches 3–3.5); with a 3-tile
+  climb the gap is at most 2 tiles, 2-tile climb 3, flat 4. The first portal in reading order
+  (top row first) is a sub-level's entry: keep it the topmost. Water drains 2 HP/s, larva hits
+  10 per entry. `//go:embed` takes untracked files (commit a level's backgrounds with its grid);
+  a new kind of file in a level folder needs its own pattern in `assets/embed.go`. Saves store
+  the level name: `deepForest1` stays the day sub-level's name
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: deepForest night, last portal opens the next level (tasks 6, 7)
+
+- Changed: `deepForest_night.json` + background; `LevelOrder`, `World.OpenNextLevel` (`levels.go`); `savePortal`, `LevelDone` (`combat.go`); `cmd/main.go`
+- Verified: `node scripts/verify.mjs --full` → 8/8; `TestLastPortalOpensNextLevel`, `TestLevelPortals`; night level screenshot
+- Docs touched: levels tasks, state; current-state; portals, main-menu, enemy-types sessions
 
 ### 2026-10-26: each level's tiles checked (task 5)
 
@@ -40,12 +46,6 @@
 - Changed: docs only: decisions.md D1–D5, spec rules, tasks 2–8
 - Verified: `node scripts/docs-check.mjs` → 0 errors
 - Docs touched: levels decisions, spec, tasks, state; enemy-types D10; current-state
-
-### 2026-10-26: unique background names (task 1)
-
-- Changed: `assets/levels/*/background/*` renamed; `Background_1` (`internal/core/world.go`), `levels_test.go`
-- Verified: `node scripts/verify.mjs` → passed (5 steps); `TestAssetBaseNamesUnique`, `TestAssetPathsAreEmbedded` pass
-- Docs touched: levels tasks, state; current-state
 
 ## Known issues
 

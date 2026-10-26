@@ -14,6 +14,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: touched by levels (tasks 6, 7)
+
+- Changed: saving a level's last unused portal opens the next level (`combat.go` `savePortal`, `levels.go` `OpenNextLevel`) ([levels](../levels/state.md)); this feature's behaviour unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this entry only
+
 ### 2026-10-26: `LevelDef` gained tile lists (levels task 5)
 
 - Changed: `levels.go` `LevelDef.Tiles`, `KeepApart` ([levels](../levels/state.md)); portals unchanged
@@ -37,9 +43,3 @@
 - Changed: the travel menu's scroll arrows now drawn from `assets/UI/UIButtons.png` ([ui-buttons](../ui-buttons/state.md), PR #27); behaviour unchanged
 - Verified: `node scripts/verify.mjs --full` → 8/8 pass (on the ui-buttons branch)
 - Docs touched: this entry only
-
-### 2026-10-25: merged (PR #22)
-
-- Changed: nothing in code; the user merged PR #22, local `main` synced, merged branches deleted
-- Verified: `verify.mjs` 5/5 on `main` at `10b430d`
-- Docs touched: state, tasks, registry, current-state
