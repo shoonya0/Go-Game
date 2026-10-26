@@ -12,7 +12,7 @@ and /feature-docs update. -->
 
 - **Feature:** [levels](./features/levels/state.md) · Increment 1: eight themed levels, each a day and a night sub-level joined by portals (its `decisions.md`). Paused: enemy-types (low priority; task 25 waits for ranged art)
 - **Branch:** `feature/levels` (from `main` at `8c93d3b`)
-- **Next step:** task 5, a test that each level uses only its tiles; task 4 done (the web build downloads only the current sub-level's background, D4); backgrounds renamed `<level>_day.*`/`<level>_night.*`, only `deepForest_day.png` committed. Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`, the other levels' backgrounds) are committed with the code that loads them; `_asset_backups/` and `_futureAssets/` (Bat, bosses, Mossy tileset, plants, Striker) are the user's, not embedded; never commit them unless asked
+- **Next step:** task 6, day and night sub-levels (deepForest night first; its grid needs content). Done: tiles per level are tested (task 5; deepForest's larva pit is water now), the web build downloads only the current sub-level's background (task 4, D4); backgrounds renamed `<level>_day.*`/`<level>_night.*`, only `deepForest_day.png` committed. Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`, the other levels' backgrounds) are committed with the code that loads them; `_asset_backups/` and `_futureAssets/` (Bat, bosses, Mossy tileset, plants, Striker) are the user's, not embedded; never commit them unless asked
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2

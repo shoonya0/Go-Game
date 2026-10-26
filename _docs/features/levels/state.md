@@ -1,21 +1,27 @@
 # Levels: state
 
-## Now (updated 2026-10-26 at `c475613`)
+## Now (updated 2026-10-26 at `72c83e5`)
 
 - **Status:** 🟡 in progress
-- **Current task:** 5. each level's tiles checked by a test ([tasks.md](./tasks.md))
-- **Stopped at:** task 4 done and committed (code-reviewer: nothing blocking; its two findings,
-  a loading text and a retry after a failed download, are fixed). The Dockerfile change is
-  untested (Docker daemon off; tasks "Later")
-- **Open questions / blockers:** none. D1–D5 settled (the user accepted the D5 rules)
-- **Don't forget:** `//go:embed levels` embeds untracked files too, so local builds carry all
-  ~110 MB of backgrounds in the exe (the web build none) while CI and Render carry only
-  `deepForest_day.png`. A new kind of file in a level folder needs its own pattern in
-  `assets/embed.go` (`levels/*.png levels/*/*.json`). The old
-  `LBackground_1.png` is now `moltenCrater_day.png` (same bytes). Saves store the level name
+- **Current task:** 6. day and night sub-levels in order, deepForest night first ([tasks.md](./tasks.md))
+- **Stopped at:** task 5 done: `LevelDef.Tiles` / `KeepApart`, `TestLevelTiles`. deepForest's
+  larva pit (rows 31–35, columns 48–83) is now water (the user's call); not looked at in game yet
+- **Open questions / blockers:** none. The deepForest night grid needs content: the user's
+  layout, or a first draft from me (ask before task 6)
+- **Don't forget:** water drains 2 HP/s and cancels fall damage, larva hits 10 HP per entry, so
+  the old pit is gentler now. `//go:embed` takes untracked files: the exe carries all ~110 MB
+  of backgrounds (the web build none) while CI and Render get only committed ones; commit a
+  level's backgrounds with its grid. A new kind of file in a level folder needs its own pattern
+  in `assets/embed.go` (`levels/*.png levels/*/*.json`). Saves store the level name
   (`deepForest1`): renaming it for the day/night split breaks old saves' checkpoint
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: each level's tiles checked (task 5)
+
+- Changed: `LevelDef.Tiles`, `KeepApart` (`levels.go`); `TestLevelTiles`, `TestTilesTouch`; `level_1.json` larva → water
+- Verified: `node scripts/verify.mjs` → 5/5; `TestLevelTiles` failed first (113 larva cells), passes after
+- Docs touched: levels tasks, state; current-state
 
 ### 2026-10-26: backgrounds downloaded per level on the web (task 4)
 
@@ -40,12 +46,6 @@
 - Changed: `assets/levels/*/background/*` renamed; `Background_1` (`internal/core/world.go`), `levels_test.go`
 - Verified: `node scripts/verify.mjs` → passed (5 steps); `TestAssetBaseNamesUnique`, `TestAssetPathsAreEmbedded` pass
 - Docs touched: levels tasks, state; current-state
-
-### 2026-10-26: feature started
-
-- Changed: branch renamed `docs/ui-buttons-merged` → `feature/levels`; docs folder created
-- Verified: `go test ./internal/core -run TestAssetBaseNamesUnique` → FAIL (day/night name clashes)
-- Docs touched: levels README, spec, tasks, state; registry; current-state Active work
 
 ## Known issues
 
