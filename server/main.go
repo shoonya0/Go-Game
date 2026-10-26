@@ -8,6 +8,7 @@ import (
 	"mime"
 	"net/http"
 	"os"
+	"path"
 	"time"
 )
 
@@ -19,9 +20,11 @@ func main() {
 
 	port := envOr("PORT", "8080")
 	root := envOr("WEB_ROOT", "./web")
+	levels := envOr("LEVELS_ROOT", "./assets/levels")
 
 	mux := http.NewServeMux()
 	mux.Handle("/", noCacheHTML(http.FileServer(http.Dir(root))))
+	mux.Handle("/levels/", http.StripPrefix("/levels/", backgroundsOnly(http.FileServer(http.Dir(levels)))))
 
 	srv := &http.Server{
 		Addr:              ":" + port,
@@ -29,7 +32,7 @@ func main() {
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
-	log.Printf("serving %q on :%s", root, port)
+	log.Printf("serving %q and backgrounds from %q on :%s", root, levels, port)
 	log.Fatal(srv.ListenAndServe())
 }
 
@@ -55,6 +58,20 @@ func noCacheHTML(next http.Handler) http.Handler {
 		p := r.URL.Path
 		if p == "/" || p == "/index.html" || p == "/game.wasm" {
 			w.Header().Set("Cache-Control", "no-cache")
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// backgroundsOnly lets through only level background files
+// ("<level>/background/<file>"): the game downloads the level it enters
+// (the web build doesn't embed them); nothing else under the levels folder,
+// nor a folder listing, is served.
+func backgroundsOnly(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if ok, _ := path.Match("*/background/*", r.URL.Path); !ok || path.Clean(r.URL.Path) != r.URL.Path {
+			http.NotFound(w, r)
+			return
 		}
 		next.ServeHTTP(w, r)
 	})

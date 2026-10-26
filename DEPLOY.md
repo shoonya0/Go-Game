@@ -1,9 +1,11 @@
 # Deploying the game
 
-The game is written in Go with [Ebitengine](https://ebitengine.org/). All image
+The game is written in Go with [Ebitengine](https://ebitengine.org/). Image
 assets are embedded into the binary (`assets/embed.go`), so the same code runs as
-a native desktop app **and** as WebAssembly in the browser — there is no external
-filesystem dependency at runtime.
+a native desktop app **and** as WebAssembly in the browser. One exception: the
+web build leaves out the level backgrounds (several MB each) and downloads the
+current level's one from the server at `/levels/<level>/background/<file>`
+(`assets/backgrounds_js.go`); the desktop build embeds them all.
 
 ## Targets
 
@@ -29,7 +31,7 @@ go build -ldflags="-s -w" -o web/game.wasm ./cmd
 Remove-Item Env:GOOS, Env:GOARCH
 Copy-Item "$(go env GOROOT)/lib/wasm/wasm_exec.js" web/wasm_exec.js
 
-# serve locally
+# serve locally (from the repo root: backgrounds come from ./assets/levels)
 go run ./server
 ```
 
@@ -42,6 +44,10 @@ Then open http://localhost:8080.
 3. `web/index.html` streams and runs the wasm; Ebitengine draws to a `<canvas>`.
 4. `server/` is a tiny Go static file server that serves `./web` on `$PORT` and
    sets the `application/wasm` MIME type required for streaming instantiation.
+5. The server also serves level backgrounds from `$LEVELS_ROOT` (default
+   `./assets/levels`) under `/levels/`, only `<level>/background/<file>`. The game
+   fetches the one it needs when the player enters a level. The `Dockerfile` copies
+   them to `/app/levels`.
 
 ## Deploying to Render
 
@@ -63,7 +69,7 @@ build, and the WebAssembly build on every push and pull request.
 
 ## Notes
 
-- The wasm binary is large (~15–27 MB) because it bundles the Go runtime, Ebitengine,
-  and the game's images. `-ldflags="-s -w"` trims it; enabling gzip/Brotli at the
+- The wasm binary is large (~27 MB) because it bundles the Go runtime, Ebitengine,
+  and the game's images (not the level backgrounds). `-ldflags="-s -w"` trims it; enabling gzip/Brotli at the
   edge cuts transfer size further. [TinyGo](https://tinygo.org/) can shrink it more
   but does not support every Ebitengine feature.
