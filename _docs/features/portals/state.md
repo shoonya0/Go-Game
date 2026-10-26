@@ -14,6 +14,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: touched by levels (aquaticAbyss day)
+
+- Changed: `levels.go` registers a new level ([levels](../levels/state.md)); portal code unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this state
+
 ### 2026-10-26: touched by levels (travel menu list)
 
 - Changed: the travel menu lists portals by level instead of thumbnails (D9 superseded by levels D7) ([levels](../levels/state.md))
@@ -36,10 +42,4 @@
 
 - Changed: `levels.go` `LevelDef.Tiles`, `KeepApart` ([levels](../levels/state.md)); portals unchanged
 - Verified: `node scripts/verify.mjs` → 5/5
-- Docs touched: this entry only
-
-### 2026-10-26: touched by levels (task 4)
-
-- Changed: `cmd/main.go` `captureThumbs` waits until the background is loaded; `world.go` draws no background while it downloads ([levels](../levels/state.md)); this feature's behaviour unchanged
-- Verified: `node scripts/verify.mjs --full` → 8/8
 - Docs touched: this entry only
