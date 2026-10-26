@@ -27,7 +27,7 @@ One row per feature that has its own docs folder. Status: ⏳ planned · 🟡 in
 |---|---|---|---|---|
 | enemy-types | [index](./features/enemy-types/README.md) | `internal/core/enemy*.go`, `assets/enemy/`, `tools/battler2strip/` | 🟡 | Ground/flying enemies from the strip packs in `assets/enemy/`, built from movement + attack parts (low priority now) |
 | portals | [index](./features/portals/README.md) | `internal/core/portal*.go`, `world.go`, `combat.go` | ✅ | Portals: start, save point (E / tap), travel menu; non-boss enemies revive on death, on entering a level and on every teleport |
-| main-menu | [index](./features/main-menu/README.md) | `cmd/main.go`, `internal/core/menu*.go`, `save*.go`, `internal/system/save*.go` | ✅ | Title screen (New Game, Continue, Settings, Quit), pause menu, save across restarts, volume setting |
+| main-menu | [index](./features/main-menu/README.md) | `cmd/main.go`, `internal/core/menu*.go`, `help_screen*.go`, `save*.go`, `internal/system/save*.go` | 🟡 | Title screen (New Game, Continue, Settings, Quit), pause menu, save across restarts, volume setting, How to Play |
 | ui-buttons | [index](./features/ui-buttons/README.md) | `internal/core/ui_skin*.go`, `menu.go`, `travel_menu.go` | ✅ | Buttons, menus and the volume bar drawn from the wooden sheet `assets/UI/UIButtons.png` |
 | levels | [index](./features/levels/README.md) | `internal/core/levels*.go`, `world*.go`, `assets/levels/` | 🟡 | Eight themed levels, each a day and a night sub-level with its own tiles and background, joined by portals (increment 1 merged) |
 
