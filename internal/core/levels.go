@@ -39,6 +39,8 @@ const (
 	MirageCanyonNight   = "mirageCanyonNight"
 	MoltenCraterDay     = "moltenCraterDay"
 	MoltenCraterNight   = "moltenCraterNight"
+	RustyRefineryDay    = "rustyRefineryDay"
+	RustyRefineryNight  = "rustyRefineryNight"
 )
 
 // subLevel is a sub-level laid out the usual way: the grid in
@@ -96,6 +98,8 @@ var Levels = map[string]LevelDef{
 	MirageCanyonNight:   subLevel("mirageCanyon", "Mirage Canyon", "night", ".png", Sand, Rock, Larva),
 	MoltenCraterDay:     subLevel("moltenCrater", "Molten Crater", "day", ".png", Larva, Rock),
 	MoltenCraterNight:   subLevel("moltenCrater", "Molten Crater", "night", ".jpg", Larva, Rock),
+	RustyRefineryDay:    subLevel("rustyRefinery", "Rusty Refinery", "day", ".png", Metal, Wood),
+	RustyRefineryNight:  subLevel("rustyRefinery", "Rusty Refinery", "night", ".png", Metal, Wood),
 }
 
 // LevelOrder is the order levels open in: saving the last unused portal of
@@ -108,6 +112,7 @@ var LevelOrder = []string{
 	FrostbitePeaksDay, FrostbitePeaksNight,
 	MirageCanyonDay, MirageCanyonNight,
 	MoltenCraterDay, MoltenCraterNight,
+	RustyRefineryDay, RustyRefineryNight,
 }
 
 // levelPortals caches each level's portal cells in reading order, read once
