@@ -321,3 +321,69 @@ func tilesTouch(level Level, a, b TileType) (x, y int, ok bool) {
 	}
 	return 0, 0, false
 }
+
+// TestLevelPortals: every level has at least two portals, so a player who
+// arrives at its first one can still find another and open the next level
+// (levels decision D5).
+func TestLevelPortals(t *testing.T) {
+	WorldInit()
+	for name, def := range Levels {
+		if n := len(LoadLevel(def.File, def.Key).Portals); n < 2 {
+			t.Errorf("level %q has %d portals, want at least 2", name, n)
+		}
+	}
+}
+
+// TestLastPortalOpensNextLevel (levels decision D5): saving the last unused
+// portal of a level takes the player to the next level's first portal, which
+// becomes used and the checkpoint; saving it again later, or saving a portal
+// while others are still unused, does not; the last level opens nothing.
+func TestLastPortalOpensNextLevel(t *testing.T) {
+	WorldInit()
+	w, err := NewWorld(StartLevel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := InitPlayer(nil)
+	p.StartAt(w.Level) // the first portal is used
+	last := w.Level.Portals[len(w.Level.Portals)-1]
+	save := func(c Portal) {
+		p.Pos = c.StandPos()
+		p.updatePortals(w.Level.Portals, &InputState{Interact: true})
+	}
+
+	save(w.Level.Portals[0])
+	if p.LevelDone() {
+		t.Fatal("saving an already used portal, with others unused, finished the level")
+	}
+	save(last)
+	if !p.LevelDone() {
+		t.Fatalf("saving the last unused portal of %q didn't finish it", StartLevel)
+	}
+	opened, err := w.OpenNextLevel(p)
+	if err != nil || !opened {
+		t.Fatalf("OpenNextLevel = %v, %v; want true, nil", opened, err)
+	}
+	entry := w.Level.Portals[0]
+	if w.Name != DeepForestNight || p.Pos != entry.StandPos() || p.Checkpoint != entry.Ref() || !slices.Contains(p.ActivePortals, entry.Ref()) {
+		t.Fatalf("after opening: in %q at %v, checkpoint %v; want %q at its first portal %v, used and saved",
+			w.Name, p.Pos, p.Checkpoint, DeepForestNight, entry.StandPos())
+	}
+	p.updatePortals(w.Level.Portals, &InputState{})
+	if p.LevelDone() {
+		t.Error("arriving by teleport finished the level")
+	}
+
+	if err := w.Travel(p, last.Ref()); err != nil { // back to day, save the last portal again
+		t.Fatal(err)
+	}
+	save(last)
+	if p.LevelDone() {
+		t.Error("saving the last portal again opened the next level a second time")
+	}
+
+	w.Name = LevelOrder[len(LevelOrder)-1]
+	if opened, err := w.OpenNextLevel(p); opened || err != nil {
+		t.Errorf("the last level opened %v (err %v), want nothing", opened, err)
+	}
+}

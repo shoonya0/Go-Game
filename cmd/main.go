@@ -298,6 +298,14 @@ func (g *Game) Update() error {
 		g.world.Respawned(g.player)
 		g.syncBackground()
 	}
+	if g.player.LevelDone() { // the last unused portal: on to the next level (levels D5)
+		if opened, err := g.world.OpenNextLevel(g.player); err != nil {
+			log.Printf("next level: %v", err)
+		} else if opened {
+			g.syncBackground()
+			g.travel.WaitRelease() // an E still held mustn't open the menu at the arrival portal
+		}
+	}
 	g.updateEnemies()
 	g.portals.Update()
 	g.captureThumbs()

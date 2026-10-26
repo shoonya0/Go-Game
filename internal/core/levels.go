@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"log"
+	"slices"
 )
 
 // LevelDef says where a named level comes from: the JSON bundle and key its
@@ -15,8 +16,12 @@ type LevelDef struct {
 	KeepApart     [][2]TileType // tile types that must never touch, even diagonally
 }
 
-// StartLevel is the level a new game begins in.
+// StartLevel is the level a new game begins in: deepForest by day. Its name
+// predates the day/night split and stays, since saves store it.
 const StartLevel = "deepForest1"
+
+// DeepForestNight is deepForest's night sub-level (levels decision D1).
+const DeepForestNight = "deepForestNight"
 
 // Levels lists every level by name. Travel between portals switches by name.
 var Levels = map[string]LevelDef{
@@ -25,7 +30,17 @@ var Levels = map[string]LevelDef{
 		Width: Level_1_Width, Height: Level_1_Height,
 		Tiles: []TileType{Grass, Water, Rock},
 	},
+	DeepForestNight: {
+		File: "../assets/levels/deepForest/deepForest_night.json", Key: "night",
+		Background: "../assets/levels/deepForest/background/deepForest_night.jpg",
+		Width:      Level_1_Width, Height: Level_1_Height,
+		Tiles: []TileType{Grass, Water, Rock},
+	},
 }
+
+// LevelOrder is the order levels open in: saving the last unused portal of
+// one takes the player to the next (levels decision D5).
+var LevelOrder = []string{StartLevel, DeepForestNight}
 
 // World is the level the player is in: its platforms (indexed in Quadtree)
 // and its enemies. It remembers the enemies of levels the player left.
@@ -101,6 +116,24 @@ func (w *World) Travel(p *PlayerRuntime, ref PortalRef) error {
 		}
 	}
 	return fmt.Errorf("no portal at %v in level %q", ref.Cell, ref.Level)
+}
+
+// OpenNextLevel takes p to the first portal of the level after the current
+// one in LevelOrder, which becomes used and the checkpoint (levels decision
+// D5). It reports false when the current level is the last.
+func (w *World) OpenNextLevel(p *PlayerRuntime) (bool, error) {
+	i := slices.Index(LevelOrder, w.Name)
+	if i < 0 || i+1 >= len(LevelOrder) {
+		return false, nil
+	}
+	next := LevelOrder[i+1]
+	if err := w.SwitchLevel(next); err != nil {
+		return false, err
+	}
+	if len(w.Level.Portals) == 0 {
+		return false, fmt.Errorf("level %q has no portal to arrive at", next)
+	}
+	return true, w.Travel(p, w.Level.Portals[0].Ref())
 }
 
 // Respawned follows a player respawn: back to the checkpoint's level when it
