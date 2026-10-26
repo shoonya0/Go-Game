@@ -94,7 +94,8 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 
 ## Later (not planned yet)
 
-- [ ] Bosses: Striker (`Striker/`, 96×96, attack 128×96, dash/jump), Orange Golem (rename files first, D4)
+- [ ] Stronger variants (D10): Yellow Skeleton stronger than White; Orange Golem as a stronger White Golem (rename its files `OrangeGolem_*` first, D4)
+- [ ] Boss: Striker (now in `_futureAssets/Striker`, 96×96, attack 128×96, dash/jump)
 - [ ] Mushroom stun attack (`Mushroom-AttackWithStun`, `Mushroom-Stun`): needs a player stun state
 - [ ] `waterMover` (no candidate since the battlers were dropped, D9)
 - [ ] Delete `tools/battler2strip` or keep it (D9, user to decide)

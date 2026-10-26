@@ -10,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [levels](./features/levels/state.md) · Increment 1 (planned): eight themed levels, rules in its `spec.md`. Paused: enemy-types (low priority; task 25 waits for ranged art)
+- **Feature:** [levels](./features/levels/state.md) · Increment 1: eight themed levels, each a day and a night sub-level joined by portals (its `decisions.md`). Paused: enemy-types (low priority; task 25 waits for ranged art)
 - **Branch:** `feature/levels` (from `main` at `8c93d3b`)
-- **Next step:** task 2, how to keep the WASM small with ~110 MB of level backgrounds (user decides); backgrounds renamed `<level>_day.*`/`<level>_night.*`, only `deepForest_day.png` committed. Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`, the other levels' backgrounds) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it
+- **Next step:** task 2, how to keep the WASM small with ~110 MB of level backgrounds (user decides); backgrounds renamed `<level>_day.*`/`<level>_night.*`, only `deepForest_day.png` committed. Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`, the other levels' backgrounds) are committed with the code that loads them; `_asset_backups/` and `_futureAssets/` (Bat, bosses, Mossy tileset, plants, Striker) are the user's, not embedded; never commit them unless asked
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2

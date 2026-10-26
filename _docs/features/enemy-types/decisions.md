@@ -104,3 +104,12 @@
 - **Succubus removed too (2026-10-24, user's call):** its animation didn't look good in the
   game. Its numbers and clips became the test-only `testEnemyBlueprint`, so the behaviour
   tests written against it still pin the same behaviour.
+
+## D10. Orange Golem and Yellow Skeleton are stronger variants, not new enemies (2026-10-26, user's call)
+
+- **Decision:** `Orange_Golem/` is the same enemy as `White_Golem/`, and `Skeleton_Yellow/`
+  the same as `Skeleton_White/`. The other colour only shows that one is more powerful and
+  tougher than the other. The Orange Golem is not a boss (replaces part of D5); Striker moved
+  to `_futureAssets/` for later.
+- **Gap:** today both skeletons come from `skeletonBlueprint` with the same stats, so the
+  yellow one isn't stronger yet ([tasks.md](./tasks.md) "Later").

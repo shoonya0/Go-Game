@@ -7,11 +7,13 @@
 - **Stopped at:** task 1 done: backgrounds renamed `<level>_day.*` / `<level>_night.*`, level 1 loads
   `deepForest_day.png` (the old `LBackground_3.png`, same bytes). Only that file is committed; the
   other levels' backgrounds stay untracked until task 2
-- **Open questions / blockers:** (user) which enemies go in which level; how day/night is
-  picked (per visit, a timer, the clock); how to shrink the backgrounds (task 2)
+- **Open questions / blockers:** (user) how to shrink the backgrounds (task 2); how a new
+  player first enters a sub-level they've never visited, since travel only reaches used
+  portals (D2). Settled: day/night are separate sub-levels (D1), enemies go anywhere (D3)
 - **Don't forget:** `//go:embed levels` embeds untracked files too, so local builds carry all
   ~110 MB of backgrounds while CI and Render carry only `deepForest_day.png`. The old
-  `LBackground_1.png` is now `moltenCrater_day.png` (same bytes)
+  `LBackground_1.png` is now `moltenCrater_day.png` (same bytes). Saves store the level name
+  (`deepForest1`): renaming it for the day/night split breaks old saves' checkpoint
 
 ## Recent sessions (newest first, keep 5)
 

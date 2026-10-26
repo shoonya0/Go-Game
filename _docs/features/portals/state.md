@@ -14,6 +14,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: level 1 background renamed by levels
+
+- Changed: `Background_1` in `world.go` now `deepForest_day.png` ([levels](../levels/state.md)); portals unchanged
+- Verified: `node scripts/verify.mjs` → 5/5 pass
+- Docs touched: this entry only
+
 ### 2026-10-26: reskinned by ui-buttons
 
 - Changed: the travel menu's scroll arrows now drawn from `assets/UI/UIButtons.png` ([ui-buttons](../ui-buttons/state.md), PR #27); behaviour unchanged
@@ -37,9 +43,3 @@
 - Changed: `World.Travel` makes the destination the checkpoint; D10, spec; tasks 1, 3, 8c ticked (user: "everything fine")
 - Verified: `TestTravelMakesDestinationCheckpoint` failed first, then passes; `verify.mjs` 5/5
 - Docs touched: decisions, spec, tasks, state, current-state
-
-### 2026-10-25: task 10 checks, branch review, dying fix
-
-- Changed: `updatePortals` ignores input while dying; `AABB.Intersects` comment restored
-- Verified: `TestDyingPlayerCannotUsePortals` failed first (4 inputs), then passes; `verify.mjs --full` 8/8; web: loads, console clean, gold portal from the half-size sheet
-- Docs touched: tasks, state, current-state

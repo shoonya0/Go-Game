@@ -5,11 +5,13 @@ The user's rules for every level (2026-10-26). Grid codes for the tile types are
 
 ## Rules for every level
 
-1. A level uses **only its own** tiles, background and enemies, as listed below.
-2. Every level has a **day** and a **night** background (`assets/levels/<level>/background/`).
-3. Enemies are chosen per level by their type (which enemies go where: open, see
-   [state.md](./state.md)).
-4. Tile amounts are how much of the level each tile makes up: most > medium > less > very less.
+1. A level uses **only its own** tiles and background, as listed below.
+2. Every level is two sub-levels, **day** and **night**, each with its own grid and background
+   (`assets/levels/<level>/background/<level>_day.*`, `_night.*`). Nothing switches between
+   them ([D1](./decisions.md)).
+3. Portals connect every sub-level to every other: free roaming, no fixed order ([D2](./decisions.md)).
+4. Any enemy can go in any sub-level for now ([D3](./decisions.md)).
+5. Tile amounts are how much of the level each tile makes up: most > medium > less > very less.
 
 ## Levels
 
@@ -28,4 +30,5 @@ The user's rules for every level (2026-10-26). Grid codes for the tile types are
 
 - A test fails when a level's grid holds a tile code outside its list above.
 - A test fails when larva touches grass in boulderBastion.
-- Each level loads its own day or night background; no two embedded assets share a base name.
+- Each sub-level loads its own background (day or night); no two embedded assets share a base name.
+- Every sub-level has at least one portal, so the travel menu can reach it.
