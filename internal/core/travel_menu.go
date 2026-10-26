@@ -20,7 +20,7 @@ const (
 	travelRowGap   = 14
 	travelMenuRows = 4
 	travelBorder   = 4 // px of the frame around a row
-	travelArrow    = 36
+	travelArrow    = 44
 )
 
 var (
@@ -28,8 +28,6 @@ var (
 	travelRowColor   = color.RGBA{0x30, 0x24, 0x1c, 0xff}
 	travelPickColor  = color.RGBA{0xff, 0xff, 0xff, 0xff}
 	travelSavedColor = color.RGBA{0xff, 0xc8, 0x3c, 0xff} // the checkpoint's row (D9)
-	travelArrowUp    = []iconShape{lineShape(0.12, [2]float32{0.2, 0.65}, [2]float32{0.5, 0.35}, [2]float32{0.8, 0.65})}
-	travelArrowDown  = []iconShape{lineShape(0.12, [2]float32{0.2, 0.35}, [2]float32{0.5, 0.65}, [2]float32{0.8, 0.35})}
 )
 
 // travelHoldTicks is travelHoldSeconds in ticks.
@@ -47,7 +45,7 @@ type TravelMenu struct {
 
 	screenW, screenH int
 	thumbs           map[PortalRef]*ebiten.Image // a small picture of the level around each portal
-	up, down         *ebiten.Image               // arrows shown when rows are scrolled off
+	arrow            *ebiten.Image               // the wooden arrow, turned up or down when rows are scrolled off
 }
 
 // NewTravelMenu lays the menu out for a logical screen of w×h pixels.
@@ -150,8 +148,8 @@ func (m *TravelMenu) Draw(screen *ebiten.Image) {
 	if !m.Open {
 		return
 	}
-	if m.up == nil {
-		m.up, m.down = newTouchIcon(travelArrowUp), newTouchIcon(travelArrowDown)
+	if m.arrow == nil {
+		m.arrow = uiSprite(uiLeftRect)
 	}
 	vector.FillRect(screen, 0, 0, float32(m.screenW), float32(m.screenH), travelShade, false)
 
@@ -182,10 +180,10 @@ func (m *TravelMenu) Draw(screen *ebiten.Image) {
 	cx := m.screenW / 2
 	if first > 0 {
 		top := m.RowRect(first).Min.Y - travelRowGap/2 - travelArrow
-		drawScaled(screen, m.up, image.Rect(cx-travelArrow/2, top, cx+travelArrow/2, top+travelArrow), travelPickColor, 0.9)
+		drawRotated(screen, m.arrow, image.Rect(cx-travelArrow/2, top, cx+travelArrow/2, top+travelArrow), 1, nil, 1)
 	}
 	if last < len(m.Rows) {
 		top := m.RowRect(last-1).Max.Y + travelRowGap/2
-		drawScaled(screen, m.down, image.Rect(cx-travelArrow/2, top, cx+travelArrow/2, top+travelArrow), travelPickColor, 0.9)
+		drawRotated(screen, m.arrow, image.Rect(cx-travelArrow/2, top, cx+travelArrow/2, top+travelArrow), -1, nil, 1)
 	}
 }
