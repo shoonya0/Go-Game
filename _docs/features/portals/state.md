@@ -14,6 +14,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: `LevelDef` gained tile lists (levels task 5)
+
+- Changed: `levels.go` `LevelDef.Tiles`, `KeepApart` ([levels](../levels/state.md)); portals unchanged
+- Verified: `node scripts/verify.mjs` → 5/5
+- Docs touched: this entry only
+
 ### 2026-10-26: touched by levels (task 4)
 
 - Changed: `cmd/main.go` `captureThumbs` waits until the background is loaded; `world.go` draws no background while it downloads ([levels](../levels/state.md)); this feature's behaviour unchanged
@@ -37,9 +43,3 @@
 - Changed: nothing in code; the user merged PR #22, local `main` synced, merged branches deleted
 - Verified: `verify.mjs` 5/5 on `main` at `10b430d`
 - Docs touched: state, tasks, registry, current-state
-
-### 2026-10-25: D11, every teleport revives enemies; level edits
-
-- Changed: `World.Travel` revives the level's non-bosses; D11, spec; user's level edits committed (portal moved, Smasher added)
-- Verified: `TestTravelRevivesEnemies` failed first (6 of 7), then passes; `verify.mjs --full` 8/8
-- Docs touched: decisions, spec, tasks, state, current-state
