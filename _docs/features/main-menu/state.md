@@ -4,7 +4,7 @@
 
 - **Status:** ✅ done, merged to `main` in PR #25 (`6a8cc90`), branch deleted. All tasks 1–10 done
 - **Current task:** none. Leftovers are in [tasks.md](./tasks.md) "Later" (real audio, the run
-  rebuilt on each title visit, a second level)
+  rebuilt on each title visit)
 - **Stopped at:** feature complete; web build checked in agent-browser. The native window was
   not checked by hand before the merge
 - **Open questions / blockers:** D4 (confirm before wiping) and D7 (pause menu) were my calls;
@@ -18,6 +18,12 @@
   the linker).
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: touched by levels (PR #28 merged)
+
+- Changed: `cmd/main.go`: the camera follows a teleport at once (`followPlayer`), level size from `World.Level`; old saves open the next level ([levels D5](../levels/decisions.md)); menus unchanged
+- Verified: `node scripts/verify.mjs --full` 8/8; PR #28 checks green; the camera change by build only
+- Docs touched: this state, tasks (second level done)
 
 ### 2026-10-26: touched by levels (travel menu list)
 
@@ -41,10 +47,4 @@
 
 - Changed: `cmd/main.go`: `syncBackground` now downloads the background on the web and runs every tick ([levels](../levels/state.md)); this feature's behaviour unchanged
 - Verified: `node scripts/verify.mjs --full` → 8/8
-- Docs touched: this entry only
-
-### 2026-10-26: reskinned by ui-buttons
-
-- Changed: the menus now drawn from `assets/UI/UIButtons.png` ([ui-buttons](../ui-buttons/state.md), PR #27); behaviour unchanged
-- Verified: `node scripts/verify.mjs --full` → 8/8 pass (on the ui-buttons branch)
 - Docs touched: this entry only

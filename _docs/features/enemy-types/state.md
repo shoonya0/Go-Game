@@ -26,6 +26,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: touched by levels (PR #28 merged)
+
+- Changed: the Orange Golem strips are committed (not loaded yet); `TestLevelEnemiesKeepTheirGround` sizes its quadtree from the grid and runs on all 16 sub-levels ([levels](../levels/state.md)); this feature's behaviour unchanged
+- Verified: `node scripts/verify.mjs --full` 8/8
+- Docs touched: this entry only
+
 ### 2026-10-26: touched by levels (tasks 6, 7)
 
 - Changed: `TestLevelEnemiesKeepTheirGround` runs on every level (deepForest night has six enemies) ([levels](../levels/state.md)); this feature's behaviour unchanged
@@ -49,9 +55,3 @@
 - Changed: flyer wall-pin fix in `flyingMover.Move` + `TestStrandedFlyerPatrolsWhereItIs` (review note)
 - Verified: new test failed first (pinned at the wall); web build loads, no console errors, demon + F3 boxes draw; `code-reviewer`: no blockers; `verify.mjs` 5/5
 - Next: PR (ask before merge); the user confirmed "Smasher working". Review gaps, not bugs: no test for hurt mid-dive
-
-### 2026-10-24: task 26, dive attack + Smasher built
-
-- Changed: `attack_loop`/`attack_end` clips, `swingState.phase`, `Attacker.Committed`; `diveAttack` (`enemy_dive.go`); Smasher `*` in level 1
-- Verified: dive tests failed first (build); mutations (not committed, no MaxDrop) caught; it hits a player in the level; `verify.mjs --full` 8/8
-- Next: user looks at the Smasher in game; then task 25 (needs ranged art) or 27

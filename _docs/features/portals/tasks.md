@@ -39,11 +39,12 @@
 
 ## Later (not planned yet)
 
-- [ ] On the tick of a travel or cross-level respawn the camera and the prompt still belong to the
+- [x] On the tick of a travel or cross-level respawn the camera and the prompt still belong to the
       old place (`UpdateCamera` runs before `Respawned`/`Travel` in `cmd/main.go`): one wrong frame
+      → fixed in levels PR #28 (`followPlayer`); the prompt part not checked
 
 - [x] Keep saved portals across game restarts: done in [main-menu](../main-menu/tasks.md) tasks 1–3
-- [ ] A second level to travel to (add it to `Levels` in levels.go; its background needs a unique file name)
+- [x] A second level to travel to: done in [levels](../levels/tasks.md) (16 sub-levels)
 - [x] `portal.png` halved to 1597×672 (3.6 MB → 1.0 MB; cells 336 px tall, ~2.8× the drawn 120 px)
 - [ ] `portal.png` has an AI sparkle mark in its bottom-right corner (inside the last frame's
       cell): crop it out of the asset

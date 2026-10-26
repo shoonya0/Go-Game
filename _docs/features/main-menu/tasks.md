@@ -28,4 +28,4 @@
 
 - [ ] Real audio (music, effects) once sound files exist
 - [ ] Each title visit rebuilds the run (levels parsed again): reuse the World's levels (code review 2026-10-25)
-- [ ] A second level (own feature)
+- [x] A second level: done in [levels](../levels/tasks.md) (PR #28)
