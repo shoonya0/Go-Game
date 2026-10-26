@@ -5,5 +5,9 @@ package assets
 
 import "embed"
 
-//go:embed enemy levels player UI
+// FS holds every asset but the level backgrounds (see Backgrounds). Files in
+// a level folder are embedded by pattern: a new kind of file there needs its
+// own pattern here.
+//
+//go:embed enemy player UI levels/*.png levels/*/*.json
 var FS embed.FS

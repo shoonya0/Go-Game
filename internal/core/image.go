@@ -8,45 +8,79 @@ import (
 	"io/fs"
 	"log"
 	"path"
+	"strings"
 
 	"player/assets"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+// embedded lists the embedded file systems, searched in order. Backgrounds is
+// empty in the web build (levels decision D4).
+var embedded = []fs.FS{assets.FS, assets.Backgrounds}
+
+// findAsset returns the raw bytes of the embedded asset with p's base file
+// name, or false when no embedded file has that name.
+func findAsset(p string) ([]byte, bool) {
+	base := path.Base(p)
+	for _, fsys := range embedded {
+		// Fast path: an asset embedded at the FS root.
+		if data, err := fs.ReadFile(fsys, base); err == nil {
+			return data, true
+		}
+
+		// Fall back to searching subfolders (e.g. enemy/) by base name, so callers
+		// keep addressing assets by file name only.
+		var found []byte
+		_ = fs.WalkDir(fsys, ".", func(pth string, d fs.DirEntry, err error) error {
+			if err != nil || d.IsDir() {
+				return nil
+			}
+			if path.Base(pth) == base {
+				if data, e := fs.ReadFile(fsys, pth); e == nil {
+					found = data
+					return fs.SkipAll
+				}
+			}
+			return nil
+		})
+		if found != nil {
+			return found, true
+		}
+	}
+	return nil, false
+}
+
 // readAsset returns the raw bytes of an embedded asset. The caller may pass a
 // full path (e.g. "../assets/player/GideonGraves.png" or "../assets/enemy/Mushroom/Mushroom-Idle.png");
 // only the base file name is used, so the same call works on native and
 // WebAssembly builds and regardless of which asset subfolder holds the file.
 func readAsset(p string) []byte {
-	base := path.Base(p)
-
-	// Fast path: an asset embedded at the FS root.
-	if data, err := assets.FS.ReadFile(base); err == nil {
-		return data
+	data, ok := findAsset(p)
+	if !ok {
+		log.Fatalf("load asset %q: not found in embedded FS", p)
 	}
+	return data
+}
 
-	// Fall back to searching subfolders (e.g. enemy/) by base name, so callers
-	// keep addressing assets by file name only.
-	var found []byte
-	_ = fs.WalkDir(assets.FS, ".", func(pth string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
-			return nil
-		}
-		if path.Base(pth) == base {
-			if data, e := assets.FS.ReadFile(pth); e == nil {
-				found = data
-				return fs.SkipAll
-			}
-		}
-		return nil
-	})
-	if found != nil {
-		return found
-	}
+// HasAsset reports whether asset p is embedded in this build. A level
+// background isn't in the web build: fetch it from AssetURL instead.
+func HasAsset(p string) bool {
+	_, ok := findAsset(p)
+	return ok
+}
 
-	log.Fatalf("load asset %q: not found in embedded FS", p)
-	return nil
+// AssetURL is where the web server serves asset p ("../assets/levels/x.png"
+// → "levels/x.png"), relative to the game's page.
+func AssetURL(p string) string {
+	return strings.TrimPrefix(path.Clean(p), "../assets/")
+}
+
+// DecodeImage decodes downloaded image bytes. It doesn't touch the GPU, so it
+// can run off the game loop; ebiten.NewImageFromImage uploads the result.
+func DecodeImage(data []byte) (image.Image, error) {
+	img, _, err := image.Decode(bytes.NewReader(data))
+	return img, err
 }
 
 // LoadImage decodes an embedded image asset and uploads it to a GPU-backed
