@@ -25,6 +25,7 @@ const (
 	Water            TileType   = "water"
 	Wood             TileType   = "wood"
 	Empty            TileType   = "empty"
+	Border           TileType   = "border" // the invisible wall around a level (no grid code, never drawn)
 	TopTileLen       TileLength = 11
 	BottomTileLen    TileLength = 4
 	TopTile          TileLvl    = "top"
@@ -39,14 +40,12 @@ const (
 	// level constants
 	LevelFile        = "../assets/levels/deepForest/level_1.json" // embedded JSON level bundle
 	DefaultLevelName = "level0"                                   // key to load from the bundle
-	Background_1     = "../assets/levels/deepForest/background/LBackground_3.png"
+	Background_1     = "../assets/levels/deepForest/background/deepForest_day.png"
 
 	// ---------------- level constants ----------------
 	LevelTileWidth      = 60      // before it was 40
 	LevelTileHeight     = 60      // before it was 40
 	TopTileVisualOffset = 26.5625 // for water ,grass ,sand
-	Level_1_Width       = 6000
-	Level_1_Height      = 2040
 )
 
 type Tile struct {
@@ -107,9 +106,26 @@ func (c Portal) StandPos() Position {
 // Level is the built, ready-to-use result of loading a level: its solid
 // platforms, its portals and where its enemies spawn.
 type Level struct {
-	Platforms []Platform
-	Portals   []Portal
-	Enemies   []EnemySpawn
+	Platforms     []Platform
+	Portals       []Portal
+	Enemies       []EnemySpawn
+	Width, Height float64 // the grid's size in world pixels
+}
+
+// levelBorder is the invisible wall around a level width × height: solid like
+// rock, just outside every edge, so the player and enemies stay inside it.
+// It is never drawn (the user: "cover it with rock, not shown").
+func levelBorder(width, height float64) []Platform {
+	const t = LevelTileWidth // thick enough that nothing passes through in one tick
+	wall := func(x, y, w, h float64) Platform {
+		return Platform{X: x, Y: y, Width: w, Height: h, TileInfo: Tile{TileType: Border}}
+	}
+	return []Platform{
+		wall(-t, -t, t, height+2*t),    // left
+		wall(width, -t, t, height+2*t), // right
+		wall(0, -t, width, t),          // top
+		wall(0, height, width, t),      // bottom
+	}
 }
 
 var Tiles map[TileType][2]Tile
@@ -293,12 +309,20 @@ func BuildLevel(grid [][]int) Level {
 			prevPlat.TileInfo.TileType = tileType
 		}
 	}
+	level.Height = float64(len(grid) * LevelTileHeight)
+	if len(grid) > 0 {
+		level.Width = float64(len(grid[0]) * LevelTileWidth)
+	}
 	return level
 }
 
 // DrawParallaxBackground scrolls the background with the camera's progress
-// across a level levelWidth wide.
+// across a level levelWidth wide. A nil background (still downloading) draws
+// nothing.
 func (player *PlayerRuntime) DrawParallaxBackground(screen *ebiten.Image, background *ebiten.Image, screenWidth, screenHeight, levelWidth float64) {
+	if background == nil {
+		return
+	}
 	bgW := background.Bounds().Dx()
 	bgH := background.Bounds().Dy()
 
@@ -362,7 +386,7 @@ func (player *PlayerRuntime) drawTiles(screen *ebiten.Image, quadtree *DynamicQu
 
 	for _, obj := range quadtree.Retrieve(viewport) {
 		p, ok := obj.(*Platform)
-		if !ok || (p.TileInfo.TileType == Water) != water {
+		if !ok || p.TileInfo.TileType == Border || (p.TileInfo.TileType == Water) != water {
 			continue
 		}
 

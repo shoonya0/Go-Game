@@ -141,7 +141,7 @@ func (p *PlayerRuntime) updateCombat(qt *DynamicQuadtree, onGround bool) {
 // while dying: travel would cut the death short and replay it there.
 func (p *PlayerRuntime) updatePortals(portals []Portal, in *InputState) {
 	p.savedNote = max(0, p.savedNote-deltaTime())
-	p.travelAsked = false
+	p.travelAsked, p.levelDone = false, false
 	p.atPortal = -1
 	if p.State.IsDying() {
 		return
@@ -159,15 +159,36 @@ func (p *PlayerRuntime) updatePortals(portals []Portal, in *InputState) {
 	p.atPortalRef = cp.Ref()
 	onPortal := cp.tapArea().Contains(in.TapAt.X+p.Camera.Pos.X, in.TapAt.Y+p.Camera.Pos.Y)
 	if in.Interact || (in.Tapped && onPortal) {
-		p.activatePortal(cp)
+		p.savePortal(cp, portals)
 		p.savedNote = portalSavedSeconds
 	}
 	hold := travelHoldTicks()
 	p.travelAsked = in.InteractTicks == hold || (in.TouchHoldTicks == hold && onPortal)
 	if p.travelAsked { // the press may have started outside: a hold saves too (D8)
-		p.activatePortal(cp)
+		p.savePortal(cp, portals)
 	}
 }
+
+// savePortal is the player using portal c of a level with these portals: it
+// activates c, and when every portal of the level is used and the next level
+// isn't open yet, the level is done (LevelDone). That is the save of its last
+// unused portal, or any save in a level a save from before levels D5 left
+// finished. Arriving by teleport activates a portal without this, so it never
+// finishes a level (levels decision D5).
+func (p *PlayerRuntime) savePortal(c Portal, portals []Portal) {
+	p.activatePortal(c)
+	allUsed := !slices.ContainsFunc(portals, func(o Portal) bool {
+		return !slices.Contains(p.ActivePortals, o.Ref())
+	})
+	next := nextLevel(c.Level)
+	p.levelDone = allUsed && next != "" && !slices.ContainsFunc(p.ActivePortals, func(r PortalRef) bool {
+		return r.Level == next
+	})
+}
+
+// LevelDone reports whether a save this tick finished the level (savePortal):
+// the next level opens (levels decision D5).
+func (p *PlayerRuntime) LevelDone() bool { return p.levelDone }
 
 // standingIn returns the portal the player stands in, or nil.
 func (p *PlayerRuntime) standingIn() *PortalRef {

@@ -58,7 +58,7 @@
   short press wait for the release).
 - **Replaces:** D3 (the menu listed saved portals and opened on the same press as the save).
 
-## D9. Menu rows are thumbnails of the level around each portal (2026-10-25, user)
+## D9. Menu rows are thumbnails of the level around each portal (2026-10-25, user; superseded by [levels D7](../levels/decisions.md))
 
 - **Decision:** each row is a small picture of the level around that portal, the checkpoint's
   row framed gold. No text: the game has no font, and adding one is a new dependency.

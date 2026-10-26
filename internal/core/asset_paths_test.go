@@ -4,8 +4,6 @@ import (
 	"io/fs"
 	"path"
 	"testing"
-
-	"player/assets"
 )
 
 // TestAssetPathsAreEmbedded catches an asset that was moved to a folder the
@@ -23,16 +21,18 @@ func TestAssetPathsAreEmbedded(t *testing.T) {
 		}
 	}
 
-	embedded := map[string]bool{}
-	_ = fs.WalkDir(assets.FS, ".", func(p string, d fs.DirEntry, err error) error {
-		if err == nil && !d.IsDir() {
-			embedded[path.Base(p)] = true
-		}
-		return nil
-	})
+	names := map[string]bool{}
+	for _, fsys := range embedded {
+		_ = fs.WalkDir(fsys, ".", func(p string, d fs.DirEntry, err error) error {
+			if err == nil && !d.IsDir() {
+				names[path.Base(p)] = true
+			}
+			return nil
+		})
+	}
 
 	for _, p := range paths {
-		if !embedded[path.Base(p)] {
+		if !names[path.Base(p)] {
 			t.Errorf("asset %q is not in the embedded FS; check assets/embed.go", p)
 		}
 	}

@@ -8,38 +8,38 @@
 - **Open questions / blockers:** none. `_asset_backups/` is the user's: never commit it
 - **Don't forget:** Esc both closes the travel menu (`Back`) and sets `InputState.Menu`, which
   pauses (main-menu D7); `cmd` skips the pause while the travel menu is open. `WaitRelease`
-  keeps the press that picked a title menu item from opening the travel menu. A thumbnail is taken once, so it shows the portal as it looked then. Level
+  keeps the press that picked a title menu item from opening the travel menu. Level
   sizes come from `LevelDef`, not the grid. Code 9 is non-solid. No font: UI symbols are vector
   icons (`touch_icons.go`)
 
 ## Recent sessions (newest first, keep 5)
 
-### 2026-10-25: merged (PR #22)
+### 2026-10-26: touched by levels (aquaticAbyss day)
 
-- Changed: nothing in code; the user merged PR #22, local `main` synced, merged branches deleted
-- Verified: `verify.mjs` 5/5 on `main` at `10b430d`
-- Docs touched: state, tasks, registry, current-state
+- Changed: `levels.go` registers a new level ([levels](../levels/state.md)); portal code unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this state
 
-### 2026-10-25: D11, every teleport revives enemies; level edits
+### 2026-10-26: touched by levels (travel menu list)
 
-- Changed: `World.Travel` revives the level's non-bosses; D11, spec; user's level edits committed (portal moved, Smasher added)
-- Verified: `TestTravelRevivesEnemies` failed first (6 of 7), then passes; `verify.mjs --full` 8/8
-- Docs touched: decisions, spec, tasks, state, current-state
+- Changed: the travel menu lists portals by level instead of thumbnails (D9 superseded by levels D7) ([levels](../levels/state.md))
+- Verified: `node scripts/verify.mjs --full` → 8/8; web build screenshot `_docs/evidence/levels-travel-list.png`
+- Docs touched: this state
 
-### 2026-10-25: D10, travel sets the checkpoint; user's look done
+### 2026-10-26: touched by levels (task 9)
 
-- Changed: `World.Travel` makes the destination the checkpoint; D10, spec; tasks 1, 3, 8c ticked (user: "everything fine")
-- Verified: `TestTravelMakesDestinationCheckpoint` failed first, then passes; `verify.mjs` 5/5
-- Docs touched: decisions, spec, tasks, state, current-state
+- Changed: `world.go` / `levels.go`: an invisible `Border` wall around every level ([levels](../levels/state.md)); portals unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this entry only
 
-### 2026-10-25: task 10 checks, branch review, dying fix
+### 2026-10-26: touched by levels (tasks 6, 7)
 
-- Changed: `updatePortals` ignores input while dying; `AABB.Intersects` comment restored
-- Verified: `TestDyingPlayerCannotUsePortals` failed first (4 inputs), then passes; `verify.mjs --full` 8/8; web: loads, console clean, gold portal from the half-size sheet
-- Docs touched: tasks, state, current-state
+- Changed: saving a level's last unused portal opens the next level (`combat.go` `savePortal`, `levels.go` `OpenNextLevel`) ([levels](../levels/state.md)); this feature's behaviour unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this entry only
 
-### 2026-10-25: smaller portal sheet
+### 2026-10-26: `LevelDef` gained tile lists (levels task 5)
 
-- Changed: `assets/levels/portal.png` halved (Catmull-Rom, scratch tool, no project code)
-- Verified: portal tests pass; `verify.mjs --full` 8/8; sheet looked at, detail kept
-- Docs touched: tasks, state
+- Changed: `levels.go` `LevelDef.Tiles`, `KeepApart` ([levels](../levels/state.md)); portals unchanged
+- Verified: `node scripts/verify.mjs` → 5/5
+- Docs touched: this entry only

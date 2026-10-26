@@ -26,6 +26,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: touched by levels (tasks 6, 7)
+
+- Changed: `TestLevelEnemiesKeepTheirGround` runs on every level (deepForest night has six enemies) ([levels](../levels/state.md)); this feature's behaviour unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this entry only
+
 ### 2026-10-25: portals work in this scope
 
 - Changed (by the portals feature): `EnemyBlueprint.Boss`, `RespawnEnemies` + `enemy_revive_test.go`
@@ -49,9 +55,3 @@
 - Changed: `attack_loop`/`attack_end` clips, `swingState.phase`, `Attacker.Committed`; `diveAttack` (`enemy_dive.go`); Smasher `*` in level 1
 - Verified: dive tests failed first (build); mutations (not committed, no MaxDrop) caught; it hits a player in the level; `verify.mjs --full` 8/8
 - Next: user looks at the Smasher in game; then task 25 (needs ranged art) or 27
-
-### 2026-10-24: task 24, Flying Demon built
-
-- Changed: strips renamed `FlyingDemon_*`; `flyingDemonBlueprint`, `KindFlyingDemon`, `^` in level 1; level test checks flyers keep their height
-- Verified: level test failed first (not placed); swing test lands every bite; it reaches a player under it in the level; `verify.mjs --full` 8/8
-- Next: task 25; the user confirmed "Flying Demon working"

@@ -3,25 +3,147 @@ package core
 import (
 	"fmt"
 	"log"
+	"slices"
+	"strings"
 )
 
 // LevelDef says where a named level comes from: the JSON bundle and key its
-// grid is read from, its background image and its size in world pixels.
+// grid is read from and its background image. Its size is its grid's.
 type LevelDef struct {
-	File, Key     string
-	Background    string
-	Width, Height float64
+	Title, Time string // shown in the travel menu: "Deep Forest", "Day"
+	File, Key   string
+	Background  string
+	Tiles       []TileType    // the only tile types its grid may use (levels spec)
+	KeepApart   [][2]TileType // tile types that must never touch, even diagonally
 }
 
-// StartLevel is the level a new game begins in.
+// StartLevel is the level a new game begins in: deepForest by day. Its name
+// predates the day/night split and stays, since saves store it.
 const StartLevel = "deepForest1"
+
+// DeepForestNight is deepForest's night sub-level (levels decision D1).
+const DeepForestNight = "deepForestNight"
+
+// The other sub-levels, by level in the spec's order (levels decision D1).
+const (
+	AquaticAbyssDay     = "aquaticAbyssDay"
+	AquaticAbyssNight   = "aquaticAbyssNight"
+	BoulderBastionDay   = "boulderBastionDay"
+	BoulderBastionNight = "boulderBastionNight"
+	CargoYardChaosDay   = "cargoYardChaosDay"
+	CargoYardChaosNight = "cargoYardChaosNight"
+	FrostbitePeaksDay   = "frostbitePeaksDay"
+	FrostbitePeaksNight = "frostbitePeaksNight"
+	MirageCanyonDay     = "mirageCanyonDay"
+	MirageCanyonNight   = "mirageCanyonNight"
+	MoltenCraterDay     = "moltenCraterDay"
+	MoltenCraterNight   = "moltenCraterNight"
+	RustyRefineryDay    = "rustyRefineryDay"
+	RustyRefineryNight  = "rustyRefineryNight"
+)
+
+// subLevel is a sub-level laid out the usual way: the grid in
+// assets/levels/<level>/<level>_<time>.json under the key time ("day",
+// "night"), the background in its background folder with the same base name.
+func subLevel(level, title, time, bgExt string, tiles ...TileType) LevelDef {
+	dir := "../assets/levels/" + level + "/"
+	base := level + "_" + time
+	return LevelDef{
+		Title: title, Time: strings.ToUpper(time[:1]) + time[1:],
+		File: dir + base + ".json", Key: time,
+		Background: dir + "background/" + base + bgExt,
+		Tiles:      tiles,
+	}
+}
+
+// boulderBastion keeps larva away from grass (levels spec).
+func boulderBastion(time, bgExt string) LevelDef {
+	def := subLevel("boulderBastion", "Boulder Bastion", time, bgExt, Rock, Grass, Larva)
+	def.KeepApart = [][2]TileType{{Larva, Grass}}
+	return def
+}
 
 // Levels lists every level by name. Travel between portals switches by name.
 var Levels = map[string]LevelDef{
 	StartLevel: {
+		Title: "Deep Forest", Time: "Day",
 		File: LevelFile, Key: DefaultLevelName, Background: Background_1,
-		Width: Level_1_Width, Height: Level_1_Height,
+		Tiles: []TileType{Grass, Water, Rock},
 	},
+	DeepForestNight: {
+		Title: "Deep Forest", Time: "Night",
+		File: "../assets/levels/deepForest/deepForest_night.json", Key: "night",
+		Background: "../assets/levels/deepForest/background/deepForest_night.jpg",
+		Tiles:      []TileType{Grass, Water, Rock},
+	},
+	AquaticAbyssDay: {
+		Title: "Aquatic Abyss", Time: "Day",
+		File: "../assets/levels/aquaticAbyss/aquaticAbyss_day.json", Key: "day",
+		Background: "../assets/levels/aquaticAbyss/background/aquaticAbyss_day.png",
+		Tiles:      []TileType{Water, Rock, Grass},
+	},
+	AquaticAbyssNight:   subLevel("aquaticAbyss", "Aquatic Abyss", "night", ".png", Water, Rock, Grass),
+	BoulderBastionDay:   boulderBastion("day", ".jpg"),
+	BoulderBastionNight: boulderBastion("night", ".jpg"),
+	CargoYardChaosDay:   subLevel("cargoYardChaos", "Cargo Yard Chaos", "day", ".png", Wood, Grass, Water, Rock),
+	CargoYardChaosNight: subLevel("cargoYardChaos", "Cargo Yard Chaos", "night", ".png", Wood, Grass, Water, Rock),
+	FrostbitePeaksDay:   subLevel("frostbitePeaks", "Frostbite Peaks", "day", ".png", Ice, Water, Rock),
+	FrostbitePeaksNight: subLevel("frostbitePeaks", "Frostbite Peaks", "night", ".png", Ice, Water, Rock),
+	MirageCanyonDay:     subLevel("mirageCanyon", "Mirage Canyon", "day", ".png", Sand, Rock, Larva),
+	MirageCanyonNight:   subLevel("mirageCanyon", "Mirage Canyon", "night", ".png", Sand, Rock, Larva),
+	MoltenCraterDay:     subLevel("moltenCrater", "Molten Crater", "day", ".png", Larva, Rock),
+	MoltenCraterNight:   subLevel("moltenCrater", "Molten Crater", "night", ".jpg", Larva, Rock),
+	RustyRefineryDay:    subLevel("rustyRefinery", "Rusty Refinery", "day", ".png", Metal, Wood),
+	RustyRefineryNight:  subLevel("rustyRefinery", "Rusty Refinery", "night", ".png", Metal, Wood),
+}
+
+// LevelOrder is the order levels open in: saving the last unused portal of
+// one takes the player to the next (levels decision D5).
+var LevelOrder = []string{
+	StartLevel, DeepForestNight,
+	AquaticAbyssDay, AquaticAbyssNight,
+	BoulderBastionDay, BoulderBastionNight,
+	CargoYardChaosDay, CargoYardChaosNight,
+	FrostbitePeaksDay, FrostbitePeaksNight,
+	MirageCanyonDay, MirageCanyonNight,
+	MoltenCraterDay, MoltenCraterNight,
+	RustyRefineryDay, RustyRefineryNight,
+}
+
+// levelPortals caches each level's portal cells in reading order (portalCells).
+var levelPortals = map[string][]Position{}
+
+// portalCells returns the named level's portal cells in reading order, read
+// once; none for a level not in Levels.
+func portalCells(name string) []Position {
+	cells, ok := levelPortals[name]
+	if !ok {
+		def, known := Levels[name]
+		if !known {
+			return nil
+		}
+		for _, c := range LoadLevel(def.File, def.Key).Portals {
+			cells = append(cells, c.Pos)
+		}
+		levelPortals[name] = cells
+	}
+	return cells
+}
+
+// portalNumber is ref's place among its level's portals in reading order,
+// from 1 (1 is the entry portal), or 0 when ref's level isn't in Levels.
+func portalNumber(ref PortalRef) int {
+	return slices.Index(portalCells(ref.Level), ref.Cell) + 1
+}
+
+// nextLevel is the level after name in LevelOrder, or "" when name is the
+// last or not in it.
+func nextLevel(name string) string {
+	i := slices.Index(LevelOrder, name)
+	if i < 0 || i+1 >= len(LevelOrder) {
+		return ""
+	}
+	return LevelOrder[i+1]
 }
 
 // World is the level the player is in: its platforms (indexed in Quadtree)
@@ -33,7 +155,8 @@ type World struct {
 	Quadtree *DynamicQuadtree
 	Enemies  []*EnemyRuntime
 
-	left map[string][]*EnemyRuntime // enemies of each level left, as they were (for its bosses)
+	left   map[string][]*EnemyRuntime // enemies of each level left, as they were (for its bosses)
+	border []Platform                 // the current level's invisible wall (levelBorder)
 }
 
 // NewWorld loads the named level with fresh enemies. WorldInit must be called
@@ -47,9 +170,9 @@ func NewWorld(name string) (*World, error) {
 }
 
 // SwitchLevel makes the named level the current one: its platforms, portals,
-// background and size. Entering a level brings back its non-boss enemies
-// fresh at their spawns (D4); bosses of a level visited before stay as the
-// player left them, killed ones dead. The player is not moved.
+// background and size (its grid's). Entering a level brings back its non-boss
+// enemies fresh at their spawns (D4); bosses of a level visited before stay as
+// the player left them, killed ones dead. The player is not moved.
 func (w *World) SwitchLevel(name string) error {
 	def, ok := Levels[name]
 	if !ok {
@@ -63,9 +186,13 @@ func (w *World) SwitchLevel(name string) error {
 	for i := range level.Portals {
 		level.Portals[i].Level = name
 	}
-	qt := NewDynamicQuadtree(AABB{Width: def.Width, Height: def.Height})
+	qt := NewDynamicQuadtree(AABB{Width: level.Width, Height: level.Height})
 	for i := range level.Platforms {
 		qt.Insert(&level.Platforms[i])
+	}
+	w.border = levelBorder(level.Width, level.Height)
+	for i := range w.border {
+		qt.Insert(&w.border[i])
 	}
 
 	enemies, visited := w.left[name]
@@ -98,6 +225,22 @@ func (w *World) Travel(p *PlayerRuntime, ref PortalRef) error {
 		}
 	}
 	return fmt.Errorf("no portal at %v in level %q", ref.Cell, ref.Level)
+}
+
+// OpenNextLevel takes p to the first portal of the level after the current
+// one in LevelOrder, which becomes used and the checkpoint (levels decision
+// D5). It reports false when the current level is the last. On an error the
+// world and p stay as they were.
+func (w *World) OpenNextLevel(p *PlayerRuntime) (bool, error) {
+	next := nextLevel(w.Name)
+	if next == "" {
+		return false, nil
+	}
+	cells := portalCells(next)
+	if len(cells) == 0 {
+		return false, fmt.Errorf("level %q has no portal to arrive at", next)
+	}
+	return true, w.Travel(p, PortalRef{Level: next, Cell: cells[0]})
 }
 
 // Respawned follows a player respawn: back to the checkpoint's level when it

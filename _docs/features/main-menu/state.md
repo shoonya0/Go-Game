@@ -15,30 +15,36 @@
   `Continue` counts as no save (Continue grayed). In agent-browser, focus the canvas by script
   (`canvas.tabIndex=0; canvas.focus()`): a click lands on the middle menu item. `text/v2`
   made the WASM ~5 MB bigger (28 → 33 MB, shaping library; the unused M+ font is dropped by
-  the linker). The travel menu only has thumbnails for portals of levels visited this run
+  the linker).
 
 ## Recent sessions (newest first, keep 5)
 
-### 2026-10-26: merged
+### 2026-10-26: touched by levels (travel menu list)
 
-- Changed: nothing in code; PR #25 merged by the user
-- Verified: `git log origin/main` → `6a8cc90`
-- Docs touched: state, registry, current-state
+- Changed: `cmd/main.go` no longer captures travel thumbnails; menus unchanged ([levels](../levels/state.md))
+- Verified: `node scripts/verify.mjs --full` → 8/8; web build screenshot `_docs/evidence/levels-travel-list.png`
+- Docs touched: this state
 
-### 2026-10-25: code review fixes
+### 2026-10-26: touched by levels (thumbnail fix)
 
-- Changed: `menu.go`, `menu_screens.go`, `input.go`, `text.go`, `touch_controls.go`, `cmd/main.go`
-- Verified: `node scripts/verify.mjs` → pass; web build: blocked storage still offers Continue
-- Docs touched: state, tasks ("Later"), current-state
+- Changed: `cmd/main.go` captures portal thumbnails before opening the next level ([levels](../levels/state.md)); menus unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this entry only
 
-### 2026-10-25: tasks 1–10
+### 2026-10-26: touched by levels (tasks 6, 7)
 
-- Changed: `internal/core/save*.go`, `settings*.go`, `menu*.go`, `text*.go`, `internal/system/save_*.go`, `cmd/main.go`, input
-- Verified: `node scripts/verify.mjs --full` → 8/8 pass; web build in agent-browser (see Now)
-- Docs touched: spec, decisions D2, tasks, state, architecture overview, current-state, portals state/tasks
+- Changed: `cmd/main.go` opens the next level after the player's update ([levels](../levels/state.md)); this feature's behaviour unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this entry only
 
-### 2026-10-25: feature started
+### 2026-10-26: touched by levels (task 4)
 
-- Changed: docs only (`_docs/features/main-menu/`)
-- Verified: `node scripts/docs-check.mjs`
-- Docs touched: spec, decisions, tasks, state, registry, Active work
+- Changed: `cmd/main.go`: `syncBackground` now downloads the background on the web and runs every tick ([levels](../levels/state.md)); this feature's behaviour unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this entry only
+
+### 2026-10-26: reskinned by ui-buttons
+
+- Changed: the menus now drawn from `assets/UI/UIButtons.png` ([ui-buttons](../ui-buttons/state.md), PR #27); behaviour unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8 pass (on the ui-buttons branch)
+- Docs touched: this entry only

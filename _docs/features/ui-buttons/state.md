@@ -1,19 +1,26 @@
 # UI buttons: state
 
-## Now (updated 2026-10-26 at `f184fe3`)
+## Now (updated 2026-10-26 at `8c93d3b`)
 
-- **Status:** ✅ increment 1 done; PR open, waiting for the user to merge
-- **Current task:** none. Leftovers in [tasks.md](./tasks.md) "Later"
-- **Stopped at:** the user checked the game ("working", "done"); web build screenshots in
+- **Status:** ✅ done, merged to `main` in PR #27 (`8c93d3b`), branch deleted. Tasks 1–6 done
+- **Current task:** none. Leftovers in [tasks.md](./tasks.md) "Later" (native window check, crop the sheet)
+- **Stopped at:** feature complete; the user checked it in game; web build screenshots in
   `_docs/evidence/ui-buttons-*.png` (untracked like the other evidence)
 - **Open questions / blockers:** scope D2 was my call; the user can veto parts
 - **Don't forget:** in agent-browser, key presses stopped reaching the canvas after a few
   screens; mouse clicks (move, down, up) kept working. The settings volume item keeps its
   text label (`volumeLabel`) for width and tests but draws only the bar. Main-menu and
   portals docs-check "stale state" warnings come from this feature touching `menu*.go` and
-  `travel_menu.go`; their state didn't change
+  `travel_menu.go`; their state didn't change. PR #27's ubuntu `verify` failed on exactly those
+  warnings (`docs-check --strict` in CI): a commit message with `[docs-skip]` avoids it
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: touched by levels (travel menu list)
+
+- Changed: the travel menu now uses the board, planks, check and arrows; sprites unchanged ([levels](../levels/state.md))
+- Verified: `node scripts/verify.mjs --full` → 8/8; web build screenshot `_docs/evidence/levels-travel-list.png`
+- Docs touched: this state
 
 ### 2026-10-26: PR
 

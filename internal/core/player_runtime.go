@@ -64,6 +64,7 @@ type PlayerRuntime struct {
 	atPortalRef      PortalRef // that portal, across levels (valid while atPortal >= 0)
 	savedNote        float64   // seconds the "saved" check stays up
 	travelAsked      bool      // a hold in a portal asked for the travel menu this tick
+	levelDone        bool      // this tick's save made every portal of the level used (D5)
 	knockVelX        float64   // push velocity (px/s) while knockTicks last
 
 	struck      []*EnemyRuntime // enemies already hit by the current hit of the swing (HitEnemies)

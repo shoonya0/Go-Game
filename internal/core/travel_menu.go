@@ -1,6 +1,8 @@
 package core
 
 import (
+	"cmp"
+	"fmt"
 	"image"
 	"image/color"
 	"math"
@@ -10,25 +12,26 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-// The travel menu is a centered column of thumbnails, one per active portal
-// (D9). It shows at most travelMenuRows rows at a time, scrolling with the pick.
+// The travel menu is a wooden board listing the active portals under their
+// level's and sub-level's names, a plank per portal (levels D7). A list
+// taller than the screen scrolls with the pick.
 const (
 	travelHoldSeconds = 0.5 // how long E, or a touch on the portal, is held to open the menu
 
-	travelThumbW   = 272 // a thumbnail is a fifth of the 1360×768 screen
-	travelThumbH   = 154
-	travelRowGap   = 14
-	travelMenuRows = 4
-	travelBorder   = 4 // px of the frame around a row
-	travelArrow    = 44
+	travelHeadSize = 36 // px of a level's name
+	travelSubSize  = 24 // px of a sub-level's name
+	travelItemSize = 24 // px of a portal's name
+	travelHeadLine = 64 // px of the list a level's name takes
+	travelSubLine  = 44
+	travelPlankW   = 340
+	travelPlankH   = 64
+	travelRowGap   = 12
+	travelBoardPad = 60 // px of board around the list
+	travelMargin   = 20 // px between the board and the screen's edges
+	travelArrow    = 36
 )
 
-var (
-	travelShade      = color.RGBA{0, 0, 0, 0xa0} // over the paused game
-	travelRowColor   = color.RGBA{0x30, 0x24, 0x1c, 0xff}
-	travelPickColor  = color.RGBA{0xff, 0xff, 0xff, 0xff}
-	travelSavedColor = color.RGBA{0xff, 0xc8, 0x3c, 0xff} // the checkpoint's row (D9)
-)
+var travelSubColor = color.RGBA{0xf4, 0xe4, 0xc4, 0xff} // a sub-level's name, under the gold level name
 
 // travelHoldTicks is travelHoldSeconds in ticks.
 func travelHoldTicks() int { return int(math.Round(travelHoldSeconds * tps())) }
@@ -37,31 +40,28 @@ func travelHoldTicks() int { return int(math.Round(travelHoldSeconds * tps())) }
 // the game is paused.
 type TravelMenu struct {
 	Open     bool
-	Rows     []PortalRef // the active portals, in the order they were activated
+	Rows     []PortalRef // the active portals, by level in LevelOrder, then by number
 	Selected int
-	Saved    PortalRef // the checkpoint when the menu opened, framed gold
+	Saved    PortalRef // the checkpoint when the menu opened, marked with a check
 
 	waitRelease bool // closed while E or a touch was down: that hold can't reopen it
 
 	screenW, screenH int
-	thumbs           map[PortalRef]*ebiten.Image // a small picture of the level around each portal
-	arrow            *ebiten.Image               // the wooden arrow, turned up or down when rows are scrolled off
+	arrow            *ebiten.Image // the wooden arrow, turned up or down when the list is scrolled
+}
+
+// travelLine is one line of the menu's list: a level's or a sub-level's
+// name, or a portal's plank.
+type travelLine struct {
+	text string
+	size float64 // px of the letters
+	row  int     // index in Rows of a plank; -1 for a name
+	y, h int     // px from the list's top
 }
 
 // NewTravelMenu lays the menu out for a logical screen of w×h pixels.
 func NewTravelMenu(w, h int) *TravelMenu {
-	return &TravelMenu{screenW: w, screenH: h, thumbs: map[PortalRef]*ebiten.Image{}}
-}
-
-// HasThumb reports whether portal ref has its thumbnail.
-func (m *TravelMenu) HasThumb(ref PortalRef) bool { return m.thumbs[ref] != nil }
-
-// SetThumb keeps view, a full-screen picture of the level around portal ref,
-// shrunk to a thumbnail.
-func (m *TravelMenu) SetThumb(ref PortalRef, view *ebiten.Image) {
-	thumb := ebiten.NewImage(travelThumbW, travelThumbH)
-	drawScaled(thumb, view, thumb.Bounds(), nil, 1)
-	m.thumbs[ref] = thumb
+	return &TravelMenu{screenW: w, screenH: h}
 }
 
 // OpenFor opens the menu on p's active portals, picking the one p stands in
@@ -69,11 +69,122 @@ func (m *TravelMenu) SetThumb(ref PortalRef, view *ebiten.Image) {
 func (m *TravelMenu) OpenFor(p *PlayerRuntime) {
 	m.Open = true
 	m.Rows = slices.Clone(p.ActivePortals)
+	sortTravelRows(m.Rows)
 	m.Saved = p.Checkpoint
 	m.Selected = max(0, slices.Index(m.Rows, p.Checkpoint))
 	if at := p.standingIn(); at != nil {
 		m.Selected = max(0, slices.Index(m.Rows, *at))
 	}
+}
+
+// sortTravelRows orders rows by level, in LevelOrder (levels not in it
+// last), then by portal number; portals of levels not in Levels have no
+// number and go in reading order.
+func sortTravelRows(rows []PortalRef) {
+	place := func(level string) int {
+		if i := slices.Index(LevelOrder, level); i >= 0 {
+			return i
+		}
+		return len(LevelOrder)
+	}
+	slices.SortStableFunc(rows, func(a, b PortalRef) int {
+		return cmp.Or(
+			cmp.Compare(place(a.Level), place(b.Level)),
+			cmp.Compare(a.Level, b.Level),
+			cmp.Compare(portalNumber(a), portalNumber(b)),
+			cmp.Compare(a.Cell.Y, b.Cell.Y),
+			cmp.Compare(a.Cell.X, b.Cell.X),
+		)
+	})
+}
+
+// levelNames returns the names the menu shows for a level: its title
+// ("Deep Forest") and its sub-level's ("Deep Forest Day"); empty for a level
+// not in Levels.
+func levelNames(level string) (title, sub string) {
+	def, ok := Levels[level]
+	if !ok {
+		return "", ""
+	}
+	return def.Title, def.Title + " " + def.Time
+}
+
+// lines lays out the list: a level's name where the level changes, the
+// sub-level's name where the sub-level does, and a plank per row.
+func (m *TravelMenu) lines() []travelLine {
+	var out []travelLine
+	y := 0
+	add := func(text string, size float64, row, h int) {
+		out = append(out, travelLine{text: text, size: size, row: row, y: y, h: h})
+		y += h
+	}
+	lastTitle, n := "", 0
+	for i, ref := range m.Rows {
+		if i == 0 || ref.Level != m.Rows[i-1].Level {
+			title, sub := levelNames(ref.Level)
+			if title != "" && (i == 0 || title != lastTitle) {
+				add(title, travelHeadSize, -1, travelHeadLine)
+			}
+			if sub != "" {
+				add(sub, travelSubSize, -1, travelSubLine)
+			}
+			lastTitle, n = title, 0
+		}
+		n++
+		num := portalNumber(ref)
+		if num == 0 { // not in Levels: count the rows instead
+			num = n
+		}
+		add(fmt.Sprintf("Portal %d", num), travelItemSize, i, travelPlankH+travelRowGap)
+	}
+	return out
+}
+
+// listHeight is how tall lines are, without the gap after the last plank.
+func listHeight(lines []travelLine) int {
+	if len(lines) == 0 {
+		return 0
+	}
+	return lines[len(lines)-1].y + lines[len(lines)-1].h - travelRowGap
+}
+
+// Labels returns the text of every line of the list, top to bottom.
+func (m *TravelMenu) Labels() []string {
+	var out []string
+	for _, l := range m.lines() {
+		out = append(out, l.text)
+	}
+	return out
+}
+
+// view returns the screen area the list shows through, and how far the list
+// is scrolled: when it is too tall, the pick is kept in the middle.
+func (m *TravelMenu) view(lines []travelLine) (r image.Rectangle, scroll int) {
+	content := listHeight(lines)
+	h := min(content, m.screenH-2*(travelMargin+travelBoardPad))
+	w := travelPlankW + 2*(travelPlankH+menuIconGap) // room for the check left of a plank
+	for _, l := range lines {
+		if l.row < 0 {
+			w = max(w, int(textWidth(l.text, l.size)))
+		}
+	}
+	x, y := (m.screenW-w)/2, (m.screenH-h)/2
+	for _, l := range lines {
+		if l.row == m.Selected {
+			scroll = l.y + travelPlankH/2 - h/2
+		}
+	}
+	return image.Rect(x, y, x+w, y+h), min(max(0, scroll), content-h)
+}
+
+// lineRect returns where line l is on the screen; it may be scrolled off.
+func (m *TravelMenu) lineRect(l travelLine, view image.Rectangle, scroll int) image.Rectangle {
+	y := view.Min.Y + l.y - scroll
+	if l.row < 0 {
+		return image.Rect(view.Min.X, y, view.Max.X, y+l.h)
+	}
+	x := (m.screenW - travelPlankW) / 2
+	return image.Rect(x, y, x+travelPlankW, y+travelPlankH)
 }
 
 // WaitRelease makes a hold of E or a touch already down not open the menu,
@@ -124,26 +235,39 @@ func (m *TravelMenu) Update(in *InputState) (PortalRef, bool) {
 	return PortalRef{}, false
 }
 
-// VisibleRows returns the rows on screen, [first, last): up to
-// travelMenuRows, keeping the pick among them.
+// VisibleRows returns the rows whose planks are wholly on screen,
+// [first, last); the pick is always among them.
 func (m *TravelMenu) VisibleRows() (first, last int) {
-	first = min(max(0, m.Selected-travelMenuRows/2), max(0, len(m.Rows)-travelMenuRows))
-	return first, min(len(m.Rows), first+travelMenuRows)
+	lines := m.lines()
+	view, scroll := m.view(lines)
+	first = -1
+	for _, l := range lines {
+		if l.row >= 0 && m.lineRect(l, view, scroll).In(view) {
+			if first < 0 {
+				first = l.row
+			}
+			last = l.row + 1
+		}
+	}
+	return max(0, first), last
 }
 
-// RowRect returns the screen area of row i's thumbnail; i must be visible.
+// RowRect returns the screen area of row i's plank; i must be visible.
 func (m *TravelMenu) RowRect(i int) image.Rectangle {
-	first, last := m.VisibleRows()
-	n := last - first
-	top := (m.screenH - n*travelThumbH - (n-1)*travelRowGap) / 2
-	x := (m.screenW - travelThumbW) / 2
-	y := top + (i-first)*(travelThumbH+travelRowGap)
-	return image.Rect(x, y, x+travelThumbW, y+travelThumbH)
+	lines := m.lines()
+	view, scroll := m.view(lines)
+	for _, l := range lines {
+		if l.row == i {
+			return m.lineRect(l, view, scroll)
+		}
+	}
+	return image.Rectangle{}
 }
 
-// Draw shades the paused game and draws the visible rows: each portal's
-// thumbnail, the pick framed white, the checkpoint gold, with arrows when
-// rows are scrolled off above or below.
+// Draw shades the paused game and draws the list on the wooden board: each
+// level's name in gold, its sub-levels' names under it, and a plank per
+// portal. The pick is the arrow plank, the checkpoint has a check at its
+// left, and arrows show when the list is scrolled.
 func (m *TravelMenu) Draw(screen *ebiten.Image) {
 	if !m.Open {
 		return
@@ -151,39 +275,47 @@ func (m *TravelMenu) Draw(screen *ebiten.Image) {
 	if m.arrow == nil {
 		m.arrow = uiSprite(uiLeftRect)
 	}
-	vector.FillRect(screen, 0, 0, float32(m.screenW), float32(m.screenH), travelShade, false)
+	vector.FillRect(screen, 0, 0, float32(m.screenW), float32(m.screenH), menuShade, false)
 
-	first, last := m.VisibleRows()
-	for i := first; i < last; i++ {
-		r := m.RowRect(i)
-		x, y, w, h := float32(r.Min.X), float32(r.Min.Y), float32(r.Dx()), float32(r.Dy())
-		if thumb := m.thumbs[m.Rows[i]]; thumb != nil {
-			drawScaled(screen, thumb, r, nil, 1)
-		} else {
-			vector.FillRect(screen, x, y, w, h, travelRowColor, false)
+	lines := m.lines()
+	view, scroll := m.view(lines)
+	drawSliced(screen, uiBoardRect, uiBoardInsets, view.Inset(-travelBoardPad), menuBoardScale, nil, 1)
+	list := screen.SubImage(view).(*ebiten.Image) // cuts lines scrolled off at its edges
+	for _, l := range lines {
+		r := m.lineRect(l, view, scroll)
+		if !r.Overlaps(view) {
+			continue
 		}
-		if i != m.Selected {
-			vector.FillRect(screen, x, y, w, h, color.RGBA{0, 0, 0, 0x60}, false) // the pick stands out
-		}
-		const b = travelBorder
+		cx, cy := float64(r.Min.X+r.Max.X)/2, float64(r.Min.Y+r.Max.Y)/2
 		switch {
-		case m.Rows[i] == m.Saved:
-			vector.StrokeRect(screen, x-b/2, y-b/2, w+b, h+b, b, travelSavedColor, false)
-			if i == m.Selected {
-				vector.StrokeRect(screen, x-1.5*b, y-1.5*b, w+3*b, h+3*b, b, travelPickColor, false)
+		case l.row < 0 && l.size == travelHeadSize:
+			DrawTextCentered(list, l.text, l.size, cx+3, cy+3, menuTitleShadow)
+			DrawTextCentered(list, l.text, l.size, cx, cy, menuTitleColor)
+		case l.row < 0:
+			DrawTextCentered(list, l.text, l.size, cx+2, cy+2, menuTitleShadow)
+			DrawTextCentered(list, l.text, l.size, cx, cy, travelSubColor)
+		default:
+			plank, insets := uiPlankRect, uiPlankInsets
+			var tint color.Color = menuIdleTint
+			if l.row == m.Selected {
+				plank, insets, tint = uiPlankArrowRect, uiPlankArrowInsets, nil
 			}
-		case i == m.Selected:
-			vector.StrokeRect(screen, x-b/2, y-b/2, w+b, h+b, b, travelPickColor, false)
+			drawPlank(list, plank, insets, r, tint)
+			if m.Rows[l.row] == m.Saved {
+				check := image.Rect(r.Min.X-menuIconGap-r.Dy(), r.Min.Y, r.Min.X-menuIconGap, r.Max.Y)
+				drawRotated(list, uiSprite(uiCheckRect), check, 0, nil, 1)
+			}
+			DrawTextCentered(list, l.text, l.size, cx, float64(r.Min.Y)+menuTextRise*float64(r.Dy()), menuItemColor)
 		}
 	}
 
 	cx := m.screenW / 2
-	if first > 0 {
-		top := m.RowRect(first).Min.Y - travelRowGap/2 - travelArrow
+	if scroll > 0 {
+		top := view.Min.Y - travelArrow - 6
 		drawRotated(screen, m.arrow, image.Rect(cx-travelArrow/2, top, cx+travelArrow/2, top+travelArrow), 1, nil, 1)
 	}
-	if last < len(m.Rows) {
-		top := m.RowRect(last-1).Max.Y + travelRowGap/2
+	if scroll+view.Dy() < listHeight(lines) {
+		top := view.Max.Y + 6
 		drawRotated(screen, m.arrow, image.Rect(cx-travelArrow/2, top, cx+travelArrow/2, top+travelArrow), -1, nil, 1)
 	}
 }

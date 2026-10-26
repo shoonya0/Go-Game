@@ -1,7 +1,7 @@
 ---
 kind: feature
 scope: [internal/core/ui_skin*.go, internal/core/menu.go, internal/core/menu_screens.go, internal/core/travel_menu.go, internal/core/touch_controls.go, assets/UI/UIButtons.png]
-status: in-progress
+status: done
 ---
 # UI buttons: docs index
 
