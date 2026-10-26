@@ -10,22 +10,38 @@ type Direction struct {
 // produced by the input adapter (see internal/system) and consumed by the
 // player update, keeping core free of any device/keyboard dependency.
 type InputState struct {
-	Direction       Direction
-	JumpJustPressed bool     // jump button pressed this frame
-	JumpHeld        bool     // jump button currently held
-	DashJustPressed bool     // dash button pressed this frame
-	RunJustPressed  bool     // run modifier pressed this frame
-	Menu            bool     // menu toggled
-	SmugFace        bool     // taunt button pressed
-	ToggleHitboxes  bool     // debug hitbox overlay toggled this frame
-	Interact        bool     // use button (E) pressed this frame: saves the portal the player stands in
-	InteractTicks   int      // ticks the use button (E) has been held, 0 while up: a long hold opens the travel menu
-	Tapped          bool     // a touch off the on-screen buttons started this frame
-	TouchHoldTicks  int      // ticks that touch has stayed down since it started, 0 when there is none
-	TapAt           Position // that touch's screen point (where it is now, while held)
-	UpJustPressed   bool     // up pressed this frame (menus)
-	DownJustPressed bool     // down pressed this frame (menus)
-	Confirm         bool     // Enter pressed this frame (menus)
-	Back            bool     // Escape pressed this frame: closes a menu
-	Skills          Skills
+	Direction        Direction
+	JumpJustPressed  bool     // jump button pressed this frame
+	JumpHeld         bool     // jump button currently held
+	DashJustPressed  bool     // dash button pressed this frame
+	RunJustPressed   bool     // run modifier pressed this frame
+	Menu             bool     // Esc or the touch menu button pressed this frame: pauses (main-menu D7)
+	SmugFace         bool     // taunt button pressed
+	ToggleHitboxes   bool     // debug hitbox overlay toggled this frame
+	Interact         bool     // use button (E) pressed this frame: saves the portal the player stands in
+	InteractTicks    int      // ticks the use button (E) has been held, 0 while up: a long hold opens the travel menu
+	Tapped           bool     // a touch off the on-screen buttons started this frame
+	TouchHoldTicks   int      // ticks that touch has stayed down since it started, 0 when there is none
+	TapAt            Position // that touch's screen point (where it is now, while held)
+	UpJustPressed    bool     // up pressed this frame (menus)
+	DownJustPressed  bool     // down pressed this frame (menus)
+	LeftJustPressed  bool     // left pressed this frame (menus)
+	RightJustPressed bool     // right pressed this frame (menus)
+	Confirm          bool     // Enter pressed this frame (menus)
+	Pointer          Position // the mouse cursor's screen point (menus)
+	Clicked          bool     // the left mouse button was pressed this frame (menus)
+	Back             bool     // Escape pressed this frame: closes a menu
+	Skills           Skills
+}
+
+// PressAt returns the screen point pressed this frame by a mouse click or a
+// touch off the on-screen buttons (a click wins), and whether there was one.
+func (in *InputState) PressAt() (Position, bool) {
+	switch {
+	case in.Clicked:
+		return in.Pointer, true
+	case in.Tapped:
+		return in.TapAt, true
+	}
+	return Position{}, false
 }

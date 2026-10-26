@@ -63,6 +63,7 @@ var (
 // so the player code never knows whether input came from keys or fingers.
 type TouchControls struct {
 	Enabled bool // shown and active; set on touch devices or after the first touch
+	Hidden  bool // a menu covers the game: no buttons, every touch is a tap on the menu
 
 	rects      [touchButtonCount]image.Rectangle
 	held, prev [touchButtonCount]bool
@@ -125,7 +126,7 @@ func (tc *TouchControls) Update(points []image.Point) {
 	tc.tapped = false
 	for _, p := range points {
 		for b, r := range tc.rects {
-			if p.In(r) {
+			if p.In(r) && !tc.Hidden {
 				tc.held[b] = true
 			}
 		}
@@ -157,7 +158,7 @@ func (tc *TouchControls) Started(points []image.Point) {
 	for _, p := range points {
 		onButton := false
 		for _, r := range tc.rects {
-			onButton = onButton || p.In(r)
+			onButton = onButton || (p.In(r) && !tc.Hidden)
 		}
 		if !onButton {
 			tc.tapped, tc.tapAt = true, p
@@ -207,15 +208,13 @@ func (tc *TouchControls) Apply(in *InputState) {
 	in.Skills.SpecialAttack3 = in.Skills.SpecialAttack3 || h[TouchSpecial3]
 	in.Skills.SpecialAttack4 = in.Skills.SpecialAttack4 || tc.justPressed(TouchSpecial4)
 
-	if tc.justPressed(TouchMenu) {
-		in.Menu = !in.Menu
-	}
+	in.Menu = in.Menu || tc.justPressed(TouchMenu)
 }
 
 // Draw renders the buttons over the game, see-through while idle; pressed
 // buttons turn dark and solid.
 func (tc *TouchControls) Draw(screen *ebiten.Image) {
-	if !tc.Enabled {
+	if !tc.Enabled || tc.Hidden {
 		return
 	}
 	if tc.sprites == nil {

@@ -78,6 +78,10 @@ func (m *TravelMenu) OpenFor(p *PlayerRuntime) {
 	}
 }
 
+// WaitRelease makes a hold of E or a touch already down not open the menu,
+// like one left down when it closed: the press that picked a title menu item.
+func (m *TravelMenu) WaitRelease() { m.waitRelease = true }
+
 // MaybeOpen opens the menu when p asked for it this tick, unless the hold
 // began before the menu last closed (the E that confirmed a pick, a finger
 // left on a row): E and the touch must be let go first.

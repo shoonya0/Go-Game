@@ -80,7 +80,7 @@ func TestTouchOppositeDirectionsCancel(t *testing.T) {
 }
 
 // K, L and O read as just-pressed, like their keys, so holding them does not
-// re-trigger the combo; the menu button toggles once per press.
+// re-trigger the combo; the menu button too, once per press (it pauses).
 func TestTouchJustPressedButtons(t *testing.T) {
 	tc := NewTouchControls(1360, 768)
 	held := []image.Point{touchCenter(tc, TouchSpecial1), touchCenter(tc, TouchSpecial2), touchCenter(tc, TouchSpecial4), touchCenter(tc, TouchMenu)}
@@ -92,19 +92,20 @@ func TestTouchJustPressedButtons(t *testing.T) {
 		t.Fatalf("first frame: K=%v L=%v O=%v menu=%v, want all true", in.Skills.SpecialAttack1, in.Skills.SpecialAttack2, in.Skills.SpecialAttack4, in.Menu)
 	}
 
-	in.Skills = Skills{}
+	in = InputState{} // HandleInput rewrites every field each frame
 	tc.Update(held)
 	tc.Apply(&in)
-	if in.Skills.SpecialAttack1 || in.Skills.SpecialAttack2 || in.Skills.SpecialAttack4 || !in.Menu {
-		t.Fatalf("held: K=%v L=%v O=%v menu=%v, want K/L/O false and menu still open", in.Skills.SpecialAttack1, in.Skills.SpecialAttack2, in.Skills.SpecialAttack4, in.Menu)
+	if in.Skills.SpecialAttack1 || in.Skills.SpecialAttack2 || in.Skills.SpecialAttack4 || in.Menu {
+		t.Fatalf("held: K=%v L=%v O=%v menu=%v, want all false", in.Skills.SpecialAttack1, in.Skills.SpecialAttack2, in.Skills.SpecialAttack4, in.Menu)
 	}
 
+	in = InputState{}
 	tc.Update(nil)
 	tc.Apply(&in)
 	tc.Update(held[3:])
 	tc.Apply(&in)
-	if in.Menu {
-		t.Error("second menu press should close the menu")
+	if !in.Menu {
+		t.Error("second menu press: menu=false, want true (each press pauses or resumes)")
 	}
 }
 
@@ -178,5 +179,22 @@ func TestTouchTapOffButtons(t *testing.T) {
 	tc.Apply(&in)
 	if in.Tapped {
 		t.Error("a button press counted as a tap")
+	}
+}
+
+// TestTouchHiddenButtons: while a menu hides the buttons, a touch where a
+// button would be is a tap at that point and presses nothing (an unseen
+// down arrow used to move the menu's pick).
+func TestTouchHiddenButtons(t *testing.T) {
+	tc := NewTouchControls(1360, 768)
+	tc.Enabled, tc.Hidden = true, true
+	at := touchCenter(tc, TouchDown)
+	tc.Update([]image.Point{at})
+	tc.Started([]image.Point{at})
+	var in InputState
+	tc.Apply(&in)
+	if in.DownJustPressed || in.Direction.UpDown != 0 || !in.Tapped || in.TapAt != (Position{X: float64(at.X), Y: float64(at.Y)}) {
+		t.Errorf("touch on the hidden down button: down=%v updown=%d tapped=%v at %v; want only a tap at %v",
+			in.DownJustPressed, in.Direction.UpDown, in.Tapped, in.TapAt, at)
 	}
 }
