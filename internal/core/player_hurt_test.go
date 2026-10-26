@@ -192,21 +192,38 @@ func TestWhiteGolemHitTakesTwoHearts(t *testing.T) {
 	}
 }
 
-// TestKnockdownLandsHeadForward: the knockdown art (rows 16, 17) falls with
-// the head toward the left of the frame, so it is drawn mirrored: a player
-// facing right lands with the head on the right (#33).
-func TestKnockdownLandsHeadForward(t *testing.T) {
-	for _, st := range []PlayerStateType{PlayerStateDamaged, PlayerStateKnockedOut} {
-		for _, left := range []bool{false, true} {
-			p := &PlayerRuntime{FlipX: left}
-			p.State.SetPlayerState(int(st))
-			if got := p.drawFlipX(); got != !left {
-				t.Errorf("state %d facing left=%v: drawn mirrored=%v, want %v", st, left, got, !left)
+// TestKnockdownFacesTheHit: a heavy hit turns the player toward its source,
+// whichever way they were facing. The knockdown art falls backward, so the
+// head lands away from the enemy, and the player gets up facing it (#33).
+func TestKnockdownFacesTheHit(t *testing.T) {
+	for _, dmg := range []int{HeavyHitDamage, SevereHitDamage} {
+		for _, facingLeft := range []bool{false, true} {
+			for _, c := range []struct {
+				name     string
+				srcX     float64
+				wantLeft bool
+			}{
+				{"enemy on the right", 1000, false},
+				{"enemy on the left", 0, true},
+			} {
+				p := staminaPlayer()
+				p.Pos.X, p.FlipX = 500, facingLeft
+				p.ApplyDamageFrom(dmg, c.srcX)
+				tickKnockback(p, 2*int(tps())) // lies down, gets up
+				if p.FlipX != c.wantLeft {
+					t.Errorf("%d damage, %s, was facing left=%v: facing left=%v, want %v", dmg, c.name, facingLeft, p.FlipX, c.wantLeft)
+				}
 			}
 		}
 	}
-	p := &PlayerRuntime{FlipX: true}
-	if !p.drawFlipX() {
-		t.Error("idle facing left: not mirrored, want the usual facing")
+}
+
+// TestLightHitKeepsFacing: a hit too light to knock the player down doesn't turn them.
+func TestLightHitKeepsFacing(t *testing.T) {
+	p := staminaPlayer()
+	p.Pos.X = 500
+	p.ApplyDamageFrom(HeavyHitDamage-1, 0)
+	if p.FlipX {
+		t.Error("turned toward a light hit")
 	}
 }

@@ -38,8 +38,10 @@ func (p *PlayerRuntime) backward() float64 {
 
 // hurt applies dmg and, for a heavy hit the player survives, starts a knockdown
 // and a push in direction dir (-1 or 1): KnockbackDistance and the short
-// knockdown, or for a severe hit SevereKnockbackDistance and the full one. A
-// dying player takes no more damage.
+// knockdown, or for a severe hit SevereKnockbackDistance and the full one. The
+// knockdown turns the player toward the hit: the art falls backward, so the head
+// lands away from the source and the player gets up facing it. A dying player
+// takes no more damage.
 func (p *PlayerRuntime) hurt(dmg int, dir float64) {
 	if dmg <= 0 || p.State.IsDying() {
 		return
@@ -54,6 +56,7 @@ func (p *PlayerRuntime) hurt(dmg int, dir float64) {
 		state, dist = PlayerStateKnockedOut, SevereKnockbackDistance
 	}
 	p.State.SetPlayerState(int(state))
+	p.FlipX = dir > 0 // pushed right: the source is on the left
 	p.knockTicks = int(KnockbackSeconds*tps() + 0.5)
 	p.knockVelX = dir * dist / (float64(p.knockTicks) * deltaTime()) // covers dist in knockTicks ticks
 }

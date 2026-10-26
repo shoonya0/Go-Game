@@ -442,13 +442,5 @@ func (player *PlayerRuntime) DrawPlayerAnimation(screen *ebiten.Image) {
 		tint.Scale(1, damageTintGB, damageTintGB, 1)
 	}
 	drawSpriteFrame(screen, player.img, anim, player.CurrAnimFrame, player.GetBounds(),
-		player.drawFlipX(), player.Scale, player.Camera.Pos, frameOriginHeight, tint)
-}
-
-// drawFlipX reports whether the player's sprite is drawn mirrored. The art
-// faces right, so that is when the player faces left, except in a knockdown:
-// its art falls with the head to the left, and mirroring it lands the player
-// head toward the way they face.
-func (player *PlayerRuntime) drawFlipX() bool {
-	return player.FlipX != player.State.IsKnockedDown()
+		player.FlipX, player.Scale, player.Camera.Pos, frameOriginHeight, tint)
 }
