@@ -132,7 +132,7 @@ func (g *Game) startRun(save *core.SaveData) error {
 			return err
 		}
 	}
-	player.UpdateCamera(screenWidth, screenHeight, world.Def.Width, world.Def.Height) // the menus show the player behind them
+	player.UpdateCamera(screenWidth, screenHeight, world.Level.Width, world.Level.Height) // the menus show the player behind them
 	g.world, g.player, g.respawns = world, player, 0
 	g.travel = core.NewTravelMenu(screenWidth, screenHeight)
 	g.autosave = core.Autosave{}
@@ -289,7 +289,7 @@ func (g *Game) Update() error {
 	g.player.UpdateAnimation()
 	g.player.HitEnemies(g.world.Enemies)
 	g.player.UpdateGroundWaves(g.world.Quadtree, g.world.Enemies)
-	g.player.UpdateCamera(screenWidth, screenHeight, g.world.Def.Width, g.world.Def.Height)
+	g.player.UpdateCamera(screenWidth, screenHeight, g.world.Level.Width, g.world.Level.Height)
 
 	if g.player.Respawns != g.respawns {
 		g.respawns = g.player.Respawns
@@ -328,7 +328,7 @@ func (g *Game) updateEnemies() {
 
 // Draw renders one frame: background, level, then player.
 func (g *Game) Draw(screen *ebiten.Image) {
-	g.player.DrawParallaxBackground(screen, g.background, screenWidth, screenHeight, g.world.Def.Width)
+	g.player.DrawParallaxBackground(screen, g.background, screenWidth, screenHeight, g.world.Level.Width)
 	if g.background == nil { // the web build is still downloading it
 		core.DrawTextCentered(screen, "Loading...", loadingTextSize, screenWidth/2, screenHeight/2, color.White)
 	}

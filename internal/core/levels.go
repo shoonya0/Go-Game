@@ -8,14 +8,13 @@ import (
 )
 
 // LevelDef says where a named level comes from: the JSON bundle and key its
-// grid is read from, its background image and its size in world pixels.
+// grid is read from and its background image. Its size is its grid's.
 type LevelDef struct {
-	Title, Time   string // shown in the travel menu: "Deep Forest", "Day"
-	File, Key     string
-	Background    string
-	Width, Height float64
-	Tiles         []TileType    // the only tile types its grid may use (levels spec)
-	KeepApart     [][2]TileType // tile types that must never touch, even diagonally
+	Title, Time string // shown in the travel menu: "Deep Forest", "Day"
+	File, Key   string
+	Background  string
+	Tiles       []TileType    // the only tile types its grid may use (levels spec)
+	KeepApart   [][2]TileType // tile types that must never touch, even diagonally
 }
 
 // StartLevel is the level a new game begins in: deepForest by day. Its name
@@ -53,8 +52,7 @@ func subLevel(level, title, time, bgExt string, tiles ...TileType) LevelDef {
 		Title: title, Time: strings.ToUpper(time[:1]) + time[1:],
 		File: dir + base + ".json", Key: time,
 		Background: dir + "background/" + base + bgExt,
-		Width:      Level_1_Width, Height: Level_1_Height,
-		Tiles: tiles,
+		Tiles:      tiles,
 	}
 }
 
@@ -70,22 +68,19 @@ var Levels = map[string]LevelDef{
 	StartLevel: {
 		Title: "Deep Forest", Time: "Day",
 		File: LevelFile, Key: DefaultLevelName, Background: Background_1,
-		Width: Level_1_Width, Height: Level_1_Height,
 		Tiles: []TileType{Grass, Water, Rock},
 	},
 	DeepForestNight: {
 		Title: "Deep Forest", Time: "Night",
 		File: "../assets/levels/deepForest/deepForest_night.json", Key: "night",
 		Background: "../assets/levels/deepForest/background/deepForest_night.jpg",
-		Width:      Level_1_Width, Height: Level_1_Height,
-		Tiles: []TileType{Grass, Water, Rock},
+		Tiles:      []TileType{Grass, Water, Rock},
 	},
 	AquaticAbyssDay: {
 		Title: "Aquatic Abyss", Time: "Day",
 		File: "../assets/levels/aquaticAbyss/aquaticAbyss_day.json", Key: "day",
 		Background: "../assets/levels/aquaticAbyss/background/aquaticAbyss_day.png",
-		Width:      Level_1_Width, Height: Level_1_Height,
-		Tiles: []TileType{Water, Rock, Grass},
+		Tiles:      []TileType{Water, Rock, Grass},
 	},
 	AquaticAbyssNight:   subLevel("aquaticAbyss", "Aquatic Abyss", "night", ".png", Water, Rock, Grass),
 	BoulderBastionDay:   boulderBastion("day", ".jpg"),
@@ -160,9 +155,9 @@ func NewWorld(name string) (*World, error) {
 }
 
 // SwitchLevel makes the named level the current one: its platforms, portals,
-// background and size. Entering a level brings back its non-boss enemies
-// fresh at their spawns (D4); bosses of a level visited before stay as the
-// player left them, killed ones dead. The player is not moved.
+// background and size (its grid's). Entering a level brings back its non-boss
+// enemies fresh at their spawns (D4); bosses of a level visited before stay as
+// the player left them, killed ones dead. The player is not moved.
 func (w *World) SwitchLevel(name string) error {
 	def, ok := Levels[name]
 	if !ok {
@@ -176,11 +171,11 @@ func (w *World) SwitchLevel(name string) error {
 	for i := range level.Portals {
 		level.Portals[i].Level = name
 	}
-	qt := NewDynamicQuadtree(AABB{Width: def.Width, Height: def.Height})
+	qt := NewDynamicQuadtree(AABB{Width: level.Width, Height: level.Height})
 	for i := range level.Platforms {
 		qt.Insert(&level.Platforms[i])
 	}
-	w.border = levelBorder(max(def.Width, level.Width), max(def.Height, level.Height))
+	w.border = levelBorder(level.Width, level.Height)
 	for i := range w.border {
 		qt.Insert(&w.border[i])
 	}

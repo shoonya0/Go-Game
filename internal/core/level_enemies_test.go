@@ -103,7 +103,7 @@ func TestLevelEnemiesKeepTheirGround(t *testing.T) {
 
 func levelEnemiesKeepTheirGround(t *testing.T, name string, def LevelDef) {
 	level := LoadLevel(def.File, def.Key)
-	qt := NewDynamicQuadtree(AABB{Width: def.Width, Height: def.Height})
+	qt := NewDynamicQuadtree(AABB{Width: level.Width, Height: level.Height})
 	for i := range level.Platforms {
 		qt.Insert(&level.Platforms[i])
 	}

@@ -5,20 +5,20 @@ import (
 	"testing"
 )
 
-// testSecondLevel registers a second level for the test. Only one level file
-// exists, so it reuses level 1's grid with another background and size.
+// testSecondLevel registers a second level for the test: level 1's grid (so
+// its portal cells are the same) with another background.
 func testSecondLevel(t *testing.T) string {
 	t.Helper()
 	const name = "testLevel2"
 	def := Levels[StartLevel]
-	def.Background, def.Width = "../assets/levels/aquaticAbyss/background/aquaticAbyss_day.png", 7000
+	def.Background = "../assets/levels/aquaticAbyss/background/aquaticAbyss_day.png"
 	Levels[name] = def
 	t.Cleanup(func() { delete(Levels, name) })
 	return name
 }
 
 // TestSwitchLevel: switching makes another level current (platforms in a new
-// quadtree, portals, enemies, background, size); coming back restores the
+// quadtree, portals, enemies, background); coming back restores the
 // enemies as they were left; an unknown name changes nothing.
 func TestSwitchLevel(t *testing.T) {
 	WorldInit()
@@ -43,10 +43,10 @@ func TestSwitchLevel(t *testing.T) {
 	if err := w.SwitchLevel(second); err != nil {
 		t.Fatal(err)
 	}
-	if w.Name != second || w.Def.Background != Levels[second].Background || w.Def.Width != 7000 {
-		t.Errorf("after switch: level %q, background %q, width %v; want %q's", w.Name, w.Def.Background, w.Def.Width, second)
+	if w.Name != second || w.Def.Background != Levels[second].Background {
+		t.Errorf("after switch: level %q, background %q; want %q's", w.Name, w.Def.Background, second)
 	}
-	if w.Quadtree == firstQT || w.Quadtree.Root.Bounds.Width != 7000 {
+	if w.Quadtree == firstQT || w.Quadtree.Root.Bounds.Width != w.Level.Width {
 		t.Error("after switch: the quadtree was not rebuilt for the new level")
 	}
 	if got := w.Quadtree.Retrieve(w.Level.Platforms[0].GetBounds()); !containsCollider(got, &w.Level.Platforms[0]) {
@@ -388,6 +388,24 @@ func TestLastPortalOpensNextLevel(t *testing.T) {
 	}
 }
 
+// TestLevelSizeFromGrid: a level is as big as its grid, so the camera and the
+// quadtree cover every row and column (deepForest's grids are 36 rows, more
+// than the 34 the other levels have).
+func TestLevelSizeFromGrid(t *testing.T) {
+	WorldInit()
+	for name, def := range Levels {
+		w, err := NewWorld(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		grid := levelGrid(t, def)
+		wantW, wantH := float64(len(grid[0])*LevelTileWidth), float64(len(grid)*LevelTileHeight)
+		if b := w.Quadtree.Root.Bounds; b.Width != wantW || b.Height != wantH {
+			t.Errorf("level %q: quadtree %vx%v, want its grid's %vx%v", name, b.Width, b.Height, wantW, wantH)
+		}
+	}
+}
+
 // TestLevelBorderKeepsPlayerIn: every level is closed by an invisible border
 // just outside its edges, so a player pushing left, right or up from inside
 // stays in the level (the user: "cover it with rock, not shown").
@@ -398,7 +416,7 @@ func TestLevelBorderKeepsPlayerIn(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		width := w.Def.Width
+		width := w.Level.Width
 		cases := []struct {
 			edge  string
 			start Position

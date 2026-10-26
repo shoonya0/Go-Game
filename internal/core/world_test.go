@@ -101,5 +101,5 @@ func TestBuildLevelWorldCoordinates(t *testing.T) {
 // TestParallaxWithoutBackground: while the web build downloads a level's
 // background the game draws with none (nil), which must not crash.
 func TestParallaxWithoutBackground(t *testing.T) {
-	(&PlayerRuntime{}).DrawParallaxBackground(nil, nil, 640, 360, Level_1_Width)
+	(&PlayerRuntime{}).DrawParallaxBackground(nil, nil, 640, 360, 6000)
 }

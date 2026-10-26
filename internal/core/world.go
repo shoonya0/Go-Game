@@ -46,8 +46,6 @@ const (
 	LevelTileWidth      = 60      // before it was 40
 	LevelTileHeight     = 60      // before it was 40
 	TopTileVisualOffset = 26.5625 // for water ,grass ,sand
-	Level_1_Width       = 6000
-	Level_1_Height      = 2040
 )
 
 type Tile struct {
