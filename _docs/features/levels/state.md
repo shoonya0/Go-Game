@@ -1,6 +1,6 @@
 # Levels: state
 
-## Now (updated 2026-10-26 at `4a8307a`)
+## Now (updated 2026-10-26 at `c475613`)
 
 - **Status:** 🟡 in progress
 - **Current task:** 5. each level's tiles checked by a test ([tasks.md](./tasks.md))
