@@ -191,3 +191,22 @@ func TestWhiteGolemHitTakesTwoHearts(t *testing.T) {
 		t.Errorf("White Golem damage %d, want two hearts (%d)", got, 2*heart)
 	}
 }
+
+// TestKnockdownLandsHeadForward: the knockdown art (rows 16, 17) falls with
+// the head toward the left of the frame, so it is drawn mirrored: a player
+// facing right lands with the head on the right (#33).
+func TestKnockdownLandsHeadForward(t *testing.T) {
+	for _, st := range []PlayerStateType{PlayerStateDamaged, PlayerStateKnockedOut} {
+		for _, left := range []bool{false, true} {
+			p := &PlayerRuntime{FlipX: left}
+			p.State.SetPlayerState(int(st))
+			if got := p.drawFlipX(); got != !left {
+				t.Errorf("state %d facing left=%v: drawn mirrored=%v, want %v", st, left, got, !left)
+			}
+		}
+	}
+	p := &PlayerRuntime{FlipX: true}
+	if !p.drawFlipX() {
+		t.Error("idle facing left: not mirrored, want the usual facing")
+	}
+}
