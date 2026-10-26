@@ -6,3 +6,6 @@ web/game.wasm
 web/wasm_exec.js
 *.md
 art-src/
+_futureAssets/
+_docs/
+_asset_backups/
