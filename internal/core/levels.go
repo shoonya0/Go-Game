@@ -27,8 +27,10 @@ const DeepForestNight = "deepForestNight"
 
 // The other sub-levels, by level in the spec's order (levels decision D1).
 const (
-	AquaticAbyssDay   = "aquaticAbyssDay"
-	AquaticAbyssNight = "aquaticAbyssNight"
+	AquaticAbyssDay     = "aquaticAbyssDay"
+	AquaticAbyssNight   = "aquaticAbyssNight"
+	BoulderBastionDay   = "boulderBastionDay"
+	BoulderBastionNight = "boulderBastionNight"
 )
 
 // subLevel is a sub-level laid out the usual way: the grid in
@@ -44,6 +46,13 @@ func subLevel(level, title, time, bgExt string, tiles ...TileType) LevelDef {
 		Width:      Level_1_Width, Height: Level_1_Height,
 		Tiles: tiles,
 	}
+}
+
+// boulderBastion keeps larva away from grass (levels spec).
+func boulderBastion(time, bgExt string) LevelDef {
+	def := subLevel("boulderBastion", "Boulder Bastion", time, bgExt, Rock, Grass, Larva)
+	def.KeepApart = [][2]TileType{{Larva, Grass}}
+	return def
 }
 
 // Levels lists every level by name. Travel between portals switches by name.
@@ -68,7 +77,9 @@ var Levels = map[string]LevelDef{
 		Width:      Level_1_Width, Height: Level_1_Height,
 		Tiles: []TileType{Water, Rock, Grass},
 	},
-	AquaticAbyssNight: subLevel("aquaticAbyss", "Aquatic Abyss", "night", ".png", Water, Rock, Grass),
+	AquaticAbyssNight:   subLevel("aquaticAbyss", "Aquatic Abyss", "night", ".png", Water, Rock, Grass),
+	BoulderBastionDay:   boulderBastion("day", ".jpg"),
+	BoulderBastionNight: boulderBastion("night", ".jpg"),
 }
 
 // LevelOrder is the order levels open in: saving the last unused portal of
@@ -76,6 +87,7 @@ var Levels = map[string]LevelDef{
 var LevelOrder = []string{
 	StartLevel, DeepForestNight,
 	AquaticAbyssDay, AquaticAbyssNight,
+	BoulderBastionDay, BoulderBastionNight,
 }
 
 // levelPortals caches each level's portal cells in reading order, read once
