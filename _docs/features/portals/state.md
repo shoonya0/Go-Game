@@ -14,6 +14,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: reskinned by ui-buttons
+
+- Changed: the travel menu's scroll arrows now drawn from `assets/UI/UIButtons.png` ([ui-buttons](../ui-buttons/state.md), PR #27); behaviour unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8 pass (on the ui-buttons branch)
+- Docs touched: this entry only
+
 ### 2026-10-25: merged (PR #22)
 
 - Changed: nothing in code; the user merged PR #22, local `main` synced, merged branches deleted
@@ -37,9 +43,3 @@
 - Changed: `updatePortals` ignores input while dying; `AABB.Intersects` comment restored
 - Verified: `TestDyingPlayerCannotUsePortals` failed first (4 inputs), then passes; `verify.mjs --full` 8/8; web: loads, console clean, gold portal from the half-size sheet
 - Docs touched: tasks, state, current-state
-
-### 2026-10-25: smaller portal sheet
-
-- Changed: `assets/levels/portal.png` halved (Catmull-Rom, scratch tool, no project code)
-- Verified: portal tests pass; `verify.mjs --full` 8/8; sheet looked at, detail kept
-- Docs touched: tasks, state

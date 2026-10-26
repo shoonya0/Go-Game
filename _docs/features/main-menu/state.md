@@ -19,6 +19,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: reskinned by ui-buttons
+
+- Changed: the menus now drawn from `assets/UI/UIButtons.png` ([ui-buttons](../ui-buttons/state.md), PR #27); behaviour unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8 pass (on the ui-buttons branch)
+- Docs touched: this entry only
+
 ### 2026-10-26: merged
 
 - Changed: nothing in code; PR #25 merged by the user
