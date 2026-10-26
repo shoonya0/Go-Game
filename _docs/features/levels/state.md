@@ -1,10 +1,11 @@
 # Levels: state
 
-## Now (updated 2026-10-26 at `68bd015`)
+## Now (updated 2026-10-26 at `b3e3e77`)
 
 - **Status:** 🟡 in progress
 - **Current task:** 8. update docs, then the user plays deepForest night ([tasks.md](./tasks.md) "Later")
-- **Stopped at:** task 9 done (invisible border, D6). Tasks 6 and 7 done: deepForest night (`deepForest_night.json`, key `night`)
+- **Stopped at:** the saved portal's travel-menu thumbnail is now captured before the next level
+  opens (`b3e3e77`); the day → night switch worked in a web build. Task 9 done (invisible border, D6). Tasks 6 and 7 done: deepForest night (`deepForest_night.json`, key `night`)
   follows day in `LevelOrder`; saving day's last unused portal opens it. Checked by tests and a
   throwaway web build that started in the night level; not played through
 - **Open questions / blockers:** (user) is the night layout right; who draws levels 2–8
@@ -13,9 +14,17 @@
   (top row first) is a sub-level's entry: keep it the topmost. Water drains 2 HP/s, larva hits
   10 per entry. `//go:embed` takes untracked files (commit a level's backgrounds with its grid);
   a new kind of file in a level folder needs its own pattern in `assets/embed.go`. Saves store
-  the level name: `deepForest1` stays the day sub-level's name
+  the level name: `deepForest1` stays the day sub-level's name. On the web, a thumbnail is skipped
+  while the level's background still downloads; if the player leaves first, it's taken on the
+  next visit
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: saved portal's thumbnail before the next level
+
+- Changed: `cmd/main.go` captures thumbnails before `OpenNextLevel` (the user saw no picture for the last saved portal)
+- Verified: throwaway web build starting at day's last portal + E: `HasThumb` false before the fix, true after; screenshot `_docs/evidence/levels-thumb-after.png`; `verify.mjs --full` 8/8
+- Docs touched: levels state; main-menu session
 
 ### 2026-10-26: invisible border around every level (task 9, D6)
 
@@ -40,12 +49,6 @@
 - Changed: `assets/embed.go` + `backgrounds_*.go` (split embed), `internal/core/image.go` (`HasAsset`, `AssetURL`, `DecodeImage`), `internal/system/fetch_*.go`, `cmd/main.go` (`syncBackground` async), `server/main.go` (`/levels/`), `Dockerfile`, `DEPLOY.md`
 - Verified: `node scripts/verify.mjs --full` → 8/8; agent-browser: background downloaded and drawn, "Loading..." + 2 s retries with the files missing, recovered without reload (`_docs/evidence/levels-bg-*.png`); `game.wasm` 33.1 → 27.6 MB. Docker build not run (daemon off)
 - Docs touched: levels state; DEPLOY.md; architecture-overview Assets / Web server rows
-
-### 2026-10-26: JPEG decoder (task 3)
-
-- Changed: `internal/core/image.go` imports `image/jpeg`; `TestBackgroundsDecode` in `image_test.go`
-- Verified: `node scripts/verify.mjs` → 5/5 pass; the test decodes all 16 backgrounds locally
-- Docs touched: levels tasks, state
 
 ## Known issues
 

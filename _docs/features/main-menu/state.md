@@ -19,6 +19,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: touched by levels (thumbnail fix)
+
+- Changed: `cmd/main.go` captures portal thumbnails before opening the next level ([levels](../levels/state.md)); menus unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this entry only
+
 ### 2026-10-26: touched by levels (tasks 6, 7)
 
 - Changed: `cmd/main.go` opens the next level after the player's update ([levels](../levels/state.md)); this feature's behaviour unchanged
@@ -42,9 +48,3 @@
 - Changed: nothing in code; PR #25 merged by the user
 - Verified: `git log origin/main` → `6a8cc90`
 - Docs touched: state, registry, current-state
-
-### 2026-10-25: code review fixes
-
-- Changed: `menu.go`, `menu_screens.go`, `input.go`, `text.go`, `touch_controls.go`, `cmd/main.go`
-- Verified: `node scripts/verify.mjs` → pass; web build: blocked storage still offers Continue
-- Docs touched: state, tasks ("Later"), current-state
