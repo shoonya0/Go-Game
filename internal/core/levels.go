@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"slices"
+	"strings"
 )
 
 // LevelDef says where a named level comes from: the JSON bundle and key its
@@ -24,8 +25,26 @@ const StartLevel = "deepForest1"
 // DeepForestNight is deepForest's night sub-level (levels decision D1).
 const DeepForestNight = "deepForestNight"
 
-// AquaticAbyssDay is level 2's day sub-level.
-const AquaticAbyssDay = "aquaticAbyssDay"
+// The other sub-levels, by level in the spec's order (levels decision D1).
+const (
+	AquaticAbyssDay   = "aquaticAbyssDay"
+	AquaticAbyssNight = "aquaticAbyssNight"
+)
+
+// subLevel is a sub-level laid out the usual way: the grid in
+// assets/levels/<level>/<level>_<time>.json under the key time ("day",
+// "night"), the background in its background folder with the same base name.
+func subLevel(level, title, time, bgExt string, tiles ...TileType) LevelDef {
+	dir := "../assets/levels/" + level + "/"
+	base := level + "_" + time
+	return LevelDef{
+		Title: title, Time: strings.ToUpper(time[:1]) + time[1:],
+		File: dir + base + ".json", Key: time,
+		Background: dir + "background/" + base + bgExt,
+		Width:      Level_1_Width, Height: Level_1_Height,
+		Tiles: tiles,
+	}
+}
 
 // Levels lists every level by name. Travel between portals switches by name.
 var Levels = map[string]LevelDef{
@@ -49,11 +68,15 @@ var Levels = map[string]LevelDef{
 		Width:      Level_1_Width, Height: Level_1_Height,
 		Tiles: []TileType{Water, Rock, Grass},
 	},
+	AquaticAbyssNight: subLevel("aquaticAbyss", "Aquatic Abyss", "night", ".png", Water, Rock, Grass),
 }
 
 // LevelOrder is the order levels open in: saving the last unused portal of
 // one takes the player to the next (levels decision D5).
-var LevelOrder = []string{StartLevel, DeepForestNight, AquaticAbyssDay}
+var LevelOrder = []string{
+	StartLevel, DeepForestNight,
+	AquaticAbyssDay, AquaticAbyssNight,
+}
 
 // levelPortals caches each level's portal cells in reading order, read once
 // for portalNumber.
