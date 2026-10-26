@@ -43,9 +43,10 @@ const (
 	Background_1     = "../assets/levels/deepForest/background/deepForest_day.png"
 
 	// ---------------- level constants ----------------
-	LevelTileWidth      = 60      // before it was 40
-	LevelTileHeight     = 60      // before it was 40
-	TopTileVisualOffset = 26.5625 // for water ,grass ,sand
+	LevelTileWidth      = 60                  // before it was 40
+	LevelTileHeight     = 60                  // before it was 40
+	TopTileVisualOffset = 26.5625             // for water ,grass ,sand
+	LarvaTopOffset      = LevelTileHeight / 2 // the larva art's surface is halfway down its cell
 )
 
 type Tile struct {
@@ -187,10 +188,17 @@ func tileVariantIndex(lvl TileLvl) int {
 	return 0
 }
 
-// hasVisualOffset reports whether a top tile of this type sits lower in its cell
-// (water, grass and sand have a transparent margin above the solid surface).
-func hasVisualOffset(t TileType) bool {
-	return t == Water || t == Grass || t == Sand
+// topTileOffset is how far below its cell line a top tile of this type is solid:
+// water, grass and sand have a transparent margin above the surface, and larva
+// art fills only the lower half. Other types are solid from the cell line.
+func topTileOffset(t TileType) float64 {
+	switch t {
+	case Water, Grass, Sand:
+		return TopTileVisualOffset
+	case Larva:
+		return LarvaTopOffset
+	}
+	return 0
 }
 
 func getTileInfo(x, y int, tileType TileType, grid [][]int, prevPlat Platform) Platform {
@@ -220,10 +228,10 @@ func getTileInfo(x, y int, tileType TileType, grid [][]int, prevPlat Platform) P
 	}
 
 	// Top tiles with a transparent margin are nudged down so the solid part lines up.
-	if plat.TileInfo.TileLvl == TopTile && hasVisualOffset(tileType) {
-		plat.Y += TopTileVisualOffset
-		plat.DrawOffsetY = -TopTileVisualOffset
-		plat.Height -= TopTileVisualOffset
+	if off := topTileOffset(tileType); plat.TileInfo.TileLvl == TopTile && off > 0 {
+		plat.Y += off
+		plat.DrawOffsetY = -off
+		plat.Height -= off
 	}
 
 	if prevPlat.TileInfo.TileType == plat.TileInfo.TileType && prevPlat.TileInfo.TileLvl == plat.TileInfo.TileLvl {
@@ -291,9 +299,7 @@ func BuildLevel(grid [][]int) Level {
 			if code == PortalCode {
 				portal := Portal{Pos: Position{X: float64(x * LevelTileWidth), Y: float64(y * LevelTileHeight)}}
 				// The cell below is a top tile (a portal is non-solid), nudged down by its margin.
-				if hasVisualOffset(tileTypeFromCode(cellAt(grid, x, y+1))) {
-					portal.FloorDrop = TopTileVisualOffset
-				}
+				portal.FloorDrop = topTileOffset(tileTypeFromCode(cellAt(grid, x, y+1)))
 				level.Portals = append(level.Portals, portal)
 			}
 

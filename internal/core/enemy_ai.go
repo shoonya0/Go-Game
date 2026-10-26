@@ -20,16 +20,16 @@ func UpdateEnemy(e *EnemyRuntime, target *PlayerRuntime, qt *DynamicQuadtree) {
 	}
 
 	e.regenerateHealth()
-	e.decideBehavior(target)
+	e.decideBehavior(target, qt)
 	e.bp.Mover.Move(e, qt)
 }
 
 // decideBehavior runs the enemy's state machine for this tick: attack when the
 // player's body is inside the attack box (turned toward them) or a committed
-// attack is under way, chase when they are within detection range, otherwise
-// patrol. It sets the behavioural state and
-// facing, and steers the Mover, which sets the velocity.
-func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
+// attack is under way, chase when they are within detection range and the
+// Mover can get to them in qt (nil: no terrain), otherwise patrol. It sets the
+// behavioural state and facing, and steers the Mover, which sets the velocity.
+func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime, qt *DynamicQuadtree) {
 	// Let a hurt or guard reaction play out before re-deciding, so hits interrupt cleanly.
 	if e.State.IsHurt() || e.State.IsGuarding() {
 		e.bp.Mover.Steer(e, moveIntent{mode: moveHold})
@@ -44,10 +44,10 @@ func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
 	switch {
 	case e.State == EnemyAttack && e.bp.Attacker.Committed(e):
 		e.attack(target, dx)
-	case e.bp.Attacker.InRange(e, tb):
+	case e.bp.Attacker.InRange(e, tb) && clearSight(qt, eb, tb): // never through a tile
 		e.attack(target, dx)
-	case dist <= st.DetectRange:
-		e.chase(dx, centerY(tb)-centerY(eb))
+	case dist <= st.DetectRange && e.bp.Mover.CanChase(e, tb, qt):
+		e.chase(dx, centerY(tb)-centerY(eb), qt)
 	default:
 		e.patrol()
 	}
@@ -57,6 +57,7 @@ func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
 // time the enemy enters its attack state, once the Attacker is ready (it idles
 // until then); the Attacker decides when the swing lands.
 func (e *EnemyRuntime) attack(target *PlayerRuntime, dx float64) {
+	e.engaged = true
 	e.faceToward(dx)
 	e.bp.Mover.Steer(e, moveIntent{mode: moveHold})
 	if e.State != EnemyAttack {
@@ -71,16 +72,22 @@ func (e *EnemyRuntime) attack(target *PlayerRuntime, dx float64) {
 }
 
 // chase moves the enemy toward the player at chase speed. dx and dy run from
-// the enemy's center to the player's.
-func (e *EnemyRuntime) chase(dx, dy float64) {
+// the enemy's center to the player's; qt is the world, for a route.
+func (e *EnemyRuntime) chase(dx, dy float64, qt *DynamicQuadtree) {
+	e.engaged = true
 	e.setState(EnemyAlert)
 	e.faceToward(dx)
-	e.bp.Mover.Steer(e, moveIntent{mode: moveChase, dx: dx, dy: dy})
+	e.bp.Mover.Steer(e, moveIntent{mode: moveChase, dx: dx, dy: dy, qt: qt})
 }
 
-// patrol paces the enemy around its spawn point; the Mover decides where the
-// path turns.
+// patrol paces the enemy around the place it guards; the Mover decides where
+// the path turns. An enemy that lost the player guards where it is now instead
+// of going back to its spawn.
 func (e *EnemyRuntime) patrol() {
+	if e.engaged {
+		e.spawnX, e.spawnY = e.Pos.X, e.Pos.Y
+		e.engaged = false
+	}
 	e.bp.Mover.Steer(e, moveIntent{mode: movePatrol})
 	e.faceToward(e.patrolDir)
 	e.setState(EnemyPatrol)

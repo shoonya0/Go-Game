@@ -100,3 +100,15 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [ ] `waterMover` (no candidate since the battlers were dropped, D9)
 - [ ] Delete `tools/battler2strip` or keep it (D9, user to decide)
 - [ ] `readAsset` by full path instead of base name (project known issue #3)
+
+## Playtest fixes (issues #30-#35, branch `fix/30-enemy-playtest-bugs`, D11)
+
+- [x] 28. Walkers wade through water (#30) → check: `TestGroundEnemyStandsInWaterLikePlayer`, `TestGroundEnemyPatrolsThroughWater`
+- [x] 29. Guard where the player was lost, no leash (#31) → check: `enemy_home_test.go`
+- [x] 30. White Golem 2 hearts (#32); a knockdown turns the player toward the hit, head lands away from it (#33, redone after playtest) → check: `TestWhiteGolemHitTakesTwoHearts`, `TestKnockdownFacesTheHit`
+- [x] 31. Walkers chase only reachable players (#34) → check: `TestGroundEnemyChaseNeedsWalkableGround`
+- [x] 32. Flyers route around tiles, no attack through tiles (#35) → check: `enemy_route_test.go`; `verify.mjs --full` 8/8
+- [x] 33. The user played it: #30-#32, #34, #35 fine; #33 redone; detection range doubled (user: 2x) → check: `verify.mjs --full` 8/8
+- [x] 35. Walkers stay out of larva, ground check under the whole body (review #6) → check: `enemy_larva_test.go`; `verify.mjs --full` 8/8
+- [ ] 36. Review findings 1, 2, 4 left (flyers float on water, stale route at chase start, cache the reach check): the user decides
+- [ ] 34. The user plays the redone knockdown, the wider detection and larva pits; then PR (ask before merge)

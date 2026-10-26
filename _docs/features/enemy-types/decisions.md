@@ -113,3 +113,21 @@
   to `_futureAssets/` for later.
 - **Gap:** today both skeletons come from `skeletonBlueprint` with the same stats, so the
   yellow one isn't stronger yet ([tasks.md](./tasks.md) "Later").
+
+## D11. Enemies guard where they are, chase what they can reach (2026-10-26, user's call)
+
+- **Decision (playtest, issues #30-#35):** no enemy is tied to its spawn: after a chase it
+  guards (patrols) where it lost the player; the flyer leash is gone. A walker chases only a
+  player on ground it can walk to (no gap, wall or step over half a tile; water counts) and
+  wades through water at the player's depth. A flyer flies around tiles to reach the player.
+  No enemy attacks unless the line between the centres is clear of tiles. White Golem hits
+  take two hearts (a heavy hit, so it knocks the player down). A knockdown turns the player
+  toward the hit: the head lands away from the enemy, and they get up facing it. Detection
+  ranges doubled to 600-760 px (user, after the playtest). Walkers keep out of larva: a
+  walk through it isn't reachable unless they already stand in it (they shook at a pit's
+  edge once larva sat half a tile down).
+- **Why:** enemies ran off ledges at players they couldn't reach, flyers and the Smasher
+  attacked through platforms, enemies sank to the bottom of pools.
+- **Consequences:** replaces the leash of task 22 and the "return to spawn" of spec
+  criterion 4; `TestFlyingEnemyLeash` was replaced by `enemy_home_test.go`, and
+  `TestDiveEndsOverPit` expects the Smasher to guard where its dive stopped.

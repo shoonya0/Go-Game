@@ -86,10 +86,10 @@ func TestPlayerStartsAtFirstPortal(t *testing.T) {
 
 // TestPortalStandsOnTheGround: a portal's base, and the player standing in it,
 // sit on the solid top of the tile below, which for grass, sand and water is
-// nudged below the cell line (TopTileVisualOffset).
+// nudged below the cell line (topTileOffset).
 func TestPortalStandsOnTheGround(t *testing.T) {
 	WorldInit()
-	for _, below := range []TileType{Grass, Sand, Water, Rock} {
+	for _, below := range []TileType{Grass, Sand, Water, Larva, Rock} {
 		code := 0
 		for i, tt := range tileRowOrder {
 			if tt == below {

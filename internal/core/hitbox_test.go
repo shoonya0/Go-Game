@@ -26,7 +26,7 @@ func TestEnemyDoesNotHitPlayerAbove(t *testing.T) {
 	e := newTestEnemy(Position{X: 0, Y: 500})
 	above := &PlayerRuntime{Pos: Position{X: 30, Y: 500 - 300}, Combat: Combat{Health: 100, MaxHealth: 100}}
 
-	e.decideBehavior(above)
+	e.decideBehavior(above, nil)
 	if e.State == EnemyAttack || above.Combat.Health != 100 {
 		t.Errorf("player above: state=%d health=%d, want no attack", e.State, above.Combat.Health)
 	}
@@ -37,7 +37,7 @@ func TestEnemyAttacksPlayerBehind(t *testing.T) {
 	e.FlipX = false // facing right, player is to the left
 	behind := &PlayerRuntime{Pos: Position{X: 170}, Combat: Combat{Health: 100, MaxHealth: 100}}
 
-	e.decideBehavior(behind)
+	e.decideBehavior(behind, nil)
 	if e.State != EnemyAttack || !e.FlipX {
 		t.Errorf("player behind: state=%d flipX=%v, want attack after turning left", e.State, e.FlipX)
 	}

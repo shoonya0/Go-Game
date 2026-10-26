@@ -78,12 +78,12 @@ func TestMeleeSwingHitsOnce(t *testing.T) {
 	e := newAnimatedTestEnemy(Position{})
 	near := &PlayerRuntime{Pos: Position{X: 30}, Combat: Combat{Health: 100, MaxHealth: 100}}
 
-	e.decideBehavior(near) // swing starts; the test enemy hits on frame 0
+	e.decideBehavior(near, nil) // swing starts; the test enemy hits on frame 0
 	e.PrevState = e.State
 	e.attackTimer = 0
 	for range 5 {
 		e.CurrAnimFrame++
-		e.decideBehavior(near)
+		e.decideBehavior(near, nil)
 	}
 	if want := 100 - e.bp.Stats.Damage; near.Combat.Health != want {
 		t.Errorf("player health = %d after one swing, want %d (one hit)", near.Combat.Health, want)
@@ -99,14 +99,14 @@ func TestMeleeSwingLandsAfterCooldown(t *testing.T) {
 	near := &PlayerRuntime{Pos: Position{X: 30}, Combat: Combat{Health: 100, MaxHealth: 100}}
 
 	e.attackTimer = 1 // still cooling down from the last swing
-	e.decideBehavior(near)
+	e.decideBehavior(near, nil)
 	e.PrevState = e.State
 	if near.Combat.Health != 100 {
 		t.Fatalf("hit landed during the cooldown: health = %d", near.Combat.Health)
 	}
 	e.attackTimer = 0 // cooldown ready a few frames into the swing
 	e.CurrAnimFrame += 2
-	e.decideBehavior(near)
+	e.decideBehavior(near, nil)
 	if want := 100 - e.bp.Stats.Damage; near.Combat.Health != want {
 		t.Errorf("health = %d once the cooldown was ready, want %d (the blocked swing lands)", near.Combat.Health, want)
 	}

@@ -3,11 +3,11 @@ package core
 import "math"
 
 // flyingMover flies in 2D without gravity and collides with solid tiles like a
-// ground enemy. It never strays more than LeashTiles from its spawn point, in
-// either axis: a player beyond the leash is chased to its edge, and once out of
-// sight the flyer patrols back home at its spawn height. A dead flyer falls.
+// ground enemy. It chases the player wherever they go, flying around tiles in
+// the way (enemy_route.go) and, once they are out of
+// sight, patrols at the height of the place it guards (its spawn, or where it
+// lost the player). A dead flyer falls.
 type flyingMover struct {
-	LeashTiles  float64 // how far (tiles) it may fly from spawn, in X and in Y
 	HoverHeight float64 // chase: how far (px) above the player's center it aims
 }
 
@@ -17,16 +17,17 @@ func (m flyingMover) Steer(e *EnemyRuntime, in moveIntent) {
 		return
 	}
 	st := e.bp.Stats
-	leash := m.LeashTiles * LevelTileWidth
 	switch in.mode {
 	case movePatrol:
 		turnAtPathEnd(e, m.pathRange(e))
 		e.VelX = e.patrolDir * st.WalkSpeed
 		_, e.VelY = towardAt(0, e.spawnY-e.Pos.Y, st.WalkSpeed)
 	case moveChase:
-		tx := clamp(e.Pos.X+in.dx, e.spawnX-leash, e.spawnX+leash)
-		ty := clamp(e.Pos.Y+in.dy-m.HoverHeight, e.spawnY-leash, e.spawnY+leash)
-		e.VelX, e.VelY = towardAt(tx-e.Pos.X, ty-e.Pos.Y, st.ChaseSpeed)
+		dx, dy := in.dx, in.dy-m.HoverHeight
+		if wx, wy, ok := e.routeStep(dx, dy, in.qt); ok {
+			dx, dy = wx, wy // tiles in the way: follow the route around them
+		}
+		e.VelX, e.VelY = towardAt(dx, dy, st.ChaseSpeed)
 	default:
 		e.VelX, e.VelY = 0, 0
 	}
@@ -48,13 +49,16 @@ func (m flyingMover) Move(e *EnemyRuntime, qt *DynamicQuadtree) {
 	e.onGround = g.resolveVertical(e, qt)
 }
 
-// pathRange is how far (px) either side of spawn the flyer patrols: its
-// PatrolTiles, cut to the leash.
+// pathRange is how far (px) either side of the place it guards the flyer
+// patrols.
 func (m flyingMover) pathRange(e *EnemyRuntime) float64 {
-	return min(e.bp.Stats.PatrolTiles, m.LeashTiles) * LevelTileWidth
+	return e.bp.Stats.PatrolTiles * LevelTileWidth
 }
 
 func (flyingMover) Grounded(e *EnemyRuntime) bool { return e.onGround }
+
+// CanChase: a flyer can go anywhere.
+func (flyingMover) CanChase(*EnemyRuntime, AABB, *DynamicQuadtree) bool { return true }
 
 // towardAt is the velocity that covers (dx, dy) at speed, slowed on the last
 // tick so it stops on the target instead of overshooting and jittering.

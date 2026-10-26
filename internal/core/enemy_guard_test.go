@@ -39,7 +39,7 @@ func TestGuardBlocksFrontHit(t *testing.T) {
 	}
 
 	e.VelX = 100
-	e.decideBehavior(farPlayer(e))
+	e.decideBehavior(farPlayer(e), nil)
 	if e.State != EnemyGuard || e.VelX != 0 {
 		t.Errorf("while guarding: state=%d velX=%v, want still guarding and standing", e.State, e.VelX)
 	}

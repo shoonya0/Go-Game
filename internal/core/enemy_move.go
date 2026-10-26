@@ -13,6 +13,9 @@ type Mover interface {
 	Move(e *EnemyRuntime, qt *DynamicQuadtree)
 	// Grounded reports whether the enemy rested on ground after its last move.
 	Grounded(e *EnemyRuntime) bool
+	// CanChase reports whether the enemy can get to the player's box from
+	// where it is, so chasing them makes sense. qt may be nil (no terrain).
+	CanChase(e *EnemyRuntime, target AABB, qt *DynamicQuadtree) bool
 }
 
 // moveMode is what the brain wants the body to do this tick.
@@ -27,8 +30,9 @@ const (
 // moveIntent is the brain's request to the Mover.
 type moveIntent struct {
 	mode moveMode
-	dx   float64 // chase: horizontal distance to the player (positive = right)
-	dy   float64 // chase: vertical distance to the player (positive = down)
+	dx   float64          // chase: horizontal distance to the player (positive = right)
+	dy   float64          // chase: vertical distance to the player (positive = down)
+	qt   *DynamicQuadtree // chase: the world, for a Mover that plans a route (may be nil)
 }
 
 // groundMover walks on tiles under gravity, like the player.
@@ -70,8 +74,13 @@ func (m groundMover) Move(e *EnemyRuntime, qt *DynamicQuadtree) {
 
 func (groundMover) Grounded(e *EnemyRuntime) bool { return e.onGround }
 
+// CanChase: a walker reaches only a player on ground it can walk to (enemy_reach.go).
+func (groundMover) CanChase(e *EnemyRuntime, target AABB, qt *DynamicQuadtree) bool {
+	return walkReaches(e, target, qt)
+}
+
 // turnAtLedge stops a patrolling enemy whose next step would put its leading
-// edge past solid ground and reverses its patrol, so it paces its platform
+// edge past ground (solid or water) and reverses its patrol, so it paces its platform
 // instead of walking off. Chasing enemies still follow the player off edges;
 // one that lost the player outside its patrol path can't walk back to it past
 // the ledge, so it starts a new path where it stands rather than turn toward
@@ -86,8 +95,8 @@ func (groundMover) turnAtLedge(e *EnemyRuntime, qt *DynamicQuadtree) {
 	}
 	probe := AABB{X: probeX, Y: e.Pos.Y + e.bp.BodyHeight, Width: 1, Height: 1}
 	for _, obj := range qt.Retrieve(probe) {
-		if plat, ok := obj.(*Platform); ok && plat.TileInfo.TileType != Water && probe.Intersects(plat.GetBounds()) {
-			return // ground ahead
+		if plat, ok := obj.(*Platform); ok && probe.Intersects(plat.GetBounds()) {
+			return // ground ahead; water holds it up too
 		}
 	}
 	e.VelX = 0
@@ -107,6 +116,8 @@ func (groundMover) applyGravity(e *EnemyRuntime) {
 
 // resolveHorizontal integrates X and pushes the enemy out of solid tiles. Hitting
 // a wall reverses the patrol direction so patrolling enemies turn around at walls.
+// A grounded enemy steps up onto a tile no higher than maxStepUp above its
+// feet, so it can wade out of water onto the bank.
 func (groundMover) resolveHorizontal(e *EnemyRuntime, qt *DynamicQuadtree) {
 	e.Pos.X += e.VelX * deltaTime()
 	if qt == nil {
@@ -122,6 +133,9 @@ func (groundMover) resolveHorizontal(e *EnemyRuntime, qt *DynamicQuadtree) {
 		if !e.GetBounds().Intersects(bounds) {
 			continue
 		}
+		if e.onGround && stepUp(e, bounds, qt) {
+			continue
+		}
 		if e.VelX > 0 {
 			e.Pos.X = bounds.X - e.bp.BodyWidth
 		} else if e.VelX < 0 {
@@ -132,8 +146,30 @@ func (groundMover) resolveHorizontal(e *EnemyRuntime, qt *DynamicQuadtree) {
 	}
 }
 
+// maxStepUp is the highest ledge (px above its feet) a walking enemy climbs
+// without jumping: the depth it wades at, so it can leave the water.
+const maxStepUp = waterSinkTiles*LevelTileHeight + 1
+
+// stepUp lifts e onto the top of the tile it walked into, if that top is at
+// most maxStepUp above its feet and nothing solid is in the way up there.
+func stepUp(e *EnemyRuntime, tile AABB, qt *DynamicQuadtree) bool {
+	if rise := e.Pos.Y + e.bp.BodyHeight - tile.Y; rise <= 0 || rise > maxStepUp {
+		return false
+	}
+	up := e.GetBounds()
+	up.Y = tile.Y - e.bp.BodyHeight
+	for _, obj := range qt.Retrieve(up) {
+		if plat, ok := obj.(*Platform); ok && plat.TileInfo.TileType != Water && up.Intersects(plat.GetBounds()) {
+			return false
+		}
+	}
+	e.Pos.Y = up.Y
+	return true
+}
+
 // resolveVertical integrates Y, resolves floor/ceiling collisions and reports
-// whether the enemy is standing on ground.
+// whether the enemy is standing on ground. Like the player, an enemy in water
+// stands waterSinkTiles below the highest water tile it touches.
 func (groundMover) resolveVertical(e *EnemyRuntime, qt *DynamicQuadtree) (onGround bool) {
 	e.Pos.Y += e.VelY * deltaTime()
 	if qt == nil {
@@ -141,13 +177,21 @@ func (groundMover) resolveVertical(e *EnemyRuntime, qt *DynamicQuadtree) (onGrou
 	}
 
 	body := e.GetBounds()
+	inWater, surfaceY := false, 0.0
 	for _, obj := range qt.Retrieve(body) {
 		plat, ok := obj.(*Platform)
-		if !ok || plat.TileInfo.TileType == Water {
+		if !ok {
 			continue
 		}
 		bounds := plat.GetBounds()
 		if !body.Intersects(bounds) {
+			continue
+		}
+		if plat.TileInfo.TileType == Water {
+			if !inWater || bounds.Y < surfaceY {
+				surfaceY = bounds.Y
+			}
+			inWater = true
 			continue
 		}
 		if e.VelY > 0 { // landing
@@ -159,6 +203,11 @@ func (groundMover) resolveVertical(e *EnemyRuntime, qt *DynamicQuadtree) (onGrou
 			e.VelY = 0
 		}
 		body = e.GetBounds()
+	}
+	if floorY := surfaceY + waterSinkTiles*LevelTileHeight; inWater && e.Pos.Y+e.bp.BodyHeight >= floorY {
+		e.Pos.Y = floorY - e.bp.BodyHeight
+		e.VelY = 0
+		onGround = true
 	}
 	return onGround
 }

@@ -1,22 +1,18 @@
 # Enemy types: state
 
-## Now (updated 2026-10-25 at `407599c`)
+## Now (updated 2026-10-26 at `c747ee2`)
 
-- **Status:** 🟡 in progress; increments 1-5 merged except task 25 (PR #18 `2bc4469`, #19 `9124414`,
-  #20 `c2c3b87`, #21 `f6a311a`, merged by the user); fresh `feature/enemy-types` from `main`
-- **Current task:** paused, low priority (the user, 2026-10-24: portals first). Portals added `EnemyBlueprint.Boss` and `RespawnEnemies` (`407599c`, level_enemies.go): a new boss kind sets `Boss: true`. None ready: task 25 (projectiles, ranged enemy) is blocked on art with a shooting clip; or the "Later" list in [tasks.md](./tasks.md)
-- **Stopped at:** tasks 22-23 done; Flying Demon `^` added (row 25, col 14 of level 1, over the first floor).
-  The user checked the demon in game (increment 4 done). Smasher `*` added (row 25, col 38): body 56×80,
-  `HoverHeight` 160, `FallSpeed` 700 are first guesses. Task 25 waits for ranged art. Task 27 partly done:
-  web smoke check passed, `code-reviewer` found no blockers (one flyer wall-pin edge case, fixed)
+- **Status:** 🟡 playtest fixes on `fix/30-enemy-playtest-bugs` (issues #30-#35, D11), committed locally, not pushed; task 25 still waits for ranged art
+- **Current task:** task 34: the user plays the knockdown, wider detection and larva pits; task 36 (review findings 1, 2, 4) waits for the user; then push and PR (ask before merge)
+- **Stopped at:** walkers stay out of larva (`c747ee2`): an enemy facing the player across a larva pit shook at its edge (centre-only ground check). Code review (`/code-review`, 10 unverified findings): #6 fixed here; 1 (flyers float on water), 2 (stale route), 4 (reach check cost) proposed. `verify.mjs --full` 8/8
 - **Traps:** behaviour tests use `testEnemyBlueprint` (enemy_test.go), not a game enemy: change the roster freely; flyer tests use `testFlyerBlueprint` (enemy_fly_test.go). Ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
   `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
   `GuardChance` in [0,1] with a guard clip. No strip pack has a `guard` clip. The mushroom
-  art faces left (`FacesLeft`). The ledge probe acts only in `EnemyPatrol`: chasing enemies
-  still run off edges. Tests that hit an enemy with a ground wave must put it on the floor
-  with `standOnWaveFloor` (sets `onGround`). A new Attacker must implement `Ready` (a ranged one: its fire timer) and `Committed`.
-  Detection is horizontal only (`DetectRange` on dx), also for flyers. A flyer's spawn
-  cell is its home height. Death clips of both golems, Enemy3 and the demon end on a blank frame
+  art faces left (`FacesLeft`). `decideBehavior` takes the quadtree: nil in a test means no terrain (every player reachable, every line clear).
+  `spawnX`/`spawnY` are the place it guards, moved when it patrols after a chase (`engaged`); `RespawnEnemies` builds fresh enemies at the grid spawns.
+  Walkers step up at most `maxStepUp` (half a tile, to leave water) and don't jump. Tests that hit an enemy with a ground wave must put it on the floor
+  with `standOnWaveFloor` (sets `onGround`). A new Attacker must implement `Ready` (a ranged one: its fire timer) and `Committed`; a new Mover `CanChase`.
+  Detection is still horizontal only (`DetectRange` on dx). Death clips of both golems, Enemy3 and the demon end on a blank frame
 - **Open questions / blockers:** guard rules while mid-swing or hurt (decisions D8, open). Keep or delete `tools/battler2strip` (its goblin mapping
   points at a deleted sheet). No strip pack for a ranged enemy (task 25). Hook noise: `docs-check.mjs:292`
   counts untracked assets as changed code (issue proposed, not filed)

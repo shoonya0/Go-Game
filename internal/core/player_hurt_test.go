@@ -183,3 +183,47 @@ func TestOutOfStaminaKneelsInStepWithBar(t *testing.T) {
 		t.Errorf("after 2 bars refilled: state=%d, want idle", p.State.CurrentState)
 	}
 }
+
+// TestWhiteGolemHitTakesTwoHearts: a golem's slam takes two whole hearts (#32).
+func TestWhiteGolemHitTakesTwoHearts(t *testing.T) {
+	heart := MaxPlayerHealth / hudSegments
+	if got := whiteGolemBlueprint.Stats.Damage; got != 2*heart {
+		t.Errorf("White Golem damage %d, want two hearts (%d)", got, 2*heart)
+	}
+}
+
+// TestKnockdownFacesTheHit: a heavy hit turns the player toward its source,
+// whichever way they were facing. The knockdown art falls backward, so the
+// head lands away from the enemy, and the player gets up facing it (#33).
+func TestKnockdownFacesTheHit(t *testing.T) {
+	for _, dmg := range []int{HeavyHitDamage, SevereHitDamage} {
+		for _, facingLeft := range []bool{false, true} {
+			for _, c := range []struct {
+				name     string
+				srcX     float64
+				wantLeft bool
+			}{
+				{"enemy on the right", 1000, false},
+				{"enemy on the left", 0, true},
+			} {
+				p := staminaPlayer()
+				p.Pos.X, p.FlipX = 500, facingLeft
+				p.ApplyDamageFrom(dmg, c.srcX)
+				tickKnockback(p, 2*int(tps())) // lies down, gets up
+				if p.FlipX != c.wantLeft {
+					t.Errorf("%d damage, %s, was facing left=%v: facing left=%v, want %v", dmg, c.name, facingLeft, p.FlipX, c.wantLeft)
+				}
+			}
+		}
+	}
+}
+
+// TestLightHitKeepsFacing: a hit too light to knock the player down doesn't turn them.
+func TestLightHitKeepsFacing(t *testing.T) {
+	p := staminaPlayer()
+	p.Pos.X = 500
+	p.ApplyDamageFrom(HeavyHitDamage-1, 0)
+	if p.FlipX {
+		t.Error("turned toward a light hit")
+	}
+}

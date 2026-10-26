@@ -103,3 +103,18 @@ func TestBuildLevelWorldCoordinates(t *testing.T) {
 func TestParallaxWithoutBackground(t *testing.T) {
 	(&PlayerRuntime{}).DrawParallaxBackground(nil, nil, 640, 360, 6000)
 }
+
+// TestLarvaTopTileIsHalfATile: the larva art's surface lies halfway down its
+// cell, so its top tile is solid only from there; a bottom tile stays whole.
+func TestLarvaTopTileIsHalfATile(t *testing.T) {
+	WorldInit()
+	level := BuildLevel([][]int{{0}, {8}, {8}}) // 8: larva
+	top, bottom := level.Platforms[0], level.Platforms[1]
+	if top.TileInfo.TileType != Larva || top.Y != 1.5*LevelTileHeight || top.Height != LevelTileHeight/2 || top.DrawOffsetY != -LevelTileHeight/2 {
+		t.Errorf("larva top tile: y=%v height=%v drawOffset=%v, want y=%v height=%v drawOffset=%v",
+			top.Y, top.Height, top.DrawOffsetY, 1.5*LevelTileHeight, LevelTileHeight/2, -LevelTileHeight/2)
+	}
+	if bottom.Y != 2*LevelTileHeight || bottom.Height != LevelTileHeight {
+		t.Errorf("larva bottom tile: y=%v height=%v, want a whole tile at y=%v", bottom.Y, bottom.Height, 2*LevelTileHeight)
+	}
+}
