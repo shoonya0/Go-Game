@@ -1,16 +1,15 @@
 # Levels: state
 
-## Now (updated 2026-10-26 at `19a79b3`)
+## Now (updated 2026-10-26 at `3c19bb2` + the 13 grids)
 
-- **Status:** 🟡 in progress; increment 1 tasks 1–10 done, level 2 started
-- **Current task:** the user plays deepForest night (changed) and aquaticAbyss day with the lower jump; then the other 13 grids
-- **Stopped at:** the jump lifts the feet 3.13 tiles (`JumpForce` 605, was 700 = 4.18 tiles;
-  `3ef78d6`). `TestLevelPortalsReachEachOther` simulates the real jump and checks every portal
-  reaches every other: deepForest night was one-way (4-tile climb below Portal 1's ledges, 6-tile
-  wall right of the pillar), fixed by moving the ledge at row 16 to row 15 and adding three
-  stair ledges and a step (`19a79b3`). deepForest day and aquaticAbyss day passed unchanged
-- **Open questions / blockers:** (user) are the layouts right with the lower jump; enemy lists per
-  level (D3). In the web check an enemy at deepForest night Portal 2 hit the player on arrival
+- **Status:** 🟡 in progress; all 16 sub-levels have grids and are chained in `LevelOrder`
+- **Current task:** the user plays the levels (deepForest night, aquaticAbyss day, the 13 new ones)
+- **Stopped at:** 13 generated grids (D8) with their backgrounds; `subLevel` / `boulderBastion`
+  build their `LevelDef`s (`levels.go`). All level tests pass for all 16; `verify.mjs --full` 8/8.
+  Not played in game or checked in the web build yet
+- **Open questions / blockers:** (user) are the layouts fun, which levels need hand-made
+  features; enemy lists per level (D3). In the web check an enemy at deepForest night Portal 2
+  hit the player on arrival (new grids keep enemies 6+ columns from portals)
 - **Don't forget:** a new grid must pass `TestLevelPortalsReachEachOther` (it prints which portal
   can't reach which). The jump climbs 3 tiles (also straight up a wall), never 4; with a 3-tile
   climb the gap is at most 3 tiles, flat 4; out of water a jump reaches ~2 tiles. Water isn't a
@@ -22,6 +21,12 @@
   sub-level's name. A new level needs `Title` and `Time` in its `LevelDef`
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: the other 13 grids, all levels connected
+
+- Changed: 13 `assets/levels/<level>/<level>_<day|night>.json` + their backgrounds; `levels.go` (constants, `subLevel`, `LevelOrder` of 16); levels D8
+- Verified: `node scripts/verify.mjs --full` → 8/8; the reach test first failed on aquaticAbyss night (water under the stairs), fixed in the generator
+- Docs touched: levels D8, tasks, state; current-state
 
 ### 2026-10-26: 3-tile jump, portal reach test, night fixed
 
@@ -46,12 +51,6 @@
 - Changed: levels tasks, state; `_docs/current-state.md` (levels capability, test baseline, next task)
 - Verified: `node scripts/verify.mjs --full` → 8/8; `go test ./...` 200/200
 - Docs touched: levels tasks, state; current-state
-
-### 2026-10-26: saved portal's thumbnail before the next level
-
-- Changed: `cmd/main.go` captures thumbnails before `OpenNextLevel` (the user saw no picture for the last saved portal)
-- Verified: throwaway web build starting at day's last portal + E: `HasThumb` false before the fix, true after; screenshot `_docs/evidence/levels-thumb-after.png`; `verify.mjs --full` 8/8
-- Docs touched: levels state; main-menu session
 
 ## Known issues
 
