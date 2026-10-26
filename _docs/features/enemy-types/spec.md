@@ -62,10 +62,12 @@ steady row (fliers bob on purpose), and no frame is cut off.
 1. The succubus played exactly as before after the refactor: existing enemy tests passed unchanged. (Removed from the game on 2026-10-24; its numbers live on as the test-only `testEnemyBlueprint`.)
 2. Every roster enemy (not the bosses) has a blueprint, a unique level marker, and spawns
    from `level_1.json` (or a test level) with all its clips drawing the right frames.
-3. Ground enemies fall, stand on tiles, turn at walls and **don't walk off platform edges**
-   while patrolling.
-4. Flying enemies ignore gravity, collide with solid tiles, chase in 2D within a leash
-   around their spawn, and return when the player leaves.
+3. Ground enemies fall, stand on tiles, wade through water at the player's depth, turn at
+   walls and **don't walk off platform edges** while patrolling. They chase only a player
+   on ground they can walk to (D11).
+4. Flying enemies ignore gravity, collide with solid tiles, chase in 2D, flying around
+   tiles in the way, and never attack through a tile (D11).
+4a. No enemy is tied to its spawn: one that lost the player guards where it is (D11).
 5. Ranged enemies fire a projectile that hurts the player on contact and is removed on
    hitting a tile or leaving the screen; dive enemies attack downward and recover.
 6. Player attacks (J/I/K/L/O and U's ground wave) damage every type; the ground wave only

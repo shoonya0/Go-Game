@@ -24,7 +24,7 @@ and a diver from above without a change to the brain.
   back (the enemy idles, facing the player) until the cooldown ends by the hit frame;
   otherwise the skeleton whiffed every other swing (`TestMeleeEverySwingLands`). The
   test-only enemy (`testEnemyBlueprint`) keeps `HitFrame` 0. `EnemyEffects` joins `Update` with projectiles (task 25).
-- **Flying** (`enemy_fly.go`, task 22): the leash is a box (`LeashTiles` in X and in Y around spawn), not a circle; a chased player beyond it is followed to its edge. Patrol paths are cut to the leash. A dead flyer falls like a ground enemy.
+- **Flying** (`enemy_fly.go`, task 22): no leash since D11. A blocked chase searches a half-tile grid ±24 cells around the flyer (`enemy_route.go`), re-searched every 0.25 s because one search costs ~0.4 ms on desktop. Grid cells touching a tile count as solid (conservative), so the route is used only when a straight sweep against the real tile boxes is blocked. A dead flyer falls like a ground enemy.
 - **Dive** (`enemy_dive.go`, task 26): the phase lives in `swingState.phase` and picks attack_1 → attack_loop → attack_end. The Attacker, not the clip, ends the wind-up, so the wind-up clip loops; the end clip is one-shot and hands back to the brain. `Committed` keeps the brain attacking once a dive starts.
 - **Clips** (`enemy_clips.go`, `enemy_motion.go`): draw-time motion is in screen pixels and
   moves only the sprite; the collision box stays put (D7).
