@@ -1,11 +1,11 @@
 # UI buttons: state
 
-## Now (updated 2026-10-26 at `8621c11`)
+## Now (updated 2026-10-26 at `f184fe3`)
 
-- **Status:** 🟡 in progress: tasks 1–4 done, 5 coded and tested but not seen on screen
-- **Current task:** 5 in [tasks.md](./tasks.md): see the travel menu's wooden arrows (needs 5+ active portals)
-- **Stopped at:** title, settings, pause and overwrite screens checked in the web build
-  (`_docs/evidence/ui-buttons-*.png`, untracked like the other evidence)
+- **Status:** ✅ increment 1 done; PR open, waiting for the user to merge
+- **Current task:** none. Leftovers in [tasks.md](./tasks.md) "Later"
+- **Stopped at:** the user checked the game ("working", "done"); web build screenshots in
+  `_docs/evidence/ui-buttons-*.png` (untracked like the other evidence)
 - **Open questions / blockers:** scope D2 was my call; the user can veto parts
 - **Don't forget:** in agent-browser, key presses stopped reaching the canvas after a few
   screens; mouse clicks (move, down, up) kept working. The settings volume item keeps its
@@ -14,6 +14,12 @@
   `travel_menu.go`; their state didn't change
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: PR
+
+- Changed: docs only; branch pushed, PR opened
+- Verified: `node scripts/verify.mjs --full` → 8/8 pass; the user checked it in game
+- Docs touched: tasks, state, current-state
 
 ### 2026-10-26: menus from the sheet
 

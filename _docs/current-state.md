@@ -10,8 +10,8 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [ui-buttons](./features/ui-buttons/state.md) · Increment 1, task 5 (menus drawn from `assets/UI/UIButtons.png`; title, settings, pause, overwrite done). Paused: enemy-types (low priority; task 25 waits for ranged art)
-- **Branch:** `feature/ui-buttons` at `8621c11` (from `main` `fbb09e6`), not pushed
+- **Feature:** [ui-buttons](./features/ui-buttons/state.md) · increment 1 done, PR open (menus drawn from `assets/UI/UIButtons.png`). Paused: enemy-types (low priority; task 25 waits for ranged art)
+- **Branch:** `feature/ui-buttons` pushed, PR open; merging waits for the user
 - **Next step:** more levels (the user's next focus; level content still undecided, see "Next task"). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
 
 <!-- Once a feature is active, the first line becomes, for example:
@@ -27,7 +27,7 @@ and /feature-docs update. -->
 - Enemies are built from parts, not one Go type per species: a blueprint (stats, clips from one strip pack) plus a movement part (`groundMover`) and an attack part (`meleeAttack`). What an enemy can do is the clips it has (`bp.Has`); `go test ./internal/core -run TestEnemyCapabilities -v` prints the table. A guard trait exists (blocks hits from the front) but no current enemy has guard art. VERIFIED (`internal/core/enemy_types.go`, `enemy_guard.go`)
 - On a touch screen, buttons for every key: arrows bottom-left, attack symbols and a bigger sprint button bottom-right, a menu button top-left (the HUD moves right of it). Idle buttons are half see-through and stay out of the middle third of the screen. VERIFIED (tests; web build with simulated touches; not on a real device)
 - Main menu (merged, PR #25): the game opens on a title screen (New Game, Continue, Settings, Quit; Press Start 2P font), picked with W/S + Enter/E, a tap or a mouse click. Progress (used portals, checkpoint) autosaves to `%AppData%\PirateAdventure\save.json` on Windows and `localStorage` on the web; Continue starts standing in the saved portal, New Game asks before wiping a save. Settings holds a saved volume 0–10 (no audio yet). Quit is desktop only. Esc or the touch menu button pauses (Resume, Settings, Main Menu). VERIFIED (tests; web build in agent-browser, `_docs/evidence/main-menu-*.png`; native window not checked by hand)
-- Menus drawn from the wooden sheet `assets/UI/UIButtons.png` (on `feature/ui-buttons`, not merged): planks with icons on the wooden board, the pick is the arrow plank, the volume a segmented bar; the travel menu's scroll arrows are wooden. VERIFIED (tests; web build screenshots `_docs/evidence/ui-buttons-*.png`; travel arrows not seen)
+- Menus drawn from the wooden sheet `assets/UI/UIButtons.png` (on `feature/ui-buttons`, not merged): planks with icons on the wooden board, the pick is the arrow plank, the volume a segmented bar; the travel menu's scroll arrows are wooden. VERIFIED (tests; web build screenshots `_docs/evidence/ui-buttons-*.png`; the user checked it in game)
 
 ## How to build, run, test
 
