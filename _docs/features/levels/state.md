@@ -3,19 +3,24 @@
 ## Now (updated 2026-10-26 at `4a8307a`)
 
 - **Status:** 🟡 in progress
-- **Current task:** 2. keep the WASM small with ~110 MB of backgrounds ([tasks.md](./tasks.md)), the user decides
+- **Current task:** 3. register the JPEG decoder, then 4. fetch backgrounds per sub-level on the web ([tasks.md](./tasks.md))
 - **Stopped at:** task 1 done: backgrounds renamed `<level>_day.*` / `<level>_night.*`, level 1 loads
   `deepForest_day.png` (the old `LBackground_3.png`, same bytes). Only that file is committed; the
   other levels' backgrounds stay untracked until task 2
-- **Open questions / blockers:** (user) how to shrink the backgrounds (task 2); how a new
-  player first enters a sub-level they've never visited, since travel only reaches used
-  portals (D2). Settled: day/night are separate sub-levels (D1), enemies go anywhere (D3)
+- **Open questions / blockers:** (user) the sub-level order and the D5 rules I chose
+  (trigger once, 2+ portals per sub-level, first portal is the entry). Settled: D1–D5
 - **Don't forget:** `//go:embed levels` embeds untracked files too, so local builds carry all
   ~110 MB of backgrounds while CI and Render carry only `deepForest_day.png`. The old
   `LBackground_1.png` is now `moltenCrater_day.png` (same bytes). Saves store the level name
   (`deepForest1`): renaming it for the day/night split breaks old saves' checkpoint
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: the user's level rules (D1–D5)
+
+- Changed: docs only: decisions.md D1–D5, spec rules, tasks 2–8
+- Verified: `node scripts/docs-check.mjs` → 0 errors
+- Docs touched: levels decisions, spec, tasks, state; enemy-types D10; current-state
 
 ### 2026-10-26: unique background names (task 1)
 

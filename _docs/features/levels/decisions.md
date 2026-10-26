@@ -22,3 +22,28 @@
 - **Decision:** there is no enemy list per level yet. Any enemy marker can be placed in any
   sub-level. This replaces "enemies according to their type" in [spec.md](./spec.md) until
   the user sets per-level lists.
+
+## D4. Full-quality backgrounds, loaded only for the sub-level played (2026-10-26, user's call)
+
+- **Decision:** backgrounds are not shrunk or recompressed. Only the background of the
+  sub-level the player is in gets loaded.
+- **How:** decoding is already per level (`cmd/main.go`, loads when `Def.Background`
+  changes). The download is the problem: `//go:embed levels` puts every background in
+  `game.wasm`, so the web build stops embedding backgrounds and fetches the one it needs from
+  the server when the player enters a sub-level (a few MB each). The native exe keeps
+  embedding them. The fetch must not freeze the game loop (draw a loading state until it
+  arrives), and the OS/network code goes in `internal/system`, not `internal/core`.
+- **Rejected:** scaling down or lossy re-encoding (the user: it lowers the quality).
+
+## D5. Finding every portal of a sub-level opens the next one (2026-10-26, user's call)
+
+- **Decision:** when the player saves (E / tap) the **last unused** portal of a sub-level,
+  they are teleported at once to the entry portal of the **next** sub-level. That portal
+  becomes used (so it's in the travel menu) and the checkpoint. From there the player can
+  travel back to any used portal.
+- **Rules (my call, the user can veto):** it triggers only on the save that completes the
+  set, once; arriving by teleport doesn't trigger it. So every sub-level needs **at least
+  two portals**, or a sub-level entered by teleport would be a dead end. The next sub-level's
+  entry portal is its first portal in reading order. The order is the [spec](./spec.md)
+  table, day before night: deepForest day → deepForest night → aquaticAbyss day → … →
+  rustyRefinery night, which is last and opens nothing.

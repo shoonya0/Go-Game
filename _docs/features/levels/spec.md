@@ -11,7 +11,10 @@ The user's rules for every level (2026-10-26). Grid codes for the tile types are
    them ([D1](./decisions.md)).
 3. Portals connect every sub-level to every other: free roaming, no fixed order ([D2](./decisions.md)).
 4. Any enemy can go in any sub-level for now ([D3](./decisions.md)).
-5. Tile amounts are how much of the level each tile makes up: most > medium > less > very less.
+5. Saving the last unused portal of a sub-level teleports the player to the next sub-level's
+   entry portal, in the order of the table below, day before night ([D5](./decisions.md)).
+6. Backgrounds stay full quality; the web build downloads only the one being played ([D4](./decisions.md)).
+7. Tile amounts are how much of the level each tile makes up: most > medium > less > very less.
 
 ## Levels
 
@@ -31,4 +34,7 @@ The user's rules for every level (2026-10-26). Grid codes for the tile types are
 - A test fails when a level's grid holds a tile code outside its list above.
 - A test fails when larva touches grass in boulderBastion.
 - Each sub-level loads its own background (day or night); no two embedded assets share a base name.
-- Every sub-level has at least one portal, so the travel menu can reach it.
+- Every sub-level has at least two portals (D5).
+- Saving the last unused portal of a sub-level lands the player in the next one, and the
+  travel menu then lists that portal; saving it again later does not teleport.
+- `game.wasm` holds no level background.
