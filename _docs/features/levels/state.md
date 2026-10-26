@@ -1,14 +1,12 @@
 # Levels: state
 
-## Now (updated 2026-10-26 at `3c27666`)
+## Now (updated 2026-10-27 at `22779ca`, V1.0)
 
-- **Status:** 🟡 increment 1 merged to `main` (PR #28); playtest and enemy lists still open. Larva surface fix on `fix/30-enemy-playtest-bugs` (local, not pushed)
+- **Status:** 🟡 increment 1 merged to `main` (PR #28); playtest and enemy lists still open. The larva surface fix and its new `LevelTile.png` are merged (PR #37); the game is tagged v1.0
 - **Current task:** the user plays the levels and says which need hand-made changes
-- **Stopped at:** larva top tiles are solid from half a tile down (`3c27666`). It matches the
-  user's new `assets/levels/LevelTile.png` (lava in the lower half of the larva top tile),
-  which is uncommitted; the committed tileset's larva fills the whole tile
-- **Open questions / blockers:** (user) commit the new `LevelTile.png` with the larva fix on
-  this branch? Are the layouts fun, which levels need hand-made
+- **Stopped at:** larva top tiles are solid from half a tile down (`3c27666`), matching the
+  new `assets/levels/LevelTile.png` (lava in the lower half of the larva top tile), committed with it
+- **Open questions / blockers:** (user) are the layouts fun, which levels need hand-made
   features; the 5 review findings left (tasks.md): issues or not; enemy lists per level (D3). In the web check an enemy at deepForest night Portal 2
   hit the player on arrival (new grids keep enemies 6+ columns from portals; detection is now
   600-760 px, enemy-types D11, so more enemies will notice an arriving player)

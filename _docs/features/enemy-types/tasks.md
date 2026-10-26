@@ -111,4 +111,4 @@ ending with its check. Tick only when the check passed. Don't renumber. -->
 - [x] 33. The user played it: #30-#32, #34, #35 fine; #33 redone; detection range doubled (user: 2x) → check: `verify.mjs --full` 8/8
 - [x] 35. Walkers stay out of larva, ground check under the whole body (review #6) → check: `enemy_larva_test.go`; `verify.mjs --full` 8/8
 - [ ] 36. Review findings 1, 2, 4 left (flyers float on water, stale route at chase start, cache the reach check): the user decides
-- [ ] 34. The user plays the redone knockdown, the wider detection and larva pits; then PR (ask before merge)
+- [x] 34. The user plays the redone knockdown, the wider detection and larva pits; then PR (ask before merge): played, PR #37 merged 2026-10-27

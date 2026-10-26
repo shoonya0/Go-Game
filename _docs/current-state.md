@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-27)
 
-Snapshot at `0c381bf` (`main`; PR #28 levels and its docs merged) plus two local branches, not pushed: `fix/30-enemy-playtest-bugs` (`cb8338c`) and `feature/controls-help` (`f299cc1`). One page. Details live in each increment's entry in
+Snapshot at `22779ca` (`main`, **v1.0**: PR #36 How to Play and PR #37 enemy playtest fixes merged) plus `chore/v1.0` (README with screenshots, the future art packs, this page). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -10,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [main-menu](./features/main-menu/state.md) · How to Play in the settings (increment 4), 2026-10-27. Also open: `fix/30-enemy-playtest-bugs` ([enemy-types](./features/enemy-types/README.md), issues #30-#35). Paused: levels
-- **Branch:** `feature/controls-help` (2 commits) and `fix/30-enemy-playtest-bugs` (16 commits), both local, not pushed
-- **Next step:** the user reads How to Play (main-menu task 12) and plays the enemy fixes (enemy-types task 34); then the open decisions below; then push both and open PRs (ask before each merge: `main` deploys to Render). Levels: the user still plays the 16 sub-levels (levels tasks). `_asset_backups/` and `_futureAssets/` are the user's; never commit them unless asked
+- **Feature:** none active: **v1.0** is the last push for now (2026-10-27). Last touched: [enemy-types](./features/enemy-types/state.md) (playtest fixes, PR #37) and main-menu (How to Play, PR #36). Paused: levels
+- **Branch:** `chore/v1.0` (README, `_futureAssets/`, docs): PR, then the `v1.0` tag on `main`
+- **Next step:** after v1.0: enemy-types task 36 (review findings 1, 2, 4), the levels playtest (levels tasks), an enemy line on How to Play's rules page. `_asset_backups/` is the user's; never commit it unless asked
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -26,11 +26,13 @@ and /feature-docs update. -->
 - Fight six enemy types in level 1, each placed by a grid marker (one or two punctuation characters): the skeleton in white (`@`) and yellow (`#`), the mushroom (`&`) the White Golem (`%`, slow and heavy; checked by the user in game) and the Flying Demon (`^`, flies within 4 tiles of its spawn and bites; checked by the user in game) and the Smasher (`*`, hangs over you and dives down; checked by the user in game). All patrol, chase and attack; while patrolling they turn at walls and platform edges (chasing ones can still run off); they hit only when your body is inside their attack box. Each deals damage on the frame the weapon connects; the skeleton alternates two attacks. (The succubus and the goblin were removed: their animation didn't look good.) Between swings an enemy stands idle until its cooldown is ready, so no swing misses. Each shows 2 health bars above its head and regenerates 0.1 bar/s; sprites bob, lean and shake when hit (draw-time motion). Skeleton/mushroom checked by the user in game; hit timing not yet. Your attacks hurt it (J/I 0.5 bar, jump + I 1.5 and its spin hits behind you too, K 0.5 + 1, L 1 + 2, O 1 + 2); K, L and O stop halfway unless pressed again (O after sprite 9); U sends a ground wave along the floor that hurts it too (only enemies on the ground). Attacks move the player (`internal/core/attack_step.go`): J steps 45 px back, I and U 45 px forward, K's second part 15 px and O's 45 px forward; L doesn't move. Taking damage makes the player blink red for 1 s; a hit of 2+ hearts knocks them down 1.5 tiles back, 3+ hearts plays the full knockdown and 2 tiles; at 0 HP one of two death animations plays before respawn. F3 shows body/attack hitboxes for both. VERIFIED (`internal/core/enemy*.go`, tests pass)
 - Enemies are built from parts, not one Go type per species: a blueprint (stats, clips from one strip pack) plus a movement part (`groundMover`) and an attack part (`meleeAttack`). What an enemy can do is the clips it has (`bp.Has`); `go test ./internal/core -run TestEnemyCapabilities -v` prints the table. A guard trait exists (blocks hits from the front) but no current enemy has guard art. VERIFIED (`internal/core/enemy_types.go`, `enemy_guard.go`)
 - On a touch screen, buttons for every key: arrows bottom-left, attack symbols and a bigger sprint button bottom-right, a menu button top-left (the HUD moves right of it). Idle buttons are half see-through and stay out of the middle third of the screen. VERIFIED (tests; web build with simulated touches; not on a real device)
-- **How to Play** (`feature/controls-help`, not merged): Settings → How to Play shows three pages on the wooden board (moves, powers with damage and stamina per attack, rules), turned with A/D, arrows or the arrow buttons; the board shows v1.0. VERIFIED (5 `TestHelp*` tests; web build screenshots in agent-browser; native window not checked)
-- **Enemy playtest fixes** (`fix/30-enemy-playtest-bugs`, not merged, issues #30-#35, enemy-types D11): walkers wade through water at the player's depth and stay out of larva; no enemy is tied to its spawn (it guards where it lost you; the flyer leash is gone); walkers chase only a player they can walk to; flyers fly around platforms; nothing attacks through a tile; detection 600-760 px (doubled); White Golem hits take 2 hearts; a heavy hit turns the player toward the enemy (head lands away from it); larva top tiles are solid half a tile down (needs the user's uncommitted `LevelTile.png`). VERIFIED (tests; the user played #30-#32, #34, #35; the redone knockdown, 2x detection and larva not played yet)
+- **How to Play** (merged, PR #36): Settings → How to Play shows three pages on the wooden board (moves, powers with damage and stamina per attack, rules), turned with A/D, arrows or the arrow buttons; the board shows v1.0. VERIFIED (5 `TestHelp*` tests; web build screenshots in agent-browser; the user checked it in game)
+- **Enemy playtest fixes** (merged, PR #37, issues #30-#35, enemy-types D11): walkers wade through water at the player's depth and stay out of larva; no enemy is tied to its spawn (it guards where it lost you; the flyer leash is gone); walkers chase only a player they can walk to; flyers fly around platforms; nothing attacks through a tile; detection 600-760 px (doubled); White Golem hits take 2 hearts; a heavy hit turns the player toward the enemy (head lands away from it); larva top tiles are solid half a tile down (with the new `LevelTile.png` art). VERIFIED (tests; the user played all of them)
 - Main menu (merged, PR #25): the game opens on a title screen (New Game, Continue, Settings, Quit; Press Start 2P font), picked with W/S + Enter/E, a tap or a mouse click. Progress (used portals, checkpoint) autosaves to `%AppData%\PirateAdventure\save.json` on Windows and `localStorage` on the web; Continue starts standing in the saved portal, New Game asks before wiping a save. Settings holds a saved volume 0–10 (no audio yet). Quit is desktop only. Esc or the touch menu button pauses (Resume, Settings, Main Menu). VERIFIED (tests; web build in agent-browser, `_docs/evidence/main-menu-*.png`; native window not checked by hand)
 - Menus drawn from the wooden sheet `assets/UI/UIButtons.png` (merged, PR #27): planks with icons on the wooden board, the pick is the arrow plank, the volume a segmented bar; the travel menu's scroll arrows are wooden. VERIFIED (tests; web build screenshots `_docs/evidence/ui-buttons-*.png`; the user checked it in game)
 - Levels (merged, PR #28): level 1 `deepForest` has a day and a night sub-level, each with its own grid and background; saving day's last unused portal teleports to night's entry portal once, and the travel menu then lists it. Every level is walled in by an invisible border. A test checks each level uses only its own tiles. The web build downloads only the current background (`game.wasm` 27.6 MB). All eight levels have both sub-levels, chained by D5 from deepForest day to rustyRefinery night; aquaticAbyss night and levels 3–8 are generated from one pattern (levels D8). VERIFIED (tests incl. portal reach for all 16; web build screenshots `_docs/evidence/levels-*.png` cover levels 1–2 only; the new grids not played)
+
+- A `README.md` with screenshots (`_docs/images/`) is the repo's front page; `_futureAssets/` (Bat, bosses, Mossy tileset, plants, Striker) is committed but not embedded, and `.dockerignore` keeps it out of the Render build. VERIFIED (`chore/v1.0`)
 
 ## How to build, run, test
 
@@ -39,14 +41,14 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `f299cc1` on `feature/controls-help`; Windows, go1.26.7)
+## Test baseline (at `22779ca` on `main` + `chore/v1.0`; Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
-| `go test ./...` | ✅ 212/212 top-level tests pass: 200 in `internal/core` (`main`'s 195 + 5 `TestHelp*`), 2 in `internal/system`, 9 in `tools/battler2strip`, 1 in `server`. On `fix/30-enemy-playtest-bugs` (`cb8338c`): 211 in `internal/core`, all pass | — |
+| `go test ./...` | ✅ 228/228 top-level tests pass: 216 in `internal/core`, 2 in `internal/system`, 9 in `tools/battler2strip`, 1 in `server` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
-| GitHub CI | PR #28 checks green; `main` at `0c381bf`. Neither local branch has run in CI yet | — |
+| GitHub CI | PR #36 checks green; PR #37 merged by the user; `main` at `22779ca` | — |
 
 Compare runs **by test name**: `go test ./internal/core -v | grep "^--- "` lists them. Added since the last
 baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAttackSteps`,
@@ -71,14 +73,14 @@ enemy health / level marker tests, and on `feature/enemy-types` the characterisa
 11. The full knockdown (`KnockedOut`) still draws from row 17 while the short one uses row 16. ASSUMED (not rechecked this session)
 12. ~~`//go:embed enemy` embeds untracked enemy art that CI and Render don't have~~ **FIXED**: every file under `assets/` is committed (the Orange Golem strips and `player/SkeletonIdle.gif` are embedded but not loaded yet). `//go:embed` still takes untracked files, so commit new assets with their code. VERIFIED (`git status`)
 13. The Stop hook (`.claude/hooks/stop-state.mjs`) and docs-check's "stale state" warning fire while untracked files sit under a feature's `scope:` (`assets/enemy/*`), even right after state.md was committed. Noise until the check ignores untracked files (`assets/` has none now). VERIFIED (this session)
-14. ~~Enemies have no ledge probe~~ Patrolling enemies turn at ledges (task 12), and one stranded off its patrol path patrols where it is (`3edfa17`); on `main` a chasing enemy can still run off a ledge (fixed on `fix/30-enemy-playtest-bugs`: walkers chase only a player they can walk to). VERIFIED (`TestGroundEnemyTurnsAtLedge`)
+14. ~~Enemies have no ledge probe~~ Patrolling enemies turn at ledges (task 12), and one stranded off its patrol path patrols where it is (`3edfa17`); a chasing walker chases only a player it can walk to (PR #37). VERIFIED (`TestGroundEnemyTurnsAtLedge`)
 15. Eight levels' `day`/`night` backgrounds (~110 MB) sit in `assets/levels/*/background/`, all committed and loaded per sub-level (the web build downloads one at a time, D4); they make the repo and the Docker image big. VERIFIED (`git ls-files`)
 16. The menu font (`text/v2`) made `web/game.wasm` ~5 MB bigger: 28 → 33 MB with `-ldflags="-s -w"` (the text shaping library; the unused M+ font is dropped by the linker). VERIFIED (`ls -la web/game.wasm`)
 17. The main menu was checked in the web build only; the native Windows window was not run by hand. Saves land in `%AppData%\PirateAdventure\` (test runs left one there). VERIFIED (this session)
 18. Each title visit rebuilds the run: levels parsed again (code review; main-menu tasks "Later"). VERIFIED (code read)
-19. On `fix/30-enemy-playtest-bugs`, live flyers stop half a tile into water as if it were a floor (the walkers' wading rule also runs for them), so a Flying Demon over a wading player jitters and a Smasher dive "lands" on water. From `/code-review` (finding 1), not fixed yet; findings 2 (stale flyer route at a chase's start) and 4 (reach check cost per tick) also open (enemy-types task 36). ASSUMED (read in the code, no test yet)
-20. `assets/levels/LevelTile.png` is changed in the working tree, not committed (the user's new art: larva in the lower half of its top tile). The larva fix on `fix/30-enemy-playtest-bugs` matches the new art only; it also keeps docs-check's levels "stale state" warning on. VERIFIED (`git status`, pixel scan)
-21. `fix/30-enemy-playtest-bugs` and `feature/controls-help` both edit this page: the second branch merged will conflict here. VERIFIED (`git diff`)
+19. Live flyers stop half a tile into water as if it were a floor (the walkers' wading rule also runs for them), so a Flying Demon over a wading player jitters and a Smasher dive "lands" on water. From `/code-review` (finding 1), not fixed yet; findings 2 (stale flyer route at a chase's start) and 4 (reach check cost per tick) also open (enemy-types task 36). ASSUMED (read in the code, no test yet)
+20. ~~`LevelTile.png` uncommitted~~ **FIXED**: committed with the larva fix (PR #37).
+21. ~~Two branches editing this page~~ **FIXED**: resolved in the rebase before PR #37.
 
 ## Open decisions
 
@@ -87,11 +89,11 @@ enemy health / level marker tests, and on `feature/enemy-types` the characterisa
 | 1 | Untrack `game.exe` | `git rm --cached game.exe` / keep | user | no |
 | 2 | Keep or delete `tools/battler2strip` (nothing left to bake, enemy-types D9) | keep / delete | user | no |
 | 3 | Keep main-menu D4 (New Game asks before wiping a save) and D7 (Esc pause menu), both my calls | keep / drop | user | no |
-| 4 | Commit the new `LevelTile.png` with the larva fix | commit on `fix/30-enemy-playtest-bugs` / keep local | user | yes, for that PR |
+| 4 | ~~Commit the new `LevelTile.png`~~ Done: committed with the larva fix (PR #37) | | user | no |
 | 5 | Code review findings 1, 2, 4 on the enemy branch (issue 19 above) | fix before the PR / later | user | no |
-| 6 | What "V1.0" means: only the version on How to Play, or also a git tag / GitHub release | label only / tag / release | user | no |
+| 6 | ~~What "V1.0" means~~ Decided: the version on How to Play plus a `v1.0` git tag; the last push for now | | user | no |
 | 7 | Walkers and larva: stay out (now) or wade through unharmed | out / through | user | no |
 
 ## Next task
 
-- The user's checks above (How to Play, enemy fixes), then the open decisions, then one PR per branch. Then levels: the user plays deepForest night, then grids for levels 2–8 ([levels tasks](./features/levels/tasks.md)). Other candidates: an enemy line on How to Play's rules page once both branches are merged; real audio once sound files exist (main-menu D5); crop `UIButtons.png`; touch buttons for jump (Space), F, R, Q; file the J sprite issue; untrack `game.exe`; tests for player physics with collision.
+- v1.0 is done; nothing is scheduled. When work resumes: enemy-types task 36 (review findings 1, 2, 4), then levels: the user plays deepForest night, then grids for levels 2–8 ([levels tasks](./features/levels/tasks.md)). Other candidates: an enemy line on How to Play's rules page; real audio once sound files exist (main-menu D5); crop `UIButtons.png`; touch buttons for jump (Space), F, R, Q; file the J sprite issue; untrack `game.exe`; tests for player physics with collision.

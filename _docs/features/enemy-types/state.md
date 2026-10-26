@@ -1,10 +1,10 @@
 # Enemy types: state
 
-## Now (updated 2026-10-26 at `c747ee2`)
+## Now (updated 2026-10-27 at `22779ca`, V1.0)
 
-- **Status:** 🟡 playtest fixes on `fix/30-enemy-playtest-bugs` (issues #30-#35, D11), committed locally, not pushed; task 25 still waits for ranged art
-- **Current task:** task 34: the user plays the knockdown, wider detection and larva pits; task 36 (review findings 1, 2, 4) waits for the user; then push and PR (ask before merge)
-- **Stopped at:** walkers stay out of larva (`c747ee2`): an enemy facing the player across a larva pit shook at its edge (centre-only ground check). Code review (`/code-review`, 10 unverified findings): #6 fixed here; 1 (flyers float on water), 2 (stale route), 4 (reach check cost) proposed. `verify.mjs --full` 8/8
+- **Status:** 🟡 playtest fixes merged to `main` (PR #37, issues #30-#35, D11) with the new `LevelTile.png`; the game is tagged v1.0. Task 25 still waits for ranged art
+- **Current task:** none for v1.0; next: task 36 (review findings 1, 2, 4, listed in PR #37), then the "Later" list
+- **Stopped at:** the user played the knockdown, the doubled detection and the larva pits; PR #37 merged. `_futureAssets/` (Bat, bosses, Striker) is committed now, still not embedded
 - **Traps:** behaviour tests use `testEnemyBlueprint` (enemy_test.go), not a game enemy: change the roster freely; flyer tests use `testFlyerBlueprint` (enemy_fly_test.go). Ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
   `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
   `GuardChance` in [0,1] with a guard clip. No strip pack has a `guard` clip. The mushroom
@@ -21,6 +21,12 @@
   using them (D4)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-27: playtest fixes merged, v1.0
+
+- Changed: `LevelTile.png` committed with the larva fix; branch rebased on `main` (only `current-state.md` conflicted); PR #37 merged
+- Verified: `verify.mjs --full` 8/8 and `go test ./...` after the rebase
+- Docs touched: task 34, this state
 
 ### 2026-10-26: touched by levels (PR #28 merged)
 
@@ -45,9 +51,3 @@
 - Changed: PR #21 merged by the user (`f6a311a`); remote branch gone, local `main` synced, `feature/enemy-types` restarted from it
 - Verified: `verify.mjs --full` 8/8 before the push; branch was up to date with `main`
 - Next: task 25 when ranged art exists, or a "Later" item (bosses, mushroom stun)
-
-### 2026-10-24: task 27 checks (partial)
-
-- Changed: flyer wall-pin fix in `flyingMover.Move` + `TestStrandedFlyerPatrolsWhereItIs` (review note)
-- Verified: new test failed first (pinned at the wall); web build loads, no console errors, demon + F3 boxes draw; `code-reviewer`: no blockers; `verify.mjs` 5/5
-- Next: PR (ask before merge); the user confirmed "Smasher working". Review gaps, not bugs: no test for hurt mid-dive
