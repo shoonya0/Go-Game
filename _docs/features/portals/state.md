@@ -1,6 +1,6 @@
 # Portals: state
 
-## Now (updated 2026-10-25 at `10b430d`)
+## Now (updated 2026-10-26 at `3c27666`)
 
 - **Status:** ✅ done, merged to `main` in PR #22 (`10b430d`), branch deleted. All tasks 1–10 done
 - **Stopped at:** feature complete. Leftovers are in [tasks.md](./tasks.md) "Later" (saved portals
@@ -13,6 +13,12 @@
   icons (`touch_icons.go`)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: touched by levels (larva surface)
+
+- Changed: a portal over larva stands on the larva surface, half a tile down (`topTileOffset`, [levels](../levels/state.md)); this feature's behaviour unchanged
+- Verified: `TestPortalStandsOnTheGround` covers larva now; `verify.mjs --full` 8/8
+- Docs touched: Now date, this entry
 
 ### 2026-10-26: touched by levels (PR #28 merged)
 
@@ -35,11 +41,5 @@
 ### 2026-10-26: touched by levels (task 9)
 
 - Changed: `world.go` / `levels.go`: an invisible `Border` wall around every level ([levels](../levels/state.md)); portals unchanged
-- Verified: `node scripts/verify.mjs --full` → 8/8
-- Docs touched: this entry only
-
-### 2026-10-26: touched by levels (tasks 6, 7)
-
-- Changed: saving a level's last unused portal opens the next level (`combat.go` `savePortal`, `levels.go` `OpenNextLevel`) ([levels](../levels/state.md)); this feature's behaviour unchanged
 - Verified: `node scripts/verify.mjs --full` → 8/8
 - Docs touched: this entry only
