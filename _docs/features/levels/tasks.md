@@ -19,7 +19,8 @@
 - [x] aquaticAbyss day grid (`aquaticAbyss_day.json`, 3 portals, draft) → check: `TestLevelTiles`, `TestLevelPortals`, `TestLevelBorderKeepsPlayerIn`, `TestLevelEnemiesKeepTheirGround`; web screenshot `_docs/evidence/levels-aquatic-day.png`
 - [ ] Play aquaticAbyss day: is the layout right, is it fun
 - [ ] Grids for the other 13 sub-levels (aquaticAbyss night, levels 3–8 day and night), each with at least 2 portals
-- [ ] A test that every portal of a sub-level can reach the others within the jump rules (a script did it for aquaticAbyss day)
+- [x] Jump lowered to just over 3 tiles (user, 2026-10-26) → check: `TestJumpReachesThreeTiles`
+- [x] A test that every portal of a sub-level can reach the others with the real jump; it found deepForest night one-way, now fixed → check: `TestLevelPortalsReachEachOther`, `TestHopRules`
 - [ ] Enemy lists per level, once the user sets them (D3)
 - [ ] Play deepForest night: are the climbs right (≤ 3 tiles), is it fun; does saving day's last portal land in it
 - [ ] Look at deepForest's former larva pit (now water) in game
