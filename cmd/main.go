@@ -299,6 +299,7 @@ func (g *Game) Update() error {
 		g.syncBackground()
 	}
 	if g.player.LevelDone() { // the last unused portal: on to the next level (levels D5)
+		g.captureThumbs() // the portal just saved, before its level is left
 		if opened, err := g.world.OpenNextLevel(g.player); err != nil {
 			log.Printf("next level: %v", err)
 		} else if opened {
