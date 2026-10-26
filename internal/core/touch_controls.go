@@ -7,10 +7,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// UIButtonsSheet holds the wooden UI buttons used by the on-screen touch
-// controls.
-const UIButtonsSheet = "../assets/UI/UIButtons.png"
-
 // TouchButton identifies one on-screen button of the touch controls.
 type TouchButton int
 
@@ -49,11 +45,7 @@ const (
 	TouchHUDLeft = hudMargin + touchMenuSize + hudMargin
 )
 
-// Source rects inside UIButtonsSheet, measured from the non-transparent pixels.
 var (
-	uiMenuRect       = image.Rect(125, 1430, 329, 1641)   // square button with the menu icon
-	uiRoundUpRect    = image.Rect(2052, 1732, 2268, 1946) // round gold button
-	uiRoundDownRect  = image.Rect(1811, 1732, 2027, 1946) // round dark button, used while pressed
 	touchIconColor   = color.RGBA{0x5a, 0x24, 0x10, 0xff}
 	touchPressedTint = color.RGBA{0xff, 0xd2, 0x6a, 0xff}
 )
@@ -246,11 +238,10 @@ func (tc *TouchControls) Draw(screen *ebiten.Image) {
 }
 
 func loadTouchSprites() *touchSprites {
-	sheet := LoadImage(UIButtonsSheet)
 	s := &touchSprites{
-		menu: sheet.SubImage(uiMenuRect).(*ebiten.Image),
-		up:   sheet.SubImage(uiRoundUpRect).(*ebiten.Image),
-		down: sheet.SubImage(uiRoundDownRect).(*ebiten.Image),
+		menu: uiSprite(uiMenuRect),
+		up:   uiSprite(uiRoundUpRect),
+		down: uiSprite(uiRoundDownRect),
 	}
 	for b, shapes := range touchIconShapes {
 		if len(shapes) > 0 {

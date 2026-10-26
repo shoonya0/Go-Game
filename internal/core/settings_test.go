@@ -80,3 +80,20 @@ func TestSettingsScreenTapsAndBack(t *testing.T) {
 		t.Errorf("Back: screen %v, want the title", s.Current)
 	}
 }
+
+// TestSettingsVolumeBar: the volume item is a bar filled to the volume, its
+// speaker crossed out at 0.
+func TestSettingsVolumeBar(t *testing.T) {
+	s := NewScreens(1360, 768, true)
+	for _, v := range []int{0, 3, MaxVolume} {
+		s.SetSettings(Settings{Volume: v})
+		it := s.settings.Items[0]
+		wantIcon := uiSoundRect
+		if v == 0 {
+			wantIcon = uiMuteRect
+		}
+		if !it.Bar || it.Fill != float64(v)/MaxVolume || it.Icon != wantIcon {
+			t.Errorf("volume %d: bar %v fill %.2f icon %v; want bar, %.2f, %v", v, it.Bar, it.Fill, it.Icon, float64(v)/MaxVolume, wantIcon)
+		}
+	}
+}
