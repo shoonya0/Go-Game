@@ -1,6 +1,7 @@
 package core
 
 import (
+	"image"
 	"slices"
 	"testing"
 )
@@ -111,5 +112,50 @@ func TestMenuLayout(t *testing.T) {
 	}
 	if bottom := m.ItemRect(len(m.Items) - 1).Max.Y; bottom > 768 {
 		t.Errorf("last item ends at y %d, below the screen", bottom)
+	}
+}
+
+// TestMenuLayoutWithIcons: with icons, icons and planks are centered
+// together, each icon sits left of its plank, and the board holds the title,
+// every icon and plank, and fits on the screen.
+func TestMenuLayoutWithIcons(t *testing.T) {
+	for _, canQuit := range []bool{true, false} {
+		s := NewScreens(1360, 768, canQuit)
+		for name, m := range map[string]*Menu{"title": s.title, "confirm": s.confirm, "settings": s.settings, "pause": s.pause} {
+			panel := m.PanelRect()
+			if !panel.In(image.Rect(0, 0, 1360, 768)) {
+				t.Errorf("%s: board %v leaves the 1360×768 screen", name, panel)
+			}
+			for i := range m.Items {
+				r, icon := m.ItemRect(i), m.IconRect(i)
+				if icon.Max.X > r.Min.X || icon.Dx() != r.Dy() {
+					t.Errorf("%s item %d: icon %v not a square left of plank %v", name, i, icon, r)
+				}
+				if icon.Min.X+r.Max.X != 1360 {
+					t.Errorf("%s item %d: icon and plank %v–%v not centered on x 680", name, i, icon.Min.X, r.Max.X)
+				}
+				if !r.In(panel) || !icon.In(panel) {
+					t.Errorf("%s item %d: plank %v or icon %v outside the board %v", name, i, r, icon, panel)
+				}
+			}
+			if title := m.titleCenterY(); title-menuTitleSize/2 < panel.Min.Y {
+				t.Errorf("%s: title at y %d sticks out of the board %v", name, title, panel)
+			}
+		}
+	}
+}
+
+// TestMenuBarFitsPlank: the volume bar lies on the plank's face, clear of
+// the arrow plank's ends.
+func TestMenuBarFitsPlank(t *testing.T) {
+	m := NewScreens(1360, 768, true).settings
+	r := m.ItemRect(0)
+	b := m.barRect(r)
+	if !b.In(r) {
+		t.Fatalf("bar %v outside its plank %v", b, r)
+	}
+	side := int(float64(uiPlankArrowInsets.right*r.Dy()) / float64(uiPlankArrowRect.Dy()))
+	if b.Max.X > r.Max.X-side {
+		t.Errorf("bar ends at x %d, over the arrow plank's point (from x %d)", b.Max.X, r.Max.X-side)
 	}
 }

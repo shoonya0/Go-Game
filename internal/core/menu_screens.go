@@ -1,6 +1,10 @@
 package core
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"image"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 // Screen is the menu screen on top of the game, or ScreenNone while playing.
 type Screen int
@@ -49,14 +53,20 @@ func NewScreens(w, h int, canQuit bool) *Screens {
 	if canQuit {
 		labels = append(labels, labelQuit)
 	}
-	return &Screens{
+	s := &Screens{
 		Current:  ScreenTitle,
 		title:    NewMenu(w, h, "PIRATE ADVENTURE", labels...),
 		confirm:  NewMenu(w, h, "OVERWRITE SAVE?", "No", "Yes"),
-		settings: NewMenu(w, h, "SETTINGS", volumeLabel(DefaultSettings().Volume), "Back"),
+		settings: NewMenu(w, h, "SETTINGS", "", "Back"),
 		pause:    NewMenu(w, h, "PAUSED", "Resume", labelSettings, "Main Menu"),
-		Settings: DefaultSettings(),
 	}
+	s.title.SetIcons(uiRestartRect, uiRightRect, uiSettingsRect, uiCrossRect)
+	s.confirm.SetIcons(uiCrossRect, uiCheckRect)
+	s.settings.SetIcons(image.Rectangle{}, uiLeftRect) // the volume's is set with it
+	s.pause.SetIcons(uiRightRect, uiSettingsRect, uiHomeRect)
+	s.settings.Items[0].Bar = true
+	s.SetSettings(DefaultSettings())
+	return s
 }
 
 // OpenPause pauses the game under the pause menu, its pick on Resume.
@@ -65,9 +75,16 @@ func (s *Screens) OpenPause() {
 	s.pause.Open(0)
 }
 
-// SetSettings shows s on the settings screen.
+// SetSettings shows s on the settings screen: the volume as a bar, with the
+// speaker crossed out at 0.
 func (s *Screens) SetSettings(st Settings) {
 	s.Settings = st
+	vol := &s.settings.Items[0]
+	vol.Fill = float64(st.Volume) / MaxVolume
+	vol.Icon = uiSoundRect
+	if st.Volume == 0 {
+		vol.Icon = uiMuteRect
+	}
 	s.settings.SetLabel(0, volumeLabel(st.Volume))
 }
 
