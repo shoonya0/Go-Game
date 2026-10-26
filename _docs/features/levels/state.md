@@ -1,20 +1,25 @@
 # Levels: state
 
-## Now (updated 2026-10-26 at `edb1ba6`)
+## Now (updated 2026-10-26 at `4a8307a`)
 
-- **Status:** ⏳ planned
-- **Current task:** 1. unique background names ([tasks.md](./tasks.md))
-- **Stopped at:** docs only: the user's per-level tiles are in [spec.md](./spec.md); no code changed
+- **Status:** 🟡 in progress
+- **Current task:** 2. keep the WASM small with ~110 MB of backgrounds ([tasks.md](./tasks.md)), the user decides
+- **Stopped at:** task 1 done: backgrounds renamed `<level>_day.*` / `<level>_night.*`, level 1 loads
+  `deepForest_day.png` (the old `LBackground_3.png`, same bytes). Only that file is committed; the
+  other levels' backgrounds stay untracked until task 2
 - **Open questions / blockers:** (user) which enemies go in which level; how day/night is
-  picked (per visit, a timer, the clock); how to shrink the backgrounds for the WASM (task 2)
-- **Don't forget:** the new backgrounds are all named `day.*` / `night.*`, so
-  `TestAssetBaseNamesUnique` fails and `readAsset` would load the wrong one (lookup is by base
-  name). The old `LBackground_*.png` were deleted on disk, but `Background_1`
-  (`internal/core/world.go`) still points at `LBackground_3.png`: the game can't load level 1
-  until task 1. The new backgrounds total ~110 MB and `//go:embed levels` embeds all of them
-  (today's `web/game.wasm` is ~33 MB)
+  picked (per visit, a timer, the clock); how to shrink the backgrounds (task 2)
+- **Don't forget:** `//go:embed levels` embeds untracked files too, so local builds carry all
+  ~110 MB of backgrounds while CI and Render carry only `deepForest_day.png`. The old
+  `LBackground_1.png` is now `moltenCrater_day.png` (same bytes)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: unique background names (task 1)
+
+- Changed: `assets/levels/*/background/*` renamed; `Background_1` (`internal/core/world.go`), `levels_test.go`
+- Verified: `node scripts/verify.mjs` → passed (5 steps); `TestAssetBaseNamesUnique`, `TestAssetPathsAreEmbedded` pass
+- Docs touched: levels tasks, state; current-state
 
 ### 2026-10-26: feature started
 
@@ -24,4 +29,4 @@
 
 ## Known issues
 
-- Background files clash by base name and level 1's background path is gone (see "Don't forget")
+- Local builds embed untracked backgrounds that CI doesn't (see "Don't forget")

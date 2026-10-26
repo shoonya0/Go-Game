@@ -39,7 +39,7 @@ const (
 	// level constants
 	LevelFile        = "../assets/levels/deepForest/level_1.json" // embedded JSON level bundle
 	DefaultLevelName = "level0"                                   // key to load from the bundle
-	Background_1     = "../assets/levels/deepForest/background/LBackground_3.png"
+	Background_1     = "../assets/levels/deepForest/background/deepForest_day.png"
 
 	// ---------------- level constants ----------------
 	LevelTileWidth      = 60      // before it was 40

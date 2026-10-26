@@ -8,7 +8,7 @@ func testSecondLevel(t *testing.T) string {
 	t.Helper()
 	const name = "testLevel2"
 	def := Levels[StartLevel]
-	def.Background, def.Width = "../assets/levels/deepForest/background/LBackground_1.png", 7000
+	def.Background, def.Width = "../assets/levels/aquaticAbyss/background/aquaticAbyss_day.png", 7000
 	Levels[name] = def
 	t.Cleanup(func() { delete(Levels, name) })
 	return name
