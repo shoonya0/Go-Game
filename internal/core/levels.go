@@ -11,6 +11,8 @@ type LevelDef struct {
 	File, Key     string
 	Background    string
 	Width, Height float64
+	Tiles         []TileType    // the only tile types its grid may use (levels spec)
+	KeepApart     [][2]TileType // tile types that must never touch, even diagonally
 }
 
 // StartLevel is the level a new game begins in.
@@ -21,6 +23,7 @@ var Levels = map[string]LevelDef{
 	StartLevel: {
 		File: LevelFile, Key: DefaultLevelName, Background: Background_1,
 		Width: Level_1_Width, Height: Level_1_Height,
+		Tiles: []TileType{Grass, Water, Rock},
 	},
 }
 

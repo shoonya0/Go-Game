@@ -1,6 +1,9 @@
 package core
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
 // testSecondLevel registers a second level for the test. Only one level file
 // exists, so it reuses level 1's grid with another background and size.
@@ -247,4 +250,74 @@ func TestEnteringLevelRevivesEnemies(t *testing.T) {
 				i, e.bp.Name, e.Pos, e.Health, e.State, want.bp.Name, want.Pos, want.Health)
 		}
 	}
+}
+
+// TestLevelTiles: every level's grid uses only its own tile types, and the
+// pairs it keeps apart never touch (levels spec: e.g. larva never near grass
+// in boulderBastion).
+func TestLevelTiles(t *testing.T) {
+	WorldInit()
+	for name, def := range Levels {
+		level := LoadLevel(def.File, def.Key)
+		if len(def.Tiles) == 0 {
+			t.Errorf("level %q lists no tiles", name)
+		}
+		bad := map[TileType]int{}
+		for _, p := range level.Platforms {
+			if !slices.Contains(def.Tiles, p.TileInfo.TileType) {
+				bad[p.TileInfo.TileType]++
+			}
+		}
+		for tt, n := range bad {
+			t.Errorf("level %q: %d %s cells, but its tiles are %v", name, n, tt, def.Tiles)
+		}
+		for _, pair := range def.KeepApart {
+			if x, y, ok := tilesTouch(level, pair[0], pair[1]); ok {
+				t.Errorf("level %q: %s touches %s at cell (%d, %d)", name, pair[0], pair[1], x, y)
+			}
+		}
+	}
+}
+
+// TestTilesTouch: the KeepApart check finds side and diagonal neighbours and
+// nothing farther.
+func TestTilesTouch(t *testing.T) {
+	g, l := slices.Index(tileRowOrder, Grass)+1, slices.Index(tileRowOrder, Larva)+1 // grid codes
+	cases := []struct {
+		name  string
+		grid  [][]int
+		touch bool
+	}{
+		{"side", [][]int{{g, l}}, true},
+		{"diagonal", [][]int{{g, 0}, {0, l}}, true},
+		{"one cell apart", [][]int{{g, 0, l}}, false},
+		{"no larva", [][]int{{g, g}}, false},
+	}
+	for _, c := range cases {
+		if _, _, got := tilesTouch(BuildLevel(c.grid), Grass, Larva); got != c.touch {
+			t.Errorf("%s: touch = %v, want %v", c.name, got, c.touch)
+		}
+	}
+}
+
+// tilesTouch finds a cell of type a with a cell of type b among its eight
+// neighbours, and returns a's cell.
+func tilesTouch(level Level, a, b TileType) (x, y int, ok bool) {
+	cells := map[[2]int]TileType{}
+	for _, p := range level.Platforms {
+		cells[[2]int{int(p.X) / LevelTileWidth, int(p.Y) / LevelTileHeight}] = p.TileInfo.TileType
+	}
+	for c, tt := range cells {
+		if tt != a {
+			continue
+		}
+		for dy := -1; dy <= 1; dy++ {
+			for dx := -1; dx <= 1; dx++ {
+				if cells[[2]int{c[0] + dx, c[1] + dy}] == b {
+					return c[0], c[1], true
+				}
+			}
+		}
+	}
+	return 0, 0, false
 }
