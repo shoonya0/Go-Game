@@ -2,6 +2,7 @@ package core
 
 import (
 	"image"
+	"slices"
 	"testing"
 )
 
@@ -191,5 +192,33 @@ func TestTravelMenuWaitRelease(t *testing.T) {
 	m.MaybeOpen(p, in)
 	if !m.Open {
 		t.Error("a new hold after letting go did not open the travel menu")
+	}
+}
+
+// TestTravelMenuGroupsByLevel: the menu lists active portals under their
+// level's and sub-level's names, levels in LevelOrder and portals by their
+// number in reading order, whatever order they were used in (levels D7).
+func TestTravelMenuGroupsByLevel(t *testing.T) {
+	WorldInit()
+	ref := func(level string, i int) PortalRef {
+		def := Levels[level]
+		return PortalRef{Level: level, Cell: LoadLevel(def.File, def.Key).Portals[i].Pos}
+	}
+	day1, day2, night1 := ref(StartLevel, 0), ref(StartLevel, 1), ref(DeepForestNight, 0)
+	p := InitPlayer(nil)
+	p.ActivePortals = []PortalRef{night1, day2, day1}
+	p.Checkpoint = day2
+
+	m := NewTravelMenu(1360, 768)
+	m.OpenFor(p)
+	want := []string{"Deep Forest", "Deep Forest Day", "Portal 1", "Portal 2", "Deep Forest Night", "Portal 1"}
+	if got := m.Labels(); !slices.Equal(got, want) {
+		t.Errorf("lines %q, want %q", got, want)
+	}
+	if !slices.Equal(m.Rows, []PortalRef{day1, day2, night1}) {
+		t.Errorf("rows %v, want day 1, day 2, night 1", m.Rows)
+	}
+	if m.Selected != 1 {
+		t.Errorf("selected row %d, want 1 (the checkpoint, day's portal 2)", m.Selected)
 	}
 }

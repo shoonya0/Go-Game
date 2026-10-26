@@ -9,6 +9,7 @@ import (
 // LevelDef says where a named level comes from: the JSON bundle and key its
 // grid is read from, its background image and its size in world pixels.
 type LevelDef struct {
+	Title, Time   string // shown in the travel menu: "Deep Forest", "Day"
 	File, Key     string
 	Background    string
 	Width, Height float64
@@ -26,11 +27,13 @@ const DeepForestNight = "deepForestNight"
 // Levels lists every level by name. Travel between portals switches by name.
 var Levels = map[string]LevelDef{
 	StartLevel: {
+		Title: "Deep Forest", Time: "Day",
 		File: LevelFile, Key: DefaultLevelName, Background: Background_1,
 		Width: Level_1_Width, Height: Level_1_Height,
 		Tiles: []TileType{Grass, Water, Rock},
 	},
 	DeepForestNight: {
+		Title: "Deep Forest", Time: "Night",
 		File: "../assets/levels/deepForest/deepForest_night.json", Key: "night",
 		Background: "../assets/levels/deepForest/background/deepForest_night.jpg",
 		Width:      Level_1_Width, Height: Level_1_Height,
@@ -41,6 +44,27 @@ var Levels = map[string]LevelDef{
 // LevelOrder is the order levels open in: saving the last unused portal of
 // one takes the player to the next (levels decision D5).
 var LevelOrder = []string{StartLevel, DeepForestNight}
+
+// levelPortals caches each level's portal cells in reading order, read once
+// for portalNumber.
+var levelPortals = map[string][]Position{}
+
+// portalNumber is ref's place among its level's portals in reading order,
+// from 1 (1 is the entry portal), or 0 when ref's level isn't in Levels.
+func portalNumber(ref PortalRef) int {
+	cells, ok := levelPortals[ref.Level]
+	if !ok {
+		def, known := Levels[ref.Level]
+		if !known {
+			return 0
+		}
+		for _, c := range LoadLevel(def.File, def.Key).Portals {
+			cells = append(cells, c.Pos)
+		}
+		levelPortals[ref.Level] = cells
+	}
+	return slices.Index(cells, ref.Cell) + 1
+}
 
 // World is the level the player is in: its platforms (indexed in Quadtree)
 // and its enemies. It remembers the enemies of levels the player left.

@@ -40,7 +40,6 @@ type Game struct {
 	tileset        *ebiten.Image
 	portals        *core.PortalSprite
 	travel         *core.TravelMenu // opened by holding E (or a touch) at a portal
-	view           *ebiten.Image    // scratch screen for drawing a portal's thumbnail
 
 	autosave core.Autosave // writes the progress when it changes
 
@@ -60,7 +59,6 @@ func NewGame() *Game {
 		tileset:     core.LoadImage(core.Tileset),
 		touch:       touch,
 		portals:     core.NewPortalSprite(),
-		view:        ebiten.NewImage(screenWidth, screenHeight),
 		backgrounds: make(chan downloadedBackground, 1),
 	}
 	g.screens.SetSettings(loadSettings())
@@ -299,7 +297,6 @@ func (g *Game) Update() error {
 		g.syncBackground()
 	}
 	if g.player.LevelDone() { // the last unused portal: on to the next level (levels D5)
-		g.captureThumbs() // the portal just saved, before its level is left
 		if opened, err := g.world.OpenNextLevel(g.player); err != nil {
 			log.Printf("next level: %v", err)
 		} else if opened {
@@ -309,7 +306,6 @@ func (g *Game) Update() error {
 	}
 	g.updateEnemies()
 	g.portals.Update()
-	g.captureThumbs()
 	g.travel.MaybeOpen(g.player, &g.input)
 	g.saveProgress()
 
@@ -328,30 +324,6 @@ func (g *Game) updateEnemies() {
 		}
 	}
 	g.world.Enemies = live
-}
-
-// captureThumbs gives each portal that just became active its thumbnail for
-// the travel menu: the level around it, drawn once into the scratch screen.
-func (g *Game) captureThumbs() {
-	if g.background == nil { // still downloading: capture once it's drawn
-		return
-	}
-	for _, c := range g.world.Level.Portals {
-		ref := c.Ref()
-		if g.player.PortalLook(c) == core.PortalInactive || g.travel.HasThumb(ref) {
-			continue
-		}
-		cam := g.player.Camera
-		b := c.Bounds()
-		g.player.Camera.Pos = core.Position{X: b.X + b.Width/2 - screenWidth/2, Y: b.Y + b.Height/2 - screenHeight/2}
-		g.view.Clear()
-		g.player.DrawParallaxBackground(g.view, g.background, screenWidth, screenHeight, g.world.Def.Width)
-		g.player.DrawLevel(g.view, g.world.Quadtree, screenWidth, screenHeight, g.tileset)
-		g.portals.Draw(g.view, []core.Portal{c}, g.player)
-		g.player.DrawWater(g.view, g.world.Quadtree, screenWidth, screenHeight, g.tileset)
-		g.player.Camera = cam
-		g.travel.SetThumb(ref, g.view)
-	}
 }
 
 // Draw renders one frame: background, level, then player.
