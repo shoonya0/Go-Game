@@ -1,6 +1,6 @@
 # Go-Game (Pirate Adventure): current state (snapshot 2026-10-26)
 
-Snapshot at `6a8cc90` (`main`; PR #25 main menu merged). One page. Details live in each increment's entry in
+Snapshot at `500c45f` (`main`; PR #28 levels merged). One page. Details live in each increment's entry in
 `status/increments.md` and each feature's `state.md`. Update this page when an increment lands.
 Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 
@@ -10,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** [levels](./features/levels/state.md) · Increment 1: eight themed levels, each a day and a night sub-level joined by portals (its `decisions.md`). Paused: enemy-types (low priority; task 25 waits for ranged art)
-- **Branch:** `feature/levels` (from `main` at `8c93d3b`)
-- **Next step:** PR #28 is open with the code review fixes; the user plays the levels: deepForest night, aquaticAbyss day and the 13 new generated grids (levels D8). Done: all 16 sub-levels have grids and are chained in `LevelOrder` (2026-10-26); the jump reaches just over 3 tiles, and `TestLevelPortalsReachEachOther` checks every grid's portals reach each other; aquaticAbyss day (level 2's first sub-level); the travel menu lists portals by level and sub-level (D7, no thumbnails); an invisible border walls in every level (D6); day/night sub-levels with deepForest night (tasks 6, 7, D5), tiles per level are tested (task 5; deepForest's larva pit is water now), the web build downloads only the current sub-level's background (task 4, D4); backgrounds renamed `<level>_day.*`/`<level>_night.*`; every file under `assets/` is committed (all 16 backgrounds, the Orange Golem strips and `SkeletonIdle.gif`, not loaded yet); `_asset_backups/` and `_futureAssets/` (Bat, bosses, Mossy tileset, plants, Striker) are the user's, not embedded; never commit them unless asked
+- **Feature:** [levels](./features/levels/state.md) · Increment 1 merged (PR #28, 2026-10-26): eight themed levels, each a day and a night sub-level joined by portals (its `decisions.md`). Paused: enemy-types (low priority; task 25 waits for ranged art)
+- **Branch:** none open (`main` at `500c45f`); the next levels work branches from `main`
+- **Next step:** the user plays the levels on the web or native: deepForest night, aquaticAbyss day and the 13 generated grids (levels D8), then says which need hand-made changes; the 5 code review findings left wait for the user (levels tasks). Done: all 16 sub-levels have grids and are chained in `LevelOrder` (2026-10-26); the jump reaches just over 3 tiles, and `TestLevelPortalsReachEachOther` checks every grid's portals reach each other; aquaticAbyss day (level 2's first sub-level); the travel menu lists portals by level and sub-level (D7, no thumbnails); an invisible border walls in every level (D6); day/night sub-levels with deepForest night (tasks 6, 7, D5), tiles per level are tested (task 5; deepForest's larva pit is water now), the web build downloads only the current sub-level's background (task 4, D4); backgrounds renamed `<level>_day.*`/`<level>_night.*`; every file under `assets/` is committed (all 16 backgrounds, the Orange Golem strips and `SkeletonIdle.gif`, not loaded yet); `_asset_backups/` and `_futureAssets/` (Bat, bosses, Mossy tileset, plants, Striker) are the user's, not embedded; never commit them unless asked
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -28,7 +28,7 @@ and /feature-docs update. -->
 - On a touch screen, buttons for every key: arrows bottom-left, attack symbols and a bigger sprint button bottom-right, a menu button top-left (the HUD moves right of it). Idle buttons are half see-through and stay out of the middle third of the screen. VERIFIED (tests; web build with simulated touches; not on a real device)
 - Main menu (merged, PR #25): the game opens on a title screen (New Game, Continue, Settings, Quit; Press Start 2P font), picked with W/S + Enter/E, a tap or a mouse click. Progress (used portals, checkpoint) autosaves to `%AppData%\PirateAdventure\save.json` on Windows and `localStorage` on the web; Continue starts standing in the saved portal, New Game asks before wiping a save. Settings holds a saved volume 0–10 (no audio yet). Quit is desktop only. Esc or the touch menu button pauses (Resume, Settings, Main Menu). VERIFIED (tests; web build in agent-browser, `_docs/evidence/main-menu-*.png`; native window not checked by hand)
 - Menus drawn from the wooden sheet `assets/UI/UIButtons.png` (merged, PR #27): planks with icons on the wooden board, the pick is the arrow plank, the volume a segmented bar; the travel menu's scroll arrows are wooden. VERIFIED (tests; web build screenshots `_docs/evidence/ui-buttons-*.png`; the user checked it in game)
-- Levels (branch `feature/levels`, not merged): level 1 `deepForest` has a day and a night sub-level, each with its own grid and background; saving day's last unused portal teleports to night's entry portal once, and the travel menu then lists it. Every level is walled in by an invisible border. A test checks each level uses only its own tiles. The web build downloads only the current background (`game.wasm` 27.6 MB). All eight levels have both sub-levels, chained by D5 from deepForest day to rustyRefinery night; aquaticAbyss night and levels 3–8 are generated from one pattern (levels D8). VERIFIED (tests incl. portal reach for all 16; web build screenshots `_docs/evidence/levels-*.png` cover levels 1–2 only; the new grids not played)
+- Levels (merged, PR #28): level 1 `deepForest` has a day and a night sub-level, each with its own grid and background; saving day's last unused portal teleports to night's entry portal once, and the travel menu then lists it. Every level is walled in by an invisible border. A test checks each level uses only its own tiles. The web build downloads only the current background (`game.wasm` 27.6 MB). All eight levels have both sub-levels, chained by D5 from deepForest day to rustyRefinery night; aquaticAbyss night and levels 3–8 are generated from one pattern (levels D8). VERIFIED (tests incl. portal reach for all 16; web build screenshots `_docs/evidence/levels-*.png` cover levels 1–2 only; the new grids not played)
 
 ## How to build, run, test
 
@@ -37,14 +37,14 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `af9a251` on `feature/levels`; Windows, go1.26.7)
+## Test baseline (at `500c45f` on `main`; Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
 | `go test ./...` | ✅ 207/207 top-level tests pass: 195 in `internal/core`, 2 in `internal/system`, 9 in `tools/battler2strip`, 1 in `server` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
-| GitHub CI | `main` at `6a8cc90` (PR #25): merged by the user | — |
+| GitHub CI | PR #28 checks green (build, verify on Ubuntu and Windows); `main` at `500c45f` merged by the user | — |
 
 Compare runs **by test name**: `go test ./internal/core -v | grep "^--- "` lists them. Added since the last
 baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAttackSteps`,
