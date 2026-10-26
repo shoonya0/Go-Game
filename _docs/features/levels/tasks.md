@@ -11,6 +11,7 @@
 - [x] 6. Day and night sub-levels in order (D1, D5): `LevelOrder`; deepForest night grid (`deepForest_night.json`, 3 portals, climbs ≤ 3 tiles) → check: `TestLevelPortals`, `TestLevelTiles`, `TestLevelEnemiesKeepTheirGround`; web screenshot `_docs/evidence/levels-night-start.png`
 - [x] 7. Saving the last unused portal teleports to the next sub-level's entry portal, once (D5) → check: `go test ./internal/core -run TestLastPortal`; in game: not yet (the user plays it)
 - [x] 9. Invisible border around every level (D6) → check: `go test ./internal/core -run TestLevelBorderKeepsPlayerIn`
+- [x] 10. Travel menu lists portals by level and sub-level instead of thumbnails (D7) → check: `TestTravelMenuGroupsByLevel`; web build screenshot `_docs/evidence/levels-travel-list.png`
 - [x] 8. Update docs: state.md "Now", spec.md, current-state.md → check: `node scripts/docs-check.mjs`
 
 ## Later (not planned yet)

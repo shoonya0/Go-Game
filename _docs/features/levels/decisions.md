@@ -56,3 +56,16 @@
   `Border` tile type just outside the level's edges when it loads a level (`levelBorder`,
   `internal/core/world.go`), and drawing skips that type. No grid needs a rock frame, so a
   level whose tiles don't include rock (rustyRefinery) is walled in too.
+
+## D7. The travel menu is a list by level, not thumbnails (2026-10-26, user's call)
+
+- **Decision:** the travel menu is a wooden board like the main menu: each level's name
+  ("Deep Forest"), under it each sub-level's name ("Deep Forest Day"), then a plank per
+  active portal, "Portal 1", "Portal 2", ... The pick is the arrow plank, the checkpoint has
+  a check at its left; a list taller than the screen scrolls.
+- **How (my call):** a portal's number is its place among all its sub-level's portals in
+  reading order (1 is the entry portal), so it stays the same however many are used. Levels
+  appear in `LevelOrder`. Names come from `LevelDef.Title` and `Time`.
+- **Why:** the user asked for it; names read better than small pictures, and no thumbnails
+  need capturing (the web build skipped them while a background downloaded).
+- **Replaces:** [portals D9](../portals/decisions.md) (rows were thumbnails).

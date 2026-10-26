@@ -13,8 +13,8 @@ passage to other levels, open-world enemy revival). Their answers are in
   shows how to use it. Pressing **E** (PC), or tapping the portal on a touch screen while
   near it, **activates** it (it swirls, in its own colors) and makes it the **checkpoint**
   (gold), the respawn point. Walking past a portal does nothing.
-- **Holding E** (a long press on touch) for half a second opens a **travel menu**: a column
-  of thumbnails, one per active portal in any level. Picking one takes the player there
+- **Holding E** (a long press on touch) for half a second opens a **travel menu**: a list
+  of every active portal in any level, by level and sub-level ([levels D7](../levels/decisions.md)). Picking one takes the player there
   and makes it the checkpoint (D10); closing the menu stays put.
 - When the player **dies**, they respawn at the saved portal and every non-boss enemy of
   that level is back at its spawn point with full health.
@@ -33,7 +33,7 @@ passage to other levels, open-world enemy revival). Their answers are in
 5. Death respawn, entering a level and any teleport reset every non-boss enemy of that level to its spawn
    (alive, full health, patrolling); a killed boss stays dead.
 6. Holding E (or a long press) 0.5 s at a portal opens the travel menu. It lists exactly
-   the active portals, as thumbnails in a column, and moves the player to the one picked,
+   the active portals, listed by level and sub-level, and moves the player to the one picked,
    loading its level when it is another one; the picked portal becomes the checkpoint.
 7. Works on Windows and in the browser (keyboard and touch). Native and WASM builds pass.
 

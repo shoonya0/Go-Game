@@ -1,24 +1,31 @@
 # Levels: state
 
-## Now (updated 2026-10-26 at `21820a4`)
+## Now (updated 2026-10-26 at `402afe5`)
 
-- **Status:** 🟡 in progress; increment 1 tasks 1–9 done
+- **Status:** 🟡 in progress; increment 1 tasks 1–10 done
 - **Current task:** the user plays deepForest night ([tasks.md](./tasks.md) "Later"); then grids for levels 2–8
-- **Stopped at:** docs brought up to date (task 8): spec still matches the code; current-state
-  lists the levels capability and a new test baseline (200/200 at `21820a4`, `verify.mjs --full` 8/8).
-  deepForest night follows day in `LevelOrder` and opens when day's last unused portal is saved;
-  checked by tests and a web build, not played through
-- **Open questions / blockers:** (user) is the night layout right; who draws levels 2–8
+- **Stopped at:** the travel menu is a wooden board listing portals by level and sub-level
+  ("Deep Forest" › "Deep Forest Day" › "Portal 1", D7), thumbnails removed (`402afe5`). Checked
+  by tests and a throwaway web build with every portal active: pick moved, travelled to night
+  Portal 2. deepForest night not played through by the user
+- **Open questions / blockers:** (user) is the night layout right; who draws levels 2–8. In the
+  web check an enemy at night Portal 2 hit the player right after arriving: worth a look
 - **Don't forget:** climbs are at most 3 tiles (the user: the jump reaches 3–3.5); with a 3-tile
   climb the gap is at most 2 tiles, 2-tile climb 3, flat 4. The first portal in reading order
-  (top row first) is a sub-level's entry: keep it the topmost. Water drains 2 HP/s, larva hits
-  10 per entry. `//go:embed` takes untracked files (commit a level's backgrounds with its grid);
-  a new kind of file in a level folder needs its own pattern in `assets/embed.go`. Saves store
-  the level name: `deepForest1` stays the day sub-level's name. On the web, a thumbnail is skipped
-  while the level's background still downloads; if the player leaves first, it's taken on the
-  next visit
+  (top row first) is a sub-level's entry: keep it the topmost. A portal's menu number is its
+  reading-order place in its sub-level, so moving portals in a grid renumbers them. Water drains
+  2 HP/s, larva hits 10 per entry. `//go:embed` takes untracked files (commit a level's
+  backgrounds with its grid); a new kind of file in a level folder needs its own pattern in
+  `assets/embed.go`. Saves store the level name: `deepForest1` stays the day sub-level's name.
+  A new level needs `Title` and `Time` in its `LevelDef` for the menu
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: travel menu lists portals by level (task 10, D7)
+
+- Changed: `travel_menu.go` (board, names, planks, scrolling), `LevelDef.Title/Time`, `portalNumber` (`levels.go`); `cmd/main.go` thumbnail capture removed; `TestTravelMenuGroupsByLevel`
+- Verified: `node scripts/verify.mjs --full` → 8/8; throwaway web build: list drawn, S moved the pick, Enter travelled to night Portal 2 (`_docs/evidence/levels-travel-list.png`)
+- Docs touched: levels D7, tasks, state; portals D9, spec, state; main-menu state, tasks; ui-buttons state; architecture-overview; current-state
 
 ### 2026-10-26: docs updated (task 8)
 
@@ -43,12 +50,6 @@
 - Changed: `deepForest_night.json` + background; `LevelOrder`, `World.OpenNextLevel` (`levels.go`); `savePortal`, `LevelDone` (`combat.go`); `cmd/main.go`
 - Verified: `node scripts/verify.mjs --full` → 8/8; `TestLastPortalOpensNextLevel`, `TestLevelPortals`; night level screenshot
 - Docs touched: levels tasks, state; current-state; portals, main-menu, enemy-types sessions
-
-### 2026-10-26: each level's tiles checked (task 5)
-
-- Changed: `LevelDef.Tiles`, `KeepApart` (`levels.go`); `TestLevelTiles`, `TestTilesTouch`; `level_1.json` larva → water
-- Verified: `node scripts/verify.mjs` → 5/5; `TestLevelTiles` failed first (113 larva cells), passes after
-- Docs touched: levels tasks, state; current-state
 
 ## Known issues
 

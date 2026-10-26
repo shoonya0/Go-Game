@@ -8,11 +8,17 @@
 - **Open questions / blockers:** none. `_asset_backups/` is the user's: never commit it
 - **Don't forget:** Esc both closes the travel menu (`Back`) and sets `InputState.Menu`, which
   pauses (main-menu D7); `cmd` skips the pause while the travel menu is open. `WaitRelease`
-  keeps the press that picked a title menu item from opening the travel menu. A thumbnail is taken once, so it shows the portal as it looked then. Level
+  keeps the press that picked a title menu item from opening the travel menu. Level
   sizes come from `LevelDef`, not the grid. Code 9 is non-solid. No font: UI symbols are vector
   icons (`touch_icons.go`)
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: touched by levels (travel menu list)
+
+- Changed: the travel menu lists portals by level instead of thumbnails (D9 superseded by levels D7) ([levels](../levels/state.md))
+- Verified: `node scripts/verify.mjs --full` → 8/8; web build screenshot `_docs/evidence/levels-travel-list.png`
+- Docs touched: this state
 
 ### 2026-10-26: touched by levels (task 9)
 
@@ -36,10 +42,4 @@
 
 - Changed: `cmd/main.go` `captureThumbs` waits until the background is loaded; `world.go` draws no background while it downloads ([levels](../levels/state.md)); this feature's behaviour unchanged
 - Verified: `node scripts/verify.mjs --full` → 8/8
-- Docs touched: this entry only
-
-### 2026-10-26: level 1 background renamed by levels
-
-- Changed: `Background_1` in `world.go` now `deepForest_day.png` ([levels](../levels/state.md)); portals unchanged
-- Verified: `node scripts/verify.mjs` → 5/5 pass
 - Docs touched: this entry only

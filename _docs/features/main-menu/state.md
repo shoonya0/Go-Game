@@ -15,9 +15,15 @@
   `Continue` counts as no save (Continue grayed). In agent-browser, focus the canvas by script
   (`canvas.tabIndex=0; canvas.focus()`): a click lands on the middle menu item. `text/v2`
   made the WASM ~5 MB bigger (28 → 33 MB, shaping library; the unused M+ font is dropped by
-  the linker). The travel menu only has thumbnails for portals of levels visited this run
+  the linker).
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: touched by levels (travel menu list)
+
+- Changed: `cmd/main.go` no longer captures travel thumbnails; menus unchanged ([levels](../levels/state.md))
+- Verified: `node scripts/verify.mjs --full` → 8/8; web build screenshot `_docs/evidence/levels-travel-list.png`
+- Docs touched: this state
 
 ### 2026-10-26: touched by levels (thumbnail fix)
 
@@ -42,9 +48,3 @@
 - Changed: the menus now drawn from `assets/UI/UIButtons.png` ([ui-buttons](../ui-buttons/state.md), PR #27); behaviour unchanged
 - Verified: `node scripts/verify.mjs --full` → 8/8 pass (on the ui-buttons branch)
 - Docs touched: this entry only
-
-### 2026-10-26: merged
-
-- Changed: nothing in code; PR #25 merged by the user
-- Verified: `git log origin/main` → `6a8cc90`
-- Docs touched: state, registry, current-state

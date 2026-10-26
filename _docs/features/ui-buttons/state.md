@@ -16,6 +16,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: touched by levels (travel menu list)
+
+- Changed: the travel menu now uses the board, planks, check and arrows; sprites unchanged ([levels](../levels/state.md))
+- Verified: `node scripts/verify.mjs --full` → 8/8; web build screenshot `_docs/evidence/levels-travel-list.png`
+- Docs touched: this state
+
 ### 2026-10-26: PR
 
 - Changed: docs only; branch pushed, PR opened
