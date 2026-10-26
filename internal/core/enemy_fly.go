@@ -3,7 +3,8 @@ package core
 import "math"
 
 // flyingMover flies in 2D without gravity and collides with solid tiles like a
-// ground enemy. It chases the player wherever they go and, once they are out of
+// ground enemy. It chases the player wherever they go, flying around tiles in
+// the way (enemy_route.go) and, once they are out of
 // sight, patrols at the height of the place it guards (its spawn, or where it
 // lost the player). A dead flyer falls.
 type flyingMover struct {
@@ -22,7 +23,11 @@ func (m flyingMover) Steer(e *EnemyRuntime, in moveIntent) {
 		e.VelX = e.patrolDir * st.WalkSpeed
 		_, e.VelY = towardAt(0, e.spawnY-e.Pos.Y, st.WalkSpeed)
 	case moveChase:
-		e.VelX, e.VelY = towardAt(in.dx, in.dy-m.HoverHeight, st.ChaseSpeed)
+		dx, dy := in.dx, in.dy-m.HoverHeight
+		if wx, wy, ok := e.routeStep(dx, dy, in.qt); ok {
+			dx, dy = wx, wy // tiles in the way: follow the route around them
+		}
+		e.VelX, e.VelY = towardAt(dx, dy, st.ChaseSpeed)
 	default:
 		e.VelX, e.VelY = 0, 0
 	}

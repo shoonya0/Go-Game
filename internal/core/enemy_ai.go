@@ -44,10 +44,10 @@ func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime, qt *DynamicQuadtree
 	switch {
 	case e.State == EnemyAttack && e.bp.Attacker.Committed(e):
 		e.attack(target, dx)
-	case e.bp.Attacker.InRange(e, tb):
+	case e.bp.Attacker.InRange(e, tb) && clearSight(qt, eb, tb): // never through a tile
 		e.attack(target, dx)
 	case dist <= st.DetectRange && e.bp.Mover.CanChase(e, tb, qt):
-		e.chase(dx, centerY(tb)-centerY(eb))
+		e.chase(dx, centerY(tb)-centerY(eb), qt)
 	default:
 		e.patrol()
 	}
@@ -72,12 +72,12 @@ func (e *EnemyRuntime) attack(target *PlayerRuntime, dx float64) {
 }
 
 // chase moves the enemy toward the player at chase speed. dx and dy run from
-// the enemy's center to the player's.
-func (e *EnemyRuntime) chase(dx, dy float64) {
+// the enemy's center to the player's; qt is the world, for a route.
+func (e *EnemyRuntime) chase(dx, dy float64, qt *DynamicQuadtree) {
 	e.engaged = true
 	e.setState(EnemyAlert)
 	e.faceToward(dx)
-	e.bp.Mover.Steer(e, moveIntent{mode: moveChase, dx: dx, dy: dy})
+	e.bp.Mover.Steer(e, moveIntent{mode: moveChase, dx: dx, dy: dy, qt: qt})
 }
 
 // patrol paces the enemy around the place it guards; the Mover decides where

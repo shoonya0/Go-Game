@@ -30,8 +30,9 @@ const (
 // moveIntent is the brain's request to the Mover.
 type moveIntent struct {
 	mode moveMode
-	dx   float64 // chase: horizontal distance to the player (positive = right)
-	dy   float64 // chase: vertical distance to the player (positive = down)
+	dx   float64          // chase: horizontal distance to the player (positive = right)
+	dy   float64          // chase: vertical distance to the player (positive = down)
+	qt   *DynamicQuadtree // chase: the world, for a Mover that plans a route (may be nil)
 }
 
 // groundMover walks on tiles under gravity, like the player.

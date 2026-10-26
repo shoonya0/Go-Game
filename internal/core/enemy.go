@@ -114,6 +114,7 @@ type EnemyRuntime struct {
 	spawnX      float64    // patrol anchor: X of the place it guards (spawn, or where it lost the player)
 	spawnY      float64    // flyers' patrol height: Y of the place it guards
 	engaged     bool       // chased or attacked since it last patrolled
+	route       flyerRoute // flyers: the route step it is chasing along (enemy_route.go)
 	patrolDir   float64    // current patrol direction: -1 or +1
 	attackTimer float64    // seconds until the next hit may land
 	swing       swingState // the attack in progress
