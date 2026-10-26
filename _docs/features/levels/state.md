@@ -1,14 +1,15 @@
 # Levels: state
 
-## Now (updated 2026-10-26 at `3c19bb2` + the 13 grids)
+## Now (updated 2026-10-26 at `af9a251`)
 
-- **Status:** 🟡 in progress; all 16 sub-levels have grids and are chained in `LevelOrder`
-- **Current task:** the user plays the levels (deepForest night, aquaticAbyss day, the 13 new ones)
-- **Stopped at:** 13 generated grids (D8) with their backgrounds; `subLevel` / `boulderBastion`
-  build their `LevelDef`s (`levels.go`). All level tests pass for all 16; `verify.mjs --full` 8/8.
-  Not played in game or checked in the web build yet
+- **Status:** 🟡 in review: PR #28 open; all 16 sub-levels have grids and are chained in `LevelOrder`
+- **Current task:** the user plays the levels, then decides on merging PR #28 (a merge deploys)
+- **Stopped at:** code review fixes 1–3, 6, 7 committed (`47c6338`, `b0bca0b`, `af9a251`): a
+  level's size is its grid's (`LevelDef` has no size now; deepForest is 36 rows), old saves
+  open the next level (D5), `OpenNextLevel` checks before switching, the camera follows a
+  teleport. Not played in game or checked in the web build yet
 - **Open questions / blockers:** (user) are the layouts fun, which levels need hand-made
-  features; enemy lists per level (D3). In the web check an enemy at deepForest night Portal 2
+  features; the 5 review findings left (tasks.md): issues or not; enemy lists per level (D3). In the web check an enemy at deepForest night Portal 2
   hit the player on arrival (new grids keep enemies 6+ columns from portals)
 - **Don't forget:** a new grid must pass `TestLevelPortalsReachEachOther` (it prints which portal
   can't reach which). The jump climbs 3 tiles (also straight up a wall), never 4; with a 3-tile
@@ -21,6 +22,12 @@
   sub-level's name. A new level needs `Title` and `Time` in its `LevelDef`
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: code review fixes for PR #28
+
+- Changed: `levels.go` (size from the grid, `portalCells`, `nextLevel`, `OpenNextLevel`), `combat.go` `savePortal`, `cmd/main.go` `followPlayer`; 3 tests; levels D5
+- Verified: the 3 new tests failed first, then pass; `go test ./...` 207 pass, 0 fail; `node scripts/verify.mjs --full` 8/8
+- Docs touched: levels D5, tasks, state; current-state
 
 ### 2026-10-26: the other 13 grids, all levels connected
 
@@ -45,12 +52,6 @@
 - Changed: `travel_menu.go` (board, names, planks, scrolling), `LevelDef.Title/Time`, `portalNumber` (`levels.go`); `cmd/main.go` thumbnail capture removed; `TestTravelMenuGroupsByLevel`
 - Verified: `node scripts/verify.mjs --full` → 8/8; throwaway web build: list drawn, S moved the pick, Enter travelled to night Portal 2 (`_docs/evidence/levels-travel-list.png`)
 - Docs touched: levels D7, tasks, state; portals D9, spec, state; main-menu state, tasks; ui-buttons state; architecture-overview; current-state
-
-### 2026-10-26: docs updated (task 8)
-
-- Changed: levels tasks, state; `_docs/current-state.md` (levels capability, test baseline, next task)
-- Verified: `node scripts/verify.mjs --full` → 8/8; `go test ./...` 200/200
-- Docs touched: levels tasks, state; current-state
 
 ## Known issues
 

@@ -22,6 +22,8 @@
 - [ ] Play the 13 new sub-levels: are they fun, which need hand-made features (D8)
 - [x] Jump lowered to just over 3 tiles (user, 2026-10-26) → check: `TestJumpReachesThreeTiles`
 - [x] A test that every portal of a sub-level can reach the others with the real jump; it found deepForest night one-way, now fixed → check: `TestLevelPortalsReachEachOther`, `TestHopRules`
+- [x] Code review of PR #28, fixes 1–3, 6, 7: size from the grid, old saves open the next level, `OpenNextLevel` checks before switching, camera follows a teleport, `savePortal` one branch → check: `TestLevelSizeFromGrid`, `TestOldSaveOpensNextLevel`, `TestOpenNextLevelWithoutPortalKeepsWorld` (each failed first); camera: build only (`cmd/main.go` has no tests)
+- [ ] Review findings left for issues (the user decides): desktop typo in a background path retries forever; a re-entered level downloads its background twice; wasm decodes backgrounds on the game thread; `HasAsset` reads the whole file; the travel menu rebuilds its layout per tap
 - [ ] Enemy lists per level, once the user sets them (D3)
 - [ ] Play deepForest night: are the climbs right (≤ 3 tiles), is it fun; does saving day's last portal land in it
 - [ ] Look at deepForest's former larva pit (now water) in game

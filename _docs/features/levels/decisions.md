@@ -47,6 +47,10 @@
   entry portal is its first portal in reading order. The order is the [spec](./spec.md)
   table, day before night: deepForest day → deepForest night → aquaticAbyss day → … →
   rustyRefinery night, which is last and opens nothing.
+- **Old saves (code review of PR #28):** a save from before D5 can hold every portal of a
+  sub-level as used with the next one never opened. So the rule is "every portal used and
+  the next sub-level not open yet": the completing save, or any save in such a sub-level.
+  "Open" means one of its portals is used, so it still happens once.
 
 ## D6. Every level is walled in by an invisible border (2026-10-26, user's call)
 

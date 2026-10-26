@@ -12,7 +12,7 @@ and /feature-docs update. -->
 
 - **Feature:** [levels](./features/levels/state.md) · Increment 1: eight themed levels, each a day and a night sub-level joined by portals (its `decisions.md`). Paused: enemy-types (low priority; task 25 waits for ranged art)
 - **Branch:** `feature/levels` (from `main` at `8c93d3b`)
-- **Next step:** the user plays the levels: deepForest night, aquaticAbyss day and the 13 new generated grids (levels D8). Done: all 16 sub-levels have grids and are chained in `LevelOrder` (2026-10-26); the jump reaches just over 3 tiles, and `TestLevelPortalsReachEachOther` checks every grid's portals reach each other; aquaticAbyss day (level 2's first sub-level); the travel menu lists portals by level and sub-level (D7, no thumbnails); an invisible border walls in every level (D6); day/night sub-levels with deepForest night (tasks 6, 7, D5), tiles per level are tested (task 5; deepForest's larva pit is water now), the web build downloads only the current sub-level's background (task 4, D4); backgrounds renamed `<level>_day.*`/`<level>_night.*`; every file under `assets/` is committed (all 16 backgrounds, the Orange Golem strips and `SkeletonIdle.gif`, not loaded yet); `_asset_backups/` and `_futureAssets/` (Bat, bosses, Mossy tileset, plants, Striker) are the user's, not embedded; never commit them unless asked
+- **Next step:** PR #28 is open with the code review fixes; the user plays the levels: deepForest night, aquaticAbyss day and the 13 new generated grids (levels D8). Done: all 16 sub-levels have grids and are chained in `LevelOrder` (2026-10-26); the jump reaches just over 3 tiles, and `TestLevelPortalsReachEachOther` checks every grid's portals reach each other; aquaticAbyss day (level 2's first sub-level); the travel menu lists portals by level and sub-level (D7, no thumbnails); an invisible border walls in every level (D6); day/night sub-levels with deepForest night (tasks 6, 7, D5), tiles per level are tested (task 5; deepForest's larva pit is water now), the web build downloads only the current sub-level's background (task 4, D4); backgrounds renamed `<level>_day.*`/`<level>_night.*`; every file under `assets/` is committed (all 16 backgrounds, the Orange Golem strips and `SkeletonIdle.gif`, not loaded yet); `_asset_backups/` and `_futureAssets/` (Bat, bosses, Mossy tileset, plants, Striker) are the user's, not embedded; never commit them unless asked
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -37,12 +37,12 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `efa4e17` on `feature/levels`; Windows, go1.26.7)
+## Test baseline (at `af9a251` on `feature/levels`; Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
-| `go test ./...` | ✅ 204/204 top-level tests pass: 192 in `internal/core`, 2 in `internal/system`, 9 in `tools/battler2strip`, 1 in `server` | — |
+| `go test ./...` | ✅ 207/207 top-level tests pass: 195 in `internal/core`, 2 in `internal/system`, 9 in `tools/battler2strip`, 1 in `server` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
 | GitHub CI | `main` at `6a8cc90` (PR #25): merged by the user | — |
 
@@ -52,7 +52,7 @@ baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAtt
 enemy health / level marker tests, and on `feature/enemy-types` the characterisation tests (written against the succubus, now run on the test-only `testEnemyBlueprint`)
 (`internal/core/enemy_behavior_test.go`), the clip tests in `internal/core/enemy_clips_test.go`, hold/motion tests
 (`enemy_motion_test.go`), melee hit-frame tests (`enemy_attack_test.go`), `TestBlueprintsValid`, and the baking tool's tests
-(`tools/battler2strip/bake_test.go`), the ledge, marker and guard tests (`TestGroundEnemyTurnsAtLedge`, `TestTwoCharMarkerIsOneCell`, `enemy_guard_test.go`), the capability tests (`TestBlueprintHasOwnArtOnly`, `TestEnemyCapabilities`), `TestAssetBaseNamesUnique` and `TestLevelEnemiesKeepTheirGround`; on `feature/portals` the portal tests (`internal/core/portal_test.go`: sheet frames, standing on the ground, start, golden saved portal, E/tap saving, respawn), `TestTouchTapOffButtons` and `enemy_revive_test.go`; on `feature/main-menu` `TestSave*` (`save_test.go`), `TestSaveFile*` (`internal/system/save_other_test.go`), `TestTextSize`, `TestMenu*` (`menu_test.go`, `menu_screens_test.go`), `TestSettings*`, `TestTravelMenuWaitRelease`, `TestTouchHiddenButtons`; on `feature/levels` `TestBackgroundsDecode`, `TestLevelTiles`, `TestTilesTouch`, `TestLevelPortals`, `TestLastPortalOpensNextLevel`, `TestLevelBorderKeepsPlayerIn`, `TestTravelMenuGroupsByLevel`, `TestJumpReachesThreeTiles`, `TestHopRules`, `TestLevelPortalsReachEachOther`.
+(`tools/battler2strip/bake_test.go`), the ledge, marker and guard tests (`TestGroundEnemyTurnsAtLedge`, `TestTwoCharMarkerIsOneCell`, `enemy_guard_test.go`), the capability tests (`TestBlueprintHasOwnArtOnly`, `TestEnemyCapabilities`), `TestAssetBaseNamesUnique` and `TestLevelEnemiesKeepTheirGround`; on `feature/portals` the portal tests (`internal/core/portal_test.go`: sheet frames, standing on the ground, start, golden saved portal, E/tap saving, respawn), `TestTouchTapOffButtons` and `enemy_revive_test.go`; on `feature/main-menu` `TestSave*` (`save_test.go`), `TestSaveFile*` (`internal/system/save_other_test.go`), `TestTextSize`, `TestMenu*` (`menu_test.go`, `menu_screens_test.go`), `TestSettings*`, `TestTravelMenuWaitRelease`, `TestTouchHiddenButtons`; on `feature/levels` `TestBackgroundsDecode`, `TestLevelTiles`, `TestTilesTouch`, `TestLevelPortals`, `TestLastPortalOpensNextLevel`, `TestLevelBorderKeepsPlayerIn`, `TestTravelMenuGroupsByLevel`, `TestJumpReachesThreeTiles`, `TestHopRules`, `TestLevelPortalsReachEachOther`, `TestOldSaveOpensNextLevel`, `TestOpenNextLevelWithoutPortalKeepsWorld`, `TestLevelSizeFromGrid`.
 
 ## Known issues and risks
 
