@@ -12,7 +12,7 @@ var testDiverBlueprint = func() EnemyBlueprint {
 	bp := testFlyerBlueprint
 	bp.Name = "Test diver"
 	bp.Marker = "~^"
-	bp.Mover = flyingMover{LeashTiles: 5, HoverHeight: 150}
+	bp.Mover = flyingMover{HoverHeight: 150}
 	bp.Attacker = diveAttack{FallSpeed: 600, MaxDrop: 300}
 	bp.Stats.AttackRange = 40
 	bp.Stats.AttackCooldown = 1.5
@@ -134,19 +134,25 @@ func TestDiveCommitsWhenPlayerLeaves(t *testing.T) {
 }
 
 // TestDiveEndsOverPit: with no ground below, the fall gives up and the diver
-// flies home instead of falling forever.
+// guards the place where the dive stopped (#31) instead of falling forever.
 func TestDiveEndsOverPit(t *testing.T) {
 	qt := waveWorld(0, 0) // no floor
 	e := newTestDiver(400, 150)
 	p := standingPlayer(400)
 	spawnY := e.Pos.Y
+	maxDrop := e.bp.Attacker.(diveAttack).MaxDrop
 
 	diveTick(e, p, qt)
-	p.Pos.X += 1000 // out of sight, so it goes home after the dive
-	for range 8 * int(tps()) {
+	p.Pos.X += 1000 // out of sight, so it patrols after the dive
+	for range 7 * int(tps()) {
 		diveTick(e, p, qt)
 	}
-	if e.State == EnemyAttack || math.Abs(e.Pos.Y-spawnY) > 1 {
-		t.Errorf("after 8 s: state=%d y=%v, want patrolling back at its spawn height %v", e.State, e.Pos.Y, spawnY)
+	stopY := e.Pos.Y
+	for range int(tps()) {
+		diveTick(e, p, qt)
+	}
+	if e.State != EnemyPatrol || math.Abs(e.Pos.Y-stopY) > 0.01 || e.Pos.Y-spawnY > maxDrop+1 {
+		t.Errorf("after 8 s: state=%d y=%v (%v a second before), want patrolling at a steady height no more than %v below spawn y=%v",
+			e.State, e.Pos.Y, stopY, maxDrop, spawnY)
 	}
 }

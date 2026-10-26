@@ -186,7 +186,7 @@ var flyingDemonBlueprint = EnemyBlueprint{
 	Scale:      1.5, // 64px of art -> ~96px on screen
 	FacesLeft:  true,
 	// HoverHeight 20 keeps its feet off the floor while it bites a standing player.
-	Mover:    flyingMover{LeashTiles: 4, HoverHeight: 20},
+	Mover:    flyingMover{HoverHeight: 20},
 	Attacker: meleeAttack{},
 	Stats: EnemyStats{
 		MaxHealth:      40,
@@ -232,7 +232,7 @@ var smasherBlueprint = EnemyBlueprint{
 	BodyHeight: 80,
 	Scale:      1.5, // 52px of art -> ~78px on screen
 	FacesLeft:  true,
-	Mover:      flyingMover{LeashTiles: 5, HoverHeight: 160},
+	Mover:      flyingMover{HoverHeight: 160},
 	Attacker:   diveAttack{FallSpeed: 700, MaxDrop: 300},
 	Stats: EnemyStats{
 		MaxHealth:      60,

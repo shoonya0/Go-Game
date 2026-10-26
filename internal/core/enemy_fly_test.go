@@ -11,7 +11,7 @@ var testFlyerBlueprint = func() EnemyBlueprint {
 	bp := testEnemyBlueprint
 	bp.Name = "Test flyer"
 	bp.Marker = "~~"
-	bp.Mover = flyingMover{LeashTiles: 3}
+	bp.Mover = flyingMover{}
 	return bp
 }()
 
@@ -39,40 +39,11 @@ func TestFlyingEnemyIgnoresGravity(t *testing.T) {
 	}
 }
 
-// TestFlyingEnemyLeash: a flyer chases a player it sees no farther than its
-// leash around its spawn, then flies back home when the player leaves.
-func TestFlyingEnemyLeash(t *testing.T) {
-	qt := waveWorld(0, 2000)
-	spawn := Position{X: 300, Y: waveGroundY - 300}
-	e := newTestFlyer(spawn)
-	leash := 3.0 * LevelTileWidth
-	p := &PlayerRuntime{Pos: Position{X: 700, Y: waveGroundY - bodyHeight}, Combat: Combat{Health: 100, MaxHealth: 100}}
-
-	for i := 0; i < 4*int(tps()); i++ {
-		UpdateEnemy(e, p, qt)
-		if math.Abs(e.Pos.X-spawn.X) > leash || math.Abs(e.Pos.Y-spawn.Y) > leash {
-			t.Fatalf("tick %d: at (%v, %v), want within %v of spawn (%v, %v)", i, e.Pos.X, e.Pos.Y, leash, spawn.X, spawn.Y)
-		}
-	}
-	if e.State != EnemyAlert || e.Pos.X < spawn.X+leash-1 || e.Pos.Y < spawn.Y+leash-1 {
-		t.Errorf("chasing: state=%d at (%v, %v), want EnemyAlert at the leash corner toward the player", e.State, e.Pos.X, e.Pos.Y)
-	}
-
-	p.Pos.X = 3000 // out of sight
-	for i := 0; i < 5*int(tps()); i++ {
-		UpdateEnemy(e, p, qt)
-	}
-	if e.State != EnemyPatrol || math.Abs(e.Pos.Y-spawn.Y) > 0.01 || math.Abs(e.Pos.X-spawn.X) > leash {
-		t.Errorf("after the player left: state=%d at (%v, %v), want patrolling back at height %v near x=%v",
-			e.State, e.Pos.X, e.Pos.Y, spawn.Y, spawn.X)
-	}
-}
-
 // TestFlyingEnemyHoversOverPlayer: with a HoverHeight the flyer chases to a
 // point that far above the player's center, not into them.
 func TestFlyingEnemyHoversOverPlayer(t *testing.T) {
 	bp := testFlyerBlueprint
-	bp.Mover = flyingMover{LeashTiles: 5, HoverHeight: 200}
+	bp.Mover = flyingMover{HoverHeight: 200}
 	qt := waveWorld(0, 1200)
 	p := &PlayerRuntime{Pos: Position{X: 400, Y: waveGroundY - bodyHeight}, Combat: Combat{Health: 100, MaxHealth: 100}}
 	e := newTestFlyer(Position{X: 250, Y: waveGroundY - 500})

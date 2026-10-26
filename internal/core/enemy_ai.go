@@ -57,6 +57,7 @@ func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
 // time the enemy enters its attack state, once the Attacker is ready (it idles
 // until then); the Attacker decides when the swing lands.
 func (e *EnemyRuntime) attack(target *PlayerRuntime, dx float64) {
+	e.engaged = true
 	e.faceToward(dx)
 	e.bp.Mover.Steer(e, moveIntent{mode: moveHold})
 	if e.State != EnemyAttack {
@@ -73,14 +74,20 @@ func (e *EnemyRuntime) attack(target *PlayerRuntime, dx float64) {
 // chase moves the enemy toward the player at chase speed. dx and dy run from
 // the enemy's center to the player's.
 func (e *EnemyRuntime) chase(dx, dy float64) {
+	e.engaged = true
 	e.setState(EnemyAlert)
 	e.faceToward(dx)
 	e.bp.Mover.Steer(e, moveIntent{mode: moveChase, dx: dx, dy: dy})
 }
 
-// patrol paces the enemy around its spawn point; the Mover decides where the
-// path turns.
+// patrol paces the enemy around the place it guards; the Mover decides where
+// the path turns. An enemy that lost the player guards where it is now instead
+// of going back to its spawn.
 func (e *EnemyRuntime) patrol() {
+	if e.engaged {
+		e.spawnX, e.spawnY = e.Pos.X, e.Pos.Y
+		e.engaged = false
+	}
 	e.bp.Mover.Steer(e, moveIntent{mode: movePatrol})
 	e.faceToward(e.patrolDir)
 	e.setState(EnemyPatrol)
