@@ -34,7 +34,7 @@ Go 1.24 module `player` · Ebitengine v2.9 · one codebase, two targets: native 
 | Combat | `internal/core/combat.go`, `skills.go` | Damage, power regen, hazards (water/larva), fall damage, saving a portal (E / tap), respawn | inside `PlayerRuntime` |
 | Enemies | `internal/core/enemy*.go` | Blueprint registry (each blueprint lists its animations as `EnemyClip`s under standard clip names with fallbacks, `enemy_clips.go`; every clip names its own sheet, cached by path), clips may hold frames and add draw-time motion (`enemy_motion.go`); a shared brain (patrol/chase/attack, `enemy_ai.go`) drives each species' `Mover` (`enemy_move.go`, today `groundMover`) and `Attacker` (`enemy_attack.go`, today `meleeAttack`, which lands on a clip's `HitFrame`); `AttackBox()` is the area that hits the player; `enemy_health.go` regenerates health and draws the health bars above the sprite | `EnemyRuntime` |
 | Animation | `internal/core/animation.go`, `enemy_anim.go` | Sprite-sheet frame tables, frame advance, drawing with camera | per-runtime |
-| World / level | `internal/core/world.go`, `levels.go`, `level_enemies.go` | Loads embedded `level_1.json`, builds platforms/tiles/portals (code 9) and enemy spawns (bare grid markers like `!` = `EnemyBlueprint.Marker`), draws level & water; `RespawnEnemies` revives non-boss enemies after the player respawns; `Levels` names each level and `World.SwitchLevel` swaps the current one | `Game.world` (`World`) |
+| World / level | `internal/core/world.go`, `levels.go`, `level_enemies.go` | Loads each sub-level's embedded grid (`Levels`: a `LevelDef` per sub-level, its size taken from the grid), builds platforms/tiles/portals (code 9) and enemy spawns (bare grid markers like `!` = `EnemyBlueprint.Marker`), draws level & water; `RespawnEnemies` revives non-boss enemies after the player respawns; `World.SwitchLevel` swaps the current level and `OpenNextLevel` follows `LevelOrder` | `Game.world` (`World`) |
 | Portals | `internal/core/portal.go`, `travel_menu.go` | Portal sprite (frames cropped to their art) in three looks (inactive still, active looping, checkpoint gold), the use prompt (icons, no font); the travel menu listing active portals by level (pauses the game) | `Game.portals`, `Game.travel` |
 | Spatial index | `internal/core/quadtree.go`, `aabb.go` | `DynamicQuadtree` for collision broad-phase; `Collider` interface | quadtree |
 | HUD | `internal/core/hud.go` | Health hearts / stamina (power) bars, 10 sprite segments each | no |
@@ -76,9 +76,9 @@ battler sheets into enemy strips, enemy-types D7); they stay stdlib-only too.
 - Runtime state is in memory, owned by `Game` in `cmd/main.go`. Two records persist (main-menu feature):
   the progress (`save`: used portals + checkpoint, written on change) and the settings (`settings`: volume),
   in `%AppData%\PirateAdventure\*.json` on Windows and `localStorage` (`pirateAdventure.*`) on the web.
-- Level data: `assets/levels/deepForest/level_1.json` (embedded). Assets are addressed by base file name only, so
+- Level data: `assets/levels/<level>/*.json`, one grid per sub-level (embedded; deepForest day is still `level_1.json`). Assets are addressed by base file name only, so
   **two assets with the same file name in different folders collide** (`internal/core/image.go:20`).
-- Single-threaded: no goroutines/channels in the current code.
+- Single-threaded, except the web build's background download (`cmd/main.go` `syncBackground`: a goroutine fetches and decodes, a channel hands the image to `Update`).
 
 ## Secrets and security
 

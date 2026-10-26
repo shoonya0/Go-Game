@@ -1,10 +1,10 @@
 # Levels: state
 
-## Now (updated 2026-10-26 at `af9a251`)
+## Now (updated 2026-10-26 at `500c45f`)
 
-- **Status:** 🟡 in review: PR #28 open; all 16 sub-levels have grids and are chained in `LevelOrder`
-- **Current task:** the user plays the levels, then decides on merging PR #28 (a merge deploys)
-- **Stopped at:** code review fixes 1–3, 6, 7 committed (`47c6338`, `b0bca0b`, `af9a251`): a
+- **Status:** 🟡 increment 1 merged to `main` (PR #28, deployed by the merge); playtest and enemy lists still open
+- **Current task:** the user plays the levels and says which need hand-made changes
+- **Stopped at:** PR #28 merged by the user. Its code review fixes 1–3, 6, 7 (`47c6338`, `b0bca0b`, `af9a251`): a
   level's size is its grid's (`LevelDef` has no size now; deepForest is 36 rows), old saves
   open the next level (D5), `OpenNextLevel` checks before switching, the camera follows a
   teleport. Not played in game or checked in the web build yet
@@ -22,6 +22,12 @@
   sub-level's name. A new level needs `Title` and `Time` in its `LevelDef`
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: PR #28 merged
+
+- Changed: nothing in code; local `main` fast-forwarded to `500c45f`, `feature/levels` deleted
+- Verified: `node scripts/verify.mjs` 5/5 on `main`; PR checks green
+- Docs touched: levels state; current-state; README registry; architecture-overview
 
 ### 2026-10-26: code review fixes for PR #28
 
@@ -47,11 +53,6 @@
 - Verified: `node scripts/verify.mjs --full` → 8/8 (`TestLevelBorderKeepsPlayerIn` failed on a first draft with waterfalls: water in row 0); throwaway web builds: `_docs/evidence/levels-aquatic-day.png`, `levels-travel-scroll.png`
 - Docs touched: levels tasks, state; current-state
 
-### 2026-10-26: travel menu lists portals by level (task 10, D7)
-
-- Changed: `travel_menu.go` (board, names, planks, scrolling), `LevelDef.Title/Time`, `portalNumber` (`levels.go`); `cmd/main.go` thumbnail capture removed; `TestTravelMenuGroupsByLevel`
-- Verified: `node scripts/verify.mjs --full` → 8/8; throwaway web build: list drawn, S moved the pick, Enter travelled to night Portal 2 (`_docs/evidence/levels-travel-list.png`)
-- Docs touched: levels D7, tasks, state; portals D9, spec, state; main-menu state, tasks; ui-buttons state; architecture-overview; current-state
 
 ## Known issues
 

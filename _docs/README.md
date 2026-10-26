@@ -29,7 +29,7 @@ One row per feature that has its own docs folder. Status: ⏳ planned · 🟡 in
 | portals | [index](./features/portals/README.md) | `internal/core/portal*.go`, `world.go`, `combat.go` | ✅ | Portals: start, save point (E / tap), travel menu; non-boss enemies revive on death, on entering a level and on every teleport |
 | main-menu | [index](./features/main-menu/README.md) | `cmd/main.go`, `internal/core/menu*.go`, `save*.go`, `internal/system/save*.go` | ✅ | Title screen (New Game, Continue, Settings, Quit), pause menu, save across restarts, volume setting |
 | ui-buttons | [index](./features/ui-buttons/README.md) | `internal/core/ui_skin*.go`, `menu.go`, `travel_menu.go` | ✅ | Buttons, menus and the volume bar drawn from the wooden sheet `assets/UI/UIButtons.png` |
-| levels | [index](./features/levels/README.md) | `internal/core/levels*.go`, `world*.go`, `assets/levels/` | ⏳ | Eight themed levels, each with its own tiles, day/night background and enemies |
+| levels | [index](./features/levels/README.md) | `internal/core/levels*.go`, `world*.go`, `assets/levels/` | 🟡 | Eight themed levels, each a day and a night sub-level with its own tiles and background, joined by portals (increment 1 merged) |
 
 <!-- Example row. Most features here live in the flat internal/core package, so their docs
 go in _docs/features/<feature>/ and the index lists the feature's files in "scope:".
