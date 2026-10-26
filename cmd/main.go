@@ -233,6 +233,12 @@ func (g *Game) syncBackground() {
 	}()
 }
 
+// followPlayer brings the camera to the player at once after a teleport, so
+// the next frame isn't drawn from where the player was.
+func (g *Game) followPlayer() {
+	g.player.UpdateCamera(screenWidth, screenHeight, g.world.Level.Width, g.world.Level.Height)
+}
+
 // setBackground replaces the background, freeing the old one's GPU memory at
 // once (a background is tens of MB decoded).
 func (g *Game) setBackground(img *ebiten.Image) {
@@ -278,6 +284,7 @@ func (g *Game) Update() error {
 			if err := g.world.Travel(g.player, ref); err != nil {
 				log.Printf("travel: %v", err)
 			}
+			g.followPlayer()
 			g.syncBackground()
 			g.saveProgress() // the checkpoint moved: store it now, not on the next played tick
 		}
@@ -294,12 +301,14 @@ func (g *Game) Update() error {
 	if g.player.Respawns != g.respawns {
 		g.respawns = g.player.Respawns
 		g.world.Respawned(g.player)
+		g.followPlayer()
 		g.syncBackground()
 	}
 	if g.player.LevelDone() { // the last unused portal: on to the next level (levels D5)
 		if opened, err := g.world.OpenNextLevel(g.player); err != nil {
 			log.Printf("next level: %v", err)
 		} else if opened {
+			g.followPlayer()
 			g.syncBackground()
 			g.travel.WaitRelease() // an E still held mustn't open the menu at the arrival portal
 		}
