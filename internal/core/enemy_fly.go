@@ -52,6 +52,9 @@ func (m flyingMover) pathRange(e *EnemyRuntime) float64 {
 
 func (flyingMover) Grounded(e *EnemyRuntime) bool { return e.onGround }
 
+// CanChase: a flyer can go anywhere.
+func (flyingMover) CanChase(*EnemyRuntime, AABB, *DynamicQuadtree) bool { return true }
+
 // towardAt is the velocity that covers (dx, dy) at speed, slowed on the last
 // tick so it stops on the target instead of overshooting and jittering.
 func towardAt(dx, dy, speed float64) (vx, vy float64) {

@@ -119,14 +119,14 @@ func TestEnemyDetectsChasesAndAttacks(t *testing.T) {
 
 	// Player far away: patrol.
 	far := &PlayerRuntime{Pos: Position{X: st.DetectRange + 500}, Combat: Combat{Health: 100, MaxHealth: 100}}
-	e.decideBehavior(far)
+	e.decideBehavior(far, nil)
 	if e.State != EnemyPatrol {
 		t.Errorf("far player: state=%d, want EnemyPatrol", e.State)
 	}
 
 	// Player within detection but out of reach: chase toward them.
 	mid := &PlayerRuntime{Pos: Position{X: st.DetectRange - 10}, Combat: Combat{Health: 100, MaxHealth: 100}}
-	e.decideBehavior(mid)
+	e.decideBehavior(mid, nil)
 	if e.State != EnemyAlert || e.VelX <= 0 {
 		t.Errorf("mid player: state=%d velX=%v, want EnemyAlert chasing right", e.State, e.VelX)
 	}
@@ -134,7 +134,7 @@ func TestEnemyDetectsChasesAndAttacks(t *testing.T) {
 	// Player in reach: attack and deal one hit.
 	near := &PlayerRuntime{Pos: Position{X: 30}, Combat: Combat{Health: 100, MaxHealth: 100}}
 	e.attackTimer = 0
-	e.decideBehavior(near)
+	e.decideBehavior(near, nil)
 	if e.State != EnemyAttack {
 		t.Errorf("near player: state=%d, want EnemyAttack", e.State)
 	}
@@ -143,7 +143,7 @@ func TestEnemyDetectsChasesAndAttacks(t *testing.T) {
 	}
 
 	// A second immediate tick must not deal damage (cooldown active).
-	e.decideBehavior(near)
+	e.decideBehavior(near, nil)
 	if near.Combat.Health != 100-st.Damage {
 		t.Errorf("player took damage during cooldown: health = %d", near.Combat.Health)
 	}

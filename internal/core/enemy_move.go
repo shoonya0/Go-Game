@@ -13,6 +13,9 @@ type Mover interface {
 	Move(e *EnemyRuntime, qt *DynamicQuadtree)
 	// Grounded reports whether the enemy rested on ground after its last move.
 	Grounded(e *EnemyRuntime) bool
+	// CanChase reports whether the enemy can get to the player's box from
+	// where it is, so chasing them makes sense. qt may be nil (no terrain).
+	CanChase(e *EnemyRuntime, target AABB, qt *DynamicQuadtree) bool
 }
 
 // moveMode is what the brain wants the body to do this tick.
@@ -69,6 +72,11 @@ func (m groundMover) Move(e *EnemyRuntime, qt *DynamicQuadtree) {
 }
 
 func (groundMover) Grounded(e *EnemyRuntime) bool { return e.onGround }
+
+// CanChase: a walker reaches only a player on ground it can walk to (enemy_reach.go).
+func (groundMover) CanChase(e *EnemyRuntime, target AABB, qt *DynamicQuadtree) bool {
+	return walkReaches(e, target, qt)
+}
 
 // turnAtLedge stops a patrolling enemy whose next step would put its leading
 // edge past ground (solid or water) and reverses its patrol, so it paces its platform

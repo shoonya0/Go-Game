@@ -104,7 +104,7 @@ func TestStrandedEnemyPatrolsWhereItIs(t *testing.T) {
 func TestEnemyChasesLeft(t *testing.T) {
 	e := newTestEnemy(Position{X: 1000})
 	p := &PlayerRuntime{Pos: Position{X: 1000 - e.bp.Stats.DetectRange + 10}, Combat: Combat{Health: 100, MaxHealth: 100}}
-	e.decideBehavior(p)
+	e.decideBehavior(p, nil)
 	if e.State != EnemyAlert || e.VelX != -e.bp.Stats.ChaseSpeed || !e.FlipX {
 		t.Errorf("player left in range: state=%d velX=%v flipX=%v, want EnemyAlert at -%v facing left",
 			e.State, e.VelX, e.FlipX, e.bp.Stats.ChaseSpeed)
@@ -117,7 +117,7 @@ func TestHurtEnemyHoldsStill(t *testing.T) {
 	e.TakeDamage(1)
 	near := &PlayerRuntime{Pos: Position{X: 30}, Combat: Combat{Health: 100, MaxHealth: 100}}
 
-	e.decideBehavior(near)
+	e.decideBehavior(near, nil)
 	if e.State != EnemyHurt || e.VelX != 0 || near.Combat.Health != 100 {
 		t.Errorf("while hurt: state=%d velX=%v player health=%d, want EnemyHurt, still, no hit",
 			e.State, e.VelX, near.Combat.Health)

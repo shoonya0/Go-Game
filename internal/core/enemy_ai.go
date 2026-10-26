@@ -20,16 +20,16 @@ func UpdateEnemy(e *EnemyRuntime, target *PlayerRuntime, qt *DynamicQuadtree) {
 	}
 
 	e.regenerateHealth()
-	e.decideBehavior(target)
+	e.decideBehavior(target, qt)
 	e.bp.Mover.Move(e, qt)
 }
 
 // decideBehavior runs the enemy's state machine for this tick: attack when the
 // player's body is inside the attack box (turned toward them) or a committed
-// attack is under way, chase when they are within detection range, otherwise
-// patrol. It sets the behavioural state and
-// facing, and steers the Mover, which sets the velocity.
-func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
+// attack is under way, chase when they are within detection range and the
+// Mover can get to them in qt (nil: no terrain), otherwise patrol. It sets the
+// behavioural state and facing, and steers the Mover, which sets the velocity.
+func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime, qt *DynamicQuadtree) {
 	// Let a hurt or guard reaction play out before re-deciding, so hits interrupt cleanly.
 	if e.State.IsHurt() || e.State.IsGuarding() {
 		e.bp.Mover.Steer(e, moveIntent{mode: moveHold})
@@ -46,7 +46,7 @@ func (e *EnemyRuntime) decideBehavior(target *PlayerRuntime) {
 		e.attack(target, dx)
 	case e.bp.Attacker.InRange(e, tb):
 		e.attack(target, dx)
-	case dist <= st.DetectRange:
+	case dist <= st.DetectRange && e.bp.Mover.CanChase(e, tb, qt):
 		e.chase(dx, centerY(tb)-centerY(eb))
 	default:
 		e.patrol()
