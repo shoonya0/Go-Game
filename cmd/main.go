@@ -2,8 +2,11 @@ package main
 
 import (
 	"errors"
+	"image"
+	"image/color"
 	"log"
 	"runtime"
+	"time"
 
 	"player/internal/core"
 	"player/internal/system"
@@ -13,6 +16,7 @@ import (
 
 const (
 	playerSpriteSheetPath = "../assets/player/GideonGraves.png"
+	loadingTextSize       = 16 // "Loading..." while the web build downloads a background
 	screenWidth           = 1360
 	screenHeight          = 768
 )
@@ -28,8 +32,11 @@ type Game struct {
 	world       *core.World // the current level: platforms, portals, enemies
 	respawns    int         // player respawns already handled (enemies revived)
 
-	background     *ebiten.Image
-	backgroundPath string // the asset background was loaded from
+	background     *ebiten.Image // nil while the web build downloads it
+	backgroundPath string        // the asset background was loaded from
+	backgrounds    chan downloadedBackground
+	retryFailed    string    // background whose download failed, tried again at retryAt
+	retryAt        time.Time // so a server that is down isn't asked 60 times a second
 	tileset        *ebiten.Image
 	portals        *core.PortalSprite
 	travel         *core.TravelMenu // opened by holding E (or a touch) at a portal
@@ -54,6 +61,7 @@ func NewGame() *Game {
 		touch:       touch,
 		portals:     core.NewPortalSprite(),
 		view:        ebiten.NewImage(screenWidth, screenHeight),
+		backgrounds: make(chan downloadedBackground, 1),
 	}
 	g.screens.SetSettings(loadSettings())
 	g.openTitle()
@@ -175,16 +183,70 @@ func (g *Game) storeProgress(s core.SaveData) {
 	g.autosave.Written(s) // also on failure: retrying every tick would only spam the log
 }
 
-// syncBackground loads the current level's background when it changed.
+// backgroundRetry is how long after a failed download the web build tries
+// again.
+const backgroundRetry = 2 * time.Second
+
+// downloadedBackground is a level background the web build downloaded.
+type downloadedBackground struct {
+	path string
+	img  image.Image
+	err  error
+}
+
+// syncBackground loads the current level's background when it changed. An
+// embedded one (desktop) loads at once; the web build downloads it off the
+// game loop and draws no background until it arrives (levels decision D4).
 func (g *Game) syncBackground() {
-	if path := g.world.Def.Background; path != g.backgroundPath {
-		g.background = core.LoadImage(path)
-		g.backgroundPath = path
+	for done := false; !done; {
+		select {
+		case d := <-g.backgrounds:
+			switch {
+			case d.err != nil:
+				log.Printf("background: %v", d.err)
+				if d.path == g.backgroundPath { // still needed: try again in a moment
+					g.backgroundPath, g.retryFailed, g.retryAt = "", d.path, time.Now().Add(backgroundRetry)
+				}
+			case d.path == g.backgroundPath: // not one the player already left
+				g.setBackground(ebiten.NewImageFromImage(d.img))
+			}
+		default:
+			done = true
+		}
 	}
+
+	path := g.world.Def.Background
+	if path == g.backgroundPath || (path == g.retryFailed && time.Now().Before(g.retryAt)) {
+		return
+	}
+	g.backgroundPath = path
+	if core.HasAsset(path) {
+		g.setBackground(core.LoadImage(path))
+		return
+	}
+	g.setBackground(nil)
+	go func() {
+		d := downloadedBackground{path: path}
+		var data []byte
+		if data, d.err = system.FetchFile(core.AssetURL(path)); d.err == nil {
+			d.img, d.err = core.DecodeImage(data)
+		}
+		g.backgrounds <- d
+	}()
+}
+
+// setBackground replaces the background, freeing the old one's GPU memory at
+// once (a background is tens of MB decoded).
+func (g *Game) setBackground(img *ebiten.Image) {
+	if g.background != nil {
+		g.background.Deallocate()
+	}
+	g.background = img
 }
 
 // Update advances the simulation one tick (runs at ~60 TPS).
 func (g *Game) Update() error {
+	g.syncBackground() // picks up a background the web build finished downloading
 	system.HandleInput(&g.input)
 	g.touch.Hidden = g.screens.Current != core.ScreenNone
 	system.HandleTouch(&g.input, g.touch)
@@ -262,6 +324,9 @@ func (g *Game) updateEnemies() {
 // captureThumbs gives each portal that just became active its thumbnail for
 // the travel menu: the level around it, drawn once into the scratch screen.
 func (g *Game) captureThumbs() {
+	if g.background == nil { // still downloading: capture once it's drawn
+		return
+	}
 	for _, c := range g.world.Level.Portals {
 		ref := c.Ref()
 		if g.player.PortalLook(c) == core.PortalInactive || g.travel.HasThumb(ref) {
@@ -283,6 +348,9 @@ func (g *Game) captureThumbs() {
 // Draw renders one frame: background, level, then player.
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.player.DrawParallaxBackground(screen, g.background, screenWidth, screenHeight, g.world.Def.Width)
+	if g.background == nil { // the web build is still downloading it
+		core.DrawTextCentered(screen, "Loading...", loadingTextSize, screenWidth/2, screenHeight/2, color.White)
+	}
 	g.player.DrawLevel(screen, g.world.Quadtree, screenWidth, screenHeight, g.tileset)
 	g.portals.Draw(screen, g.world.Level.Portals, g.player)
 	for _, e := range g.world.Enemies {

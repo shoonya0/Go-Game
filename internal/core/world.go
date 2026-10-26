@@ -297,8 +297,12 @@ func BuildLevel(grid [][]int) Level {
 }
 
 // DrawParallaxBackground scrolls the background with the camera's progress
-// across a level levelWidth wide.
+// across a level levelWidth wide. A nil background (still downloading) draws
+// nothing.
 func (player *PlayerRuntime) DrawParallaxBackground(screen *ebiten.Image, background *ebiten.Image, screenWidth, screenHeight, levelWidth float64) {
+	if background == nil {
+		return
+	}
 	bgW := background.Bounds().Dx()
 	bgH := background.Bounds().Dy()
 
