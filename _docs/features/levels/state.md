@@ -1,13 +1,13 @@
 # Levels: state
 
-## Now (updated 2026-10-26 at `b3e3e77`)
+## Now (updated 2026-10-26 at `21820a4`)
 
-- **Status:** 🟡 in progress
-- **Current task:** 8. update docs, then the user plays deepForest night ([tasks.md](./tasks.md) "Later")
-- **Stopped at:** the saved portal's travel-menu thumbnail is now captured before the next level
-  opens (`b3e3e77`); the day → night switch worked in a web build. Task 9 done (invisible border, D6). Tasks 6 and 7 done: deepForest night (`deepForest_night.json`, key `night`)
-  follows day in `LevelOrder`; saving day's last unused portal opens it. Checked by tests and a
-  throwaway web build that started in the night level; not played through
+- **Status:** 🟡 in progress; increment 1 tasks 1–9 done
+- **Current task:** the user plays deepForest night ([tasks.md](./tasks.md) "Later"); then grids for levels 2–8
+- **Stopped at:** docs brought up to date (task 8): spec still matches the code; current-state
+  lists the levels capability and a new test baseline (200/200 at `21820a4`, `verify.mjs --full` 8/8).
+  deepForest night follows day in `LevelOrder` and opens when day's last unused portal is saved;
+  checked by tests and a web build, not played through
 - **Open questions / blockers:** (user) is the night layout right; who draws levels 2–8
 - **Don't forget:** climbs are at most 3 tiles (the user: the jump reaches 3–3.5); with a 3-tile
   climb the gap is at most 2 tiles, 2-tile climb 3, flat 4. The first portal in reading order
@@ -19,6 +19,12 @@
   next visit
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: docs updated (task 8)
+
+- Changed: levels tasks, state; `_docs/current-state.md` (levels capability, test baseline, next task)
+- Verified: `node scripts/verify.mjs --full` → 8/8; `go test ./...` 200/200
+- Docs touched: levels tasks, state; current-state
 
 ### 2026-10-26: saved portal's thumbnail before the next level
 
@@ -43,12 +49,6 @@
 - Changed: `LevelDef.Tiles`, `KeepApart` (`levels.go`); `TestLevelTiles`, `TestTilesTouch`; `level_1.json` larva → water
 - Verified: `node scripts/verify.mjs` → 5/5; `TestLevelTiles` failed first (113 larva cells), passes after
 - Docs touched: levels tasks, state; current-state
-
-### 2026-10-26: backgrounds downloaded per level on the web (task 4)
-
-- Changed: `assets/embed.go` + `backgrounds_*.go` (split embed), `internal/core/image.go` (`HasAsset`, `AssetURL`, `DecodeImage`), `internal/system/fetch_*.go`, `cmd/main.go` (`syncBackground` async), `server/main.go` (`/levels/`), `Dockerfile`, `DEPLOY.md`
-- Verified: `node scripts/verify.mjs --full` → 8/8; agent-browser: background downloaded and drawn, "Loading..." + 2 s retries with the files missing, recovered without reload (`_docs/evidence/levels-bg-*.png`); `game.wasm` 33.1 → 27.6 MB. Docker build not run (daemon off)
-- Docs touched: levels state; DEPLOY.md; architecture-overview Assets / Web server rows
 
 ## Known issues
 

@@ -28,6 +28,7 @@ and /feature-docs update. -->
 - On a touch screen, buttons for every key: arrows bottom-left, attack symbols and a bigger sprint button bottom-right, a menu button top-left (the HUD moves right of it). Idle buttons are half see-through and stay out of the middle third of the screen. VERIFIED (tests; web build with simulated touches; not on a real device)
 - Main menu (merged, PR #25): the game opens on a title screen (New Game, Continue, Settings, Quit; Press Start 2P font), picked with W/S + Enter/E, a tap or a mouse click. Progress (used portals, checkpoint) autosaves to `%AppData%\PirateAdventure\save.json` on Windows and `localStorage` on the web; Continue starts standing in the saved portal, New Game asks before wiping a save. Settings holds a saved volume 0–10 (no audio yet). Quit is desktop only. Esc or the touch menu button pauses (Resume, Settings, Main Menu). VERIFIED (tests; web build in agent-browser, `_docs/evidence/main-menu-*.png`; native window not checked by hand)
 - Menus drawn from the wooden sheet `assets/UI/UIButtons.png` (merged, PR #27): planks with icons on the wooden board, the pick is the arrow plank, the volume a segmented bar; the travel menu's scroll arrows are wooden. VERIFIED (tests; web build screenshots `_docs/evidence/ui-buttons-*.png`; the user checked it in game)
+- Levels (branch `feature/levels`, not merged): level 1 `deepForest` has a day and a night sub-level, each with its own grid and background; saving day's last unused portal teleports to night's entry portal once, and the travel menu then lists it. Every level is walled in by an invisible border. A test checks each level uses only its own tiles. The web build downloads only the current background (`game.wasm` 27.6 MB). Levels 2–8 have backgrounds but no grids yet. VERIFIED (tests; web build screenshots `_docs/evidence/levels-*.png`; night not played through by the user)
 
 ## How to build, run, test
 
@@ -36,12 +37,12 @@ and /feature-docs update. -->
 - Run native: `go run ./cmd` · Web: build wasm then `go run ./server` → http://localhost:8080 (see `DEPLOY.md`)
 - `make` targets exist (`Makefile`) but `make` may be missing on Windows; use the commands above.
 
-## Test baseline (at `7549120`, merged unchanged as `6a8cc90`; Windows, go1.26.7)
+## Test baseline (at `21820a4` on `feature/levels`; Windows, go1.26.7)
 
 | Command | Result | Failing tests / issues (by name) |
 |---|---|---|
 | `node scripts/verify.mjs --full` | ✅ pass, all 8 steps | — |
-| `go test ./...` | ✅ 183/183 top-level tests pass: 172 in `internal/core`, 2 in `internal/system`, 9 in `tools/battler2strip` | — |
+| `go test ./...` | ✅ 200/200 top-level tests pass: 188 in `internal/core`, 2 in `internal/system`, 9 in `tools/battler2strip`, 1 in `server` | — |
 | `golangci-lint run ./...` (advisory) | 1 issue | SA9003 `internal/core/quadtree.go:217` |
 | GitHub CI | `main` at `6a8cc90` (PR #25): merged by the user | — |
 
@@ -51,7 +52,7 @@ baseline: the touch tests (`TestTouch*`), the O combo tests (`TestO*`), `TestAtt
 enemy health / level marker tests, and on `feature/enemy-types` the characterisation tests (written against the succubus, now run on the test-only `testEnemyBlueprint`)
 (`internal/core/enemy_behavior_test.go`), the clip tests in `internal/core/enemy_clips_test.go`, hold/motion tests
 (`enemy_motion_test.go`), melee hit-frame tests (`enemy_attack_test.go`), `TestBlueprintsValid`, and the baking tool's tests
-(`tools/battler2strip/bake_test.go`), the ledge, marker and guard tests (`TestGroundEnemyTurnsAtLedge`, `TestTwoCharMarkerIsOneCell`, `enemy_guard_test.go`), the capability tests (`TestBlueprintHasOwnArtOnly`, `TestEnemyCapabilities`), `TestAssetBaseNamesUnique` and `TestLevelEnemiesKeepTheirGround`; on `feature/portals` the portal tests (`internal/core/portal_test.go`: sheet frames, standing on the ground, start, golden saved portal, E/tap saving, respawn), `TestTouchTapOffButtons` and `enemy_revive_test.go`; on `feature/main-menu` `TestSave*` (`save_test.go`), `TestSaveFile*` (`internal/system/save_other_test.go`), `TestTextSize`, `TestMenu*` (`menu_test.go`, `menu_screens_test.go`), `TestSettings*`, `TestTravelMenuWaitRelease`, `TestTouchHiddenButtons`.
+(`tools/battler2strip/bake_test.go`), the ledge, marker and guard tests (`TestGroundEnemyTurnsAtLedge`, `TestTwoCharMarkerIsOneCell`, `enemy_guard_test.go`), the capability tests (`TestBlueprintHasOwnArtOnly`, `TestEnemyCapabilities`), `TestAssetBaseNamesUnique` and `TestLevelEnemiesKeepTheirGround`; on `feature/portals` the portal tests (`internal/core/portal_test.go`: sheet frames, standing on the ground, start, golden saved portal, E/tap saving, respawn), `TestTouchTapOffButtons` and `enemy_revive_test.go`; on `feature/main-menu` `TestSave*` (`save_test.go`), `TestSaveFile*` (`internal/system/save_other_test.go`), `TestTextSize`, `TestMenu*` (`menu_test.go`, `menu_screens_test.go`), `TestSettings*`, `TestTravelMenuWaitRelease`, `TestTouchHiddenButtons`; on `feature/levels` `TestBackgroundsDecode`, `TestLevelTiles`, `TestTilesTouch`, `TestLevelPortals`, `TestLastPortalOpensNextLevel`, `TestLevelBorderKeepsPlayerIn`.
 
 ## Known issues and risks
 
@@ -84,4 +85,4 @@ enemy health / level marker tests, and on `feature/enemy-types` the characterisa
 
 ## Next task
 
-- Candidates: a second level to travel to (portals "Later"; its background needs unique file names; next feature after main-menu, level content still undecided); real audio once sound files exist (main-menu D5); crop `UIButtons.png`; touch buttons for jump (Space), F, R, Q; file the J sprite issue; untrack `game.exe`; tests for player physics with collision.
+- Levels: the user plays deepForest night, then grids for levels 2–8 ([levels tasks](./features/levels/tasks.md)). Other candidates: real audio once sound files exist (main-menu D5); crop `UIButtons.png`; touch buttons for jump (Space), F, R, Q; file the J sprite issue; untrack `game.exe`; tests for player physics with collision.
