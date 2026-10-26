@@ -31,6 +31,8 @@ const (
 	AquaticAbyssNight   = "aquaticAbyssNight"
 	BoulderBastionDay   = "boulderBastionDay"
 	BoulderBastionNight = "boulderBastionNight"
+	CargoYardChaosDay   = "cargoYardChaosDay"
+	CargoYardChaosNight = "cargoYardChaosNight"
 )
 
 // subLevel is a sub-level laid out the usual way: the grid in
@@ -80,6 +82,8 @@ var Levels = map[string]LevelDef{
 	AquaticAbyssNight:   subLevel("aquaticAbyss", "Aquatic Abyss", "night", ".png", Water, Rock, Grass),
 	BoulderBastionDay:   boulderBastion("day", ".jpg"),
 	BoulderBastionNight: boulderBastion("night", ".jpg"),
+	CargoYardChaosDay:   subLevel("cargoYardChaos", "Cargo Yard Chaos", "day", ".png", Wood, Grass, Water, Rock),
+	CargoYardChaosNight: subLevel("cargoYardChaos", "Cargo Yard Chaos", "night", ".png", Wood, Grass, Water, Rock),
 }
 
 // LevelOrder is the order levels open in: saving the last unused portal of
@@ -88,6 +92,7 @@ var LevelOrder = []string{
 	StartLevel, DeepForestNight,
 	AquaticAbyssDay, AquaticAbyssNight,
 	BoulderBastionDay, BoulderBastionNight,
+	CargoYardChaosDay, CargoYardChaosNight,
 }
 
 // levelPortals caches each level's portal cells in reading order, read once
