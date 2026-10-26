@@ -1,6 +1,8 @@
 package core
 
 import (
+	"bytes"
+	"image"
 	"io/fs"
 	"path"
 	"testing"
@@ -27,5 +29,29 @@ func TestAssetBaseNamesUnique(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+// TestBackgroundsDecode checks every embedded level background can be
+// decoded: some are JPEGs, and image.Decode only knows formats whose
+// decoder is imported.
+func TestBackgroundsDecode(t *testing.T) {
+	matches, err := fs.Glob(assets.FS, "levels/*/background/*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(matches) == 0 {
+		t.Fatal("no level backgrounds embedded")
+	}
+	for _, p := range matches {
+		data, err := assets.FS.ReadFile(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, format, err := image.DecodeConfig(bytes.NewReader(data)); err != nil {
+			t.Errorf("%s: %v", p, err)
+		} else {
+			t.Logf("%s: %s", p, format)
+		}
 	}
 }

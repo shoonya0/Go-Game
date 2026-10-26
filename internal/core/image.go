@@ -3,7 +3,8 @@ package core
 import (
 	"bytes"
 	"image"
-	_ "image/png" // register PNG decoder
+	_ "image/jpeg" // register JPEG decoder (some level backgrounds are .jpg)
+	_ "image/png"  // register PNG decoder
 	"io/fs"
 	"log"
 	"path"

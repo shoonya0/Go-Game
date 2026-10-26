@@ -3,18 +3,23 @@
 ## Now (updated 2026-10-26 at `4a8307a`)
 
 - **Status:** 🟡 in progress
-- **Current task:** 3. register the JPEG decoder, then 4. fetch backgrounds per sub-level on the web ([tasks.md](./tasks.md))
+- **Current task:** 4. fetch backgrounds per sub-level on the web ([tasks.md](./tasks.md))
 - **Stopped at:** task 1 done: backgrounds renamed `<level>_day.*` / `<level>_night.*`, level 1 loads
   `deepForest_day.png` (the old `LBackground_3.png`, same bytes). Only that file is committed; the
   other levels' backgrounds stay untracked until task 2
-- **Open questions / blockers:** (user) the sub-level order and the D5 rules I chose
-  (trigger once, 2+ portals per sub-level, first portal is the entry). Settled: D1–D5
+- **Open questions / blockers:** none. D1–D5 settled (the user accepted the D5 rules)
 - **Don't forget:** `//go:embed levels` embeds untracked files too, so local builds carry all
   ~110 MB of backgrounds while CI and Render carry only `deepForest_day.png`. The old
   `LBackground_1.png` is now `moltenCrater_day.png` (same bytes). Saves store the level name
   (`deepForest1`): renaming it for the day/night split breaks old saves' checkpoint
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: JPEG decoder (task 3)
+
+- Changed: `internal/core/image.go` imports `image/jpeg`; `TestBackgroundsDecode` in `image_test.go`
+- Verified: `node scripts/verify.mjs` → 5/5 pass; the test decodes all 16 backgrounds locally
+- Docs touched: levels tasks, state
 
 ### 2026-10-26: the user's level rules (D1–D5)
 
