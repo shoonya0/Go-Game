@@ -14,6 +14,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: touched by levels (task 4)
+
+- Changed: `cmd/main.go` `captureThumbs` waits until the background is loaded; `world.go` draws no background while it downloads ([levels](../levels/state.md)); this feature's behaviour unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this entry only
+
 ### 2026-10-26: level 1 background renamed by levels
 
 - Changed: `Background_1` in `world.go` now `deepForest_day.png` ([levels](../levels/state.md)); portals unchanged
@@ -36,10 +42,4 @@
 
 - Changed: `World.Travel` revives the level's non-bosses; D11, spec; user's level edits committed (portal moved, Smasher added)
 - Verified: `TestTravelRevivesEnemies` failed first (6 of 7), then passes; `verify.mjs --full` 8/8
-- Docs touched: decisions, spec, tasks, state, current-state
-
-### 2026-10-25: D10, travel sets the checkpoint; user's look done
-
-- Changed: `World.Travel` makes the destination the checkpoint; D10, spec; tasks 1, 3, 8c ticked (user: "everything fine")
-- Verified: `TestTravelMakesDestinationCheckpoint` failed first, then passes; `verify.mjs` 5/5
 - Docs touched: decisions, spec, tasks, state, current-state

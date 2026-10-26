@@ -19,6 +19,12 @@
 
 ## Recent sessions (newest first, keep 5)
 
+### 2026-10-26: touched by levels (task 4)
+
+- Changed: `cmd/main.go`: `syncBackground` now downloads the background on the web and runs every tick ([levels](../levels/state.md)); this feature's behaviour unchanged
+- Verified: `node scripts/verify.mjs --full` → 8/8
+- Docs touched: this entry only
+
 ### 2026-10-26: reskinned by ui-buttons
 
 - Changed: the menus now drawn from `assets/UI/UIButtons.png` ([ui-buttons](../ui-buttons/state.md), PR #27); behaviour unchanged
@@ -42,9 +48,3 @@
 - Changed: `internal/core/save*.go`, `settings*.go`, `menu*.go`, `text*.go`, `internal/system/save_*.go`, `cmd/main.go`, input
 - Verified: `node scripts/verify.mjs --full` → 8/8 pass; web build in agent-browser (see Now)
 - Docs touched: spec, decisions D2, tasks, state, architecture overview, current-state, portals state/tasks
-
-### 2026-10-25: feature started
-
-- Changed: docs only (`_docs/features/main-menu/`)
-- Verified: `node scripts/docs-check.mjs`
-- Docs touched: spec, decisions, tasks, state, registry, Active work

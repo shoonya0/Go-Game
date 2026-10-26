@@ -3,17 +3,25 @@
 ## Now (updated 2026-10-26 at `4a8307a`)
 
 - **Status:** 🟡 in progress
-- **Current task:** 4. fetch backgrounds per sub-level on the web ([tasks.md](./tasks.md))
-- **Stopped at:** task 1 done: backgrounds renamed `<level>_day.*` / `<level>_night.*`, level 1 loads
-  `deepForest_day.png` (the old `LBackground_3.png`, same bytes). Only that file is committed; the
-  other levels' backgrounds stay untracked until task 2
+- **Current task:** 5. each level's tiles checked by a test ([tasks.md](./tasks.md))
+- **Stopped at:** task 4 done and committed (code-reviewer: nothing blocking; its two findings,
+  a loading text and a retry after a failed download, are fixed). The Dockerfile change is
+  untested (Docker daemon off; tasks "Later")
 - **Open questions / blockers:** none. D1–D5 settled (the user accepted the D5 rules)
 - **Don't forget:** `//go:embed levels` embeds untracked files too, so local builds carry all
-  ~110 MB of backgrounds while CI and Render carry only `deepForest_day.png`. The old
+  ~110 MB of backgrounds in the exe (the web build none) while CI and Render carry only
+  `deepForest_day.png`. A new kind of file in a level folder needs its own pattern in
+  `assets/embed.go` (`levels/*.png levels/*/*.json`). The old
   `LBackground_1.png` is now `moltenCrater_day.png` (same bytes). Saves store the level name
   (`deepForest1`): renaming it for the day/night split breaks old saves' checkpoint
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-26: backgrounds downloaded per level on the web (task 4)
+
+- Changed: `assets/embed.go` + `backgrounds_*.go` (split embed), `internal/core/image.go` (`HasAsset`, `AssetURL`, `DecodeImage`), `internal/system/fetch_*.go`, `cmd/main.go` (`syncBackground` async), `server/main.go` (`/levels/`), `Dockerfile`, `DEPLOY.md`
+- Verified: `node scripts/verify.mjs --full` → 8/8; agent-browser: background downloaded and drawn, "Loading..." + 2 s retries with the files missing, recovered without reload (`_docs/evidence/levels-bg-*.png`); `game.wasm` 33.1 → 27.6 MB. Docker build not run (daemon off)
+- Docs touched: levels state; DEPLOY.md; architecture-overview Assets / Web server rows
 
 ### 2026-10-26: JPEG decoder (task 3)
 
