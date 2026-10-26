@@ -24,6 +24,12 @@
 - [x] 10. Web check (title, Continue after reload) with agent-browser; update docs → check:
   screenshot in `_docs/evidence/`, `node scripts/verify.mjs --full`
 
+## Increment 4: How to Play (branch `feature/controls-help`)
+
+- [x] 11. How to Play in the settings: moves, powers, rules pages; v1.0 on the board → check:
+  `go test ./internal/core -run TestHelp -v`; web build screenshots of all 3 pages, no console errors; `verify.mjs --full` 8/8
+- [ ] 12. The user reads the pages (wording, anything missing); then PR (ask before merge)
+
 ## Later (not planned yet)
 
 - [ ] Real audio (music, effects) once sound files exist

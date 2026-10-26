@@ -71,7 +71,8 @@ func TestSettingsScreenTapsAndBack(t *testing.T) {
 	if s.Settings.Volume != start {
 		t.Errorf("click on the left half: volume %d, want %d", s.Settings.Volume, start)
 	}
-	s.Update(&InputState{DownJustPressed: true})
+	s.Update(&InputState{DownJustPressed: true}) // How to Play
+	s.Update(&InputState{DownJustPressed: true}) // Back
 	if a := s.Update(&InputState{RightJustPressed: true}); a != ActionNone || s.Settings.Volume != start {
 		t.Errorf("right on Back: %v, volume %d; want nothing", a, s.Settings.Volume)
 	}

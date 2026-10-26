@@ -1,6 +1,6 @@
 ---
 kind: feature
-scope: [cmd/main.go, internal/core/menu*.go, internal/core/save*.go, internal/core/settings*.go, internal/core/text*.go, internal/system/save*.go]
+scope: [cmd/main.go, internal/core/menu*.go, internal/core/save*.go, internal/core/settings*.go, internal/core/text*.go, internal/core/help_screen*.go, internal/system/save*.go]
 status: done
 ---
 # Main menu: docs index

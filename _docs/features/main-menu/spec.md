@@ -28,6 +28,10 @@ Asked by the user 2026-10-25. Levels (a second level) are a separate, later feat
 
 - **Sound volume**, 0 to 10 in steps of 1, changed with A/D or the arrows (or taps on
   − / +), saved. The game has no sound yet, so it plays nothing until audio is added ([D5](./decisions.md)).
+- **How to Play** opens three pages on the menu board: moves, powers (damage and stamina
+  per attack, read from the game's constants) and rules. Keys are drawn as planks from
+  `UIButtons.png`; A/D, the arrows or the arrow buttons turn the pages; Esc or Back
+  return to the settings. The board shows the version (`GameVersion`, v1.0).
 - Esc or **Back** returns to the screen that opened it.
 
 ## In game

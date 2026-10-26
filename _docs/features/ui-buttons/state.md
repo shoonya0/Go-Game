@@ -1,6 +1,6 @@
 # UI buttons: state
 
-## Now (updated 2026-10-26 at `8c93d3b`)
+## Now (updated 2026-10-27 at `41faa1a`)
 
 - **Status:** ✅ done, merged to `main` in PR #27 (`8c93d3b`), branch deleted. Tasks 1–6 done
 - **Current task:** none. Leftovers in [tasks.md](./tasks.md) "Later" (native window check, crop the sheet)
@@ -15,6 +15,12 @@
   warnings (`docs-check --strict` in CI): a commit message with `[docs-skip]` avoids it
 
 ## Recent sessions (newest first, keep 5)
+
+### 2026-10-27: touched by main-menu (How to Play)
+
+- Changed: How to Play draws its keys with `uiPlankRect` and its page arrows with `uiLeftRect`/`uiRightRect` ([main-menu](../main-menu/state.md)); no new sprite rects, the sheet is unchanged
+- Verified: web build screenshots; `verify.mjs --full` 8/8
+- Docs touched: Now date, this entry
 
 ### 2026-10-26: touched by levels (travel menu list)
 

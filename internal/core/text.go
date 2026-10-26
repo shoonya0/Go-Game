@@ -47,3 +47,12 @@ func DrawTextCentered(dst *ebiten.Image, s string, size, cx, cy float64, clr col
 	op.ColorScale.ScaleWithColor(clr)
 	text.Draw(dst, s, uiFace(size), op)
 }
+
+// DrawText draws s at size px starting at screen x, its letters centered on y.
+func DrawText(dst *ebiten.Image, s string, size, x, cy float64, clr color.Color) {
+	op := &text.DrawOptions{}
+	op.PrimaryAlign, op.SecondaryAlign = text.AlignStart, text.AlignCenter
+	op.GeoM.Translate(x, cy)
+	op.ColorScale.ScaleWithColor(clr)
+	text.Draw(dst, s, uiFace(size), op)
+}
