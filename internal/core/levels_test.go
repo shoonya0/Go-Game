@@ -387,3 +387,38 @@ func TestLastPortalOpensNextLevel(t *testing.T) {
 		t.Errorf("the last level opened %v (err %v), want nothing", opened, err)
 	}
 }
+
+// TestLevelBorderKeepsPlayerIn: every level is closed by an invisible border
+// just outside its edges, so a player pushing left, right or up from inside
+// stays in the level (the user: "cover it with rock, not shown").
+func TestLevelBorderKeepsPlayerIn(t *testing.T) {
+	WorldInit()
+	for name := range Levels {
+		w, err := NewWorld(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		width := w.Def.Width
+		cases := []struct {
+			edge  string
+			start Position
+			in    InputState
+			velY  float64
+		}{
+			{"left", Position{X: 5, Y: 60}, InputState{Direction: Direction{LeftRight: -1}}, 0},
+			{"right", Position{X: width - bodyWidth - 5, Y: 60}, InputState{Direction: Direction{LeftRight: 1}}, 0},
+			{"top", Position{X: width / 2, Y: 5}, InputState{}, -JumpForce},
+		}
+		for _, c := range cases {
+			p := InitPlayer(nil)
+			p.Pos = c.start
+			p.Physics.VelY = c.velY
+			for range int(tps()) { // one second
+				UpdatePlayer(p, &c.in, w.Quadtree, nil)
+				if p.Pos.X < 0 || p.Pos.X+bodyWidth > width || p.Pos.Y < 0 {
+					t.Fatalf("%s, %s edge: the player left the level, at %v", name, c.edge, p.Pos)
+				}
+			}
+		}
+	}
+}

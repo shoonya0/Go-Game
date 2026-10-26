@@ -25,6 +25,7 @@ const (
 	Water            TileType   = "water"
 	Wood             TileType   = "wood"
 	Empty            TileType   = "empty"
+	Border           TileType   = "border" // the invisible wall around a level (no grid code, never drawn)
 	TopTileLen       TileLength = 11
 	BottomTileLen    TileLength = 4
 	TopTile          TileLvl    = "top"
@@ -107,9 +108,26 @@ func (c Portal) StandPos() Position {
 // Level is the built, ready-to-use result of loading a level: its solid
 // platforms, its portals and where its enemies spawn.
 type Level struct {
-	Platforms []Platform
-	Portals   []Portal
-	Enemies   []EnemySpawn
+	Platforms     []Platform
+	Portals       []Portal
+	Enemies       []EnemySpawn
+	Width, Height float64 // the grid's size in world pixels
+}
+
+// levelBorder is the invisible wall around a level width × height: solid like
+// rock, just outside every edge, so the player and enemies stay inside it.
+// It is never drawn (the user: "cover it with rock, not shown").
+func levelBorder(width, height float64) []Platform {
+	const t = LevelTileWidth // thick enough that nothing passes through in one tick
+	wall := func(x, y, w, h float64) Platform {
+		return Platform{X: x, Y: y, Width: w, Height: h, TileInfo: Tile{TileType: Border}}
+	}
+	return []Platform{
+		wall(-t, -t, t, height+2*t),    // left
+		wall(width, -t, t, height+2*t), // right
+		wall(0, -t, width, t),          // top
+		wall(0, height, width, t),      // bottom
+	}
 }
 
 var Tiles map[TileType][2]Tile
@@ -293,6 +311,10 @@ func BuildLevel(grid [][]int) Level {
 			prevPlat.TileInfo.TileType = tileType
 		}
 	}
+	level.Height = float64(len(grid) * LevelTileHeight)
+	if len(grid) > 0 {
+		level.Width = float64(len(grid[0]) * LevelTileWidth)
+	}
 	return level
 }
 
@@ -366,7 +388,7 @@ func (player *PlayerRuntime) drawTiles(screen *ebiten.Image, quadtree *DynamicQu
 
 	for _, obj := range quadtree.Retrieve(viewport) {
 		p, ok := obj.(*Platform)
-		if !ok || (p.TileInfo.TileType == Water) != water {
+		if !ok || p.TileInfo.TileType == Border || (p.TileInfo.TileType == Water) != water {
 			continue
 		}
 

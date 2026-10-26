@@ -51,7 +51,8 @@ type World struct {
 	Quadtree *DynamicQuadtree
 	Enemies  []*EnemyRuntime
 
-	left map[string][]*EnemyRuntime // enemies of each level left, as they were (for its bosses)
+	left   map[string][]*EnemyRuntime // enemies of each level left, as they were (for its bosses)
+	border []Platform                 // the current level's invisible wall (levelBorder)
 }
 
 // NewWorld loads the named level with fresh enemies. WorldInit must be called
@@ -84,6 +85,10 @@ func (w *World) SwitchLevel(name string) error {
 	qt := NewDynamicQuadtree(AABB{Width: def.Width, Height: def.Height})
 	for i := range level.Platforms {
 		qt.Insert(&level.Platforms[i])
+	}
+	w.border = levelBorder(max(def.Width, level.Width), max(def.Height, level.Height))
+	for i := range w.border {
+		qt.Insert(&w.border[i])
 	}
 
 	enemies, visited := w.left[name]
