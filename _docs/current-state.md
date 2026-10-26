@@ -10,9 +10,9 @@ Labels: **VERIFIED** = command run or code read · **ASSUMED** = not checked.
 first, short, and with a link to exactly one feature state.md. Updated by /close-increment
 and /feature-docs update. -->
 
-- **Feature:** none active. Last done: [ui-buttons](./features/ui-buttons/state.md), merged 2026-10-26 (PR #27). Paused: enemy-types (low priority; task 25 waits for ranged art)
-- **Branch:** `main` at `8c93d3b`
-- **Next step:** more levels (the user's next focus; level content still undecided, see "Next task"). Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it. `deepForest/background/LBackground_*.png` names will collide with a second level's backgrounds (lookup is by base name)
+- **Feature:** [levels](./features/levels/state.md) · Increment 1 (planned): eight themed levels, rules in its `spec.md`. Paused: enemy-types (low priority; task 25 waits for ranged art)
+- **Branch:** `feature/levels` (from `main` at `8c93d3b`)
+- **Next step:** task 1, unique background names: the new `day.*`/`night.*` files clash by base name and level 1's `LBackground_3.png` was deleted, so level 1 can't load. Untracked assets (`assets/enemy/Orange_Golem`, `Striker`, `assets/player/SkeletonIdle.gif`) are committed with the code that loads them; `_asset_backups/` is the user's, never commit it
 
 <!-- Once a feature is active, the first line becomes, for example:
 - **Feature:** [enemies](./features/enemies/state.md) · Increment 2
@@ -69,7 +69,7 @@ enemy health / level marker tests, and on `feature/enemy-types` the characterisa
 12. `//go:embed enemy` embeds every file on disk, untracked ones included, so local builds carry untracked enemy art that CI and Render don't (13 untracked files: the Orange Golem and Striker packs and `player/SkeletonIdle.gif`, kept for later; `levels/portal.png` is committed now). The raw battler sheets are gone: moved out of the embed (task 11), then deleted (enemy-types D9). VERIFIED (`git ls-files`)
 13. The Stop hook (`.claude/hooks/stop-state.mjs`) and docs-check's "stale state" warning fire while untracked files sit under a feature's `scope:` (`assets/enemy/*`), even right after state.md was committed. Noise until those assets are committed or the check ignores untracked files. VERIFIED (this session)
 14. ~~Enemies have no ledge probe~~ Patrolling enemies turn at ledges (task 12), and one stranded off its patrol path patrols where it is (`3edfa17`); a chasing enemy can still run off a ledge. VERIFIED (`TestGroundEnemyTurnsAtLedge`)
-15. `LBackground_1.png` and `LBackground_2.png` (2.6 MB) are embedded but not loaded; only `LBackground_3.png` is. Kept on purpose (user). VERIFIED (code read)
+15. The `LBackground_*.png` files were replaced on disk by `day.*`/`night.*` backgrounds for eight levels (~110 MB, all embedded); their names clash and `Background_1` still points at the deleted `LBackground_3.png` ([levels state](./features/levels/state.md)). VERIFIED (`TestAssetBaseNamesUnique` fails)
 16. The menu font (`text/v2`) made `web/game.wasm` ~5 MB bigger: 28 → 33 MB with `-ldflags="-s -w"` (the text shaping library; the unused M+ font is dropped by the linker). VERIFIED (`ls -la web/game.wasm`)
 17. The main menu was checked in the web build only; the native Windows window was not run by hand. Saves land in `%AppData%\PirateAdventure\` (test runs left one there). VERIFIED (this session)
 18. Each title visit rebuilds the run: levels parsed again, travel thumbnails dropped and redrawn on the next played tick (code review; main-menu tasks "Later"). VERIFIED (code read)
