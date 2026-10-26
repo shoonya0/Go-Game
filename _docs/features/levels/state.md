@@ -54,4 +54,4 @@
 
 ## Known issues
 
-- Local builds embed untracked backgrounds that CI doesn't (see "Don't forget")
+- All 16 backgrounds are committed (~110 MB): the repo and the Docker image are big
