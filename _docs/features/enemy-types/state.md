@@ -1,10 +1,10 @@
 # Enemy types: state
 
-## Now (updated 2026-10-26 at `8c2093e`)
+## Now (updated 2026-10-26 at `c747ee2`)
 
 - **Status:** 🟡 playtest fixes on `fix/30-enemy-playtest-bugs` (issues #30-#35, D11), committed locally, not pushed; task 25 still waits for ranged art
-- **Current task:** task 34: the user plays the redone knockdown (#33) and the doubled detection; then push and PR (ask before merge)
-- **Stopped at:** playtest: #30-#32, #34, #35 fine. #33 redone (heavy hit turns the player toward the source); DetectRange doubled (600-760 px). `verify.mjs --full` 8/8. Wider detection may wake enemies placed 6+ columns from portals (levels state): check on arrival
+- **Current task:** task 34: the user plays the knockdown, wider detection and larva pits; task 36 (review findings 1, 2, 4) waits for the user; then push and PR (ask before merge)
+- **Stopped at:** walkers stay out of larva (`c747ee2`): an enemy facing the player across a larva pit shook at its edge (centre-only ground check). Code review (`/code-review`, 10 unverified findings): #6 fixed here; 1 (flyers float on water), 2 (stale route), 4 (reach check cost) proposed. `verify.mjs --full` 8/8
 - **Traps:** behaviour tests use `testEnemyBlueprint` (enemy_test.go), not a game enemy: change the roster freely; flyer tests use `testFlyerBlueprint` (enemy_fly_test.go). Ask `bp.Has(clip)` for "can it?", not `bp.Clips[...]`; `Has` ignores fallbacks, `resolveClip` follows them. Player hits must go through `TakeHitFrom` (blockable); `TakeDamage` is unblockable.
   `TestBlueprintsValid` skips `EnemyGuard` in the every-state check (optional) and requires
   `GuardChance` in [0,1] with a guard clip. No strip pack has a `guard` clip. The mushroom

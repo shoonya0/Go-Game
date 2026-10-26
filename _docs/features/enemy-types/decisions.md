@@ -123,7 +123,9 @@
   No enemy attacks unless the line between the centres is clear of tiles. White Golem hits
   take two hearts (a heavy hit, so it knocks the player down). A knockdown turns the player
   toward the hit: the head lands away from the enemy, and they get up facing it. Detection
-  ranges doubled to 600-760 px (user, after the playtest).
+  ranges doubled to 600-760 px (user, after the playtest). Walkers keep out of larva: a
+  walk through it isn't reachable unless they already stand in it (they shook at a pit's
+  edge once larva sat half a tile down).
 - **Why:** enemies ran off ledges at players they couldn't reach, flyers and the Smasher
   attacked through platforms, enemies sank to the bottom of pools.
 - **Consequences:** replaces the leash of task 22 and the "return to spawn" of spec
