@@ -183,3 +183,11 @@ func TestOutOfStaminaKneelsInStepWithBar(t *testing.T) {
 		t.Errorf("after 2 bars refilled: state=%d, want idle", p.State.CurrentState)
 	}
 }
+
+// TestWhiteGolemHitTakesTwoHearts: a golem's slam takes two whole hearts (#32).
+func TestWhiteGolemHitTakesTwoHearts(t *testing.T) {
+	heart := MaxPlayerHealth / hudSegments
+	if got := whiteGolemBlueprint.Stats.Damage; got != 2*heart {
+		t.Errorf("White Golem damage %d, want two hearts (%d)", got, 2*heart)
+	}
+}

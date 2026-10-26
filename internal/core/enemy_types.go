@@ -142,7 +142,7 @@ var whiteGolemBlueprint = EnemyBlueprint{
 	Attacker:   meleeAttack{},
 	Stats: EnemyStats{
 		MaxHealth:      80,
-		Damage:         15,
+		Damage:         20, // two hearts: a heavy hit, so it knocks the player down
 		WalkSpeed:      30,
 		ChaseSpeed:     70,
 		DetectRange:    300,
