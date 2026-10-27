@@ -11,7 +11,7 @@ first, short, and with a link to exactly one feature state.md. Updated by /close
 and /feature-docs update. -->
 
 - **Feature:** none active: **v1.0** is the last push for now (2026-10-27). Last touched: [enemy-types](./features/enemy-types/state.md) (playtest fixes, PR #37) and main-menu (How to Play, PR #36). Paused: levels
-- **Branch:** `chore/v1.0` (README, `_futureAssets/`, docs): PR, then the `v1.0` tag on `main`
+- **Branch:** `chore/readme-recruiter` (README live link, CI badge, Engineering section; `game.exe` untracked): PR #39, waiting for CI and the user's merge
 - **Next step:** after v1.0: enemy-types task 36 (review findings 1, 2, 4), the levels playtest (levels tasks), an enemy line on How to Play's rules page. `_asset_backups/` is the user's; never commit it unless asked
 
 <!-- Once a feature is active, the first line becomes, for example:
