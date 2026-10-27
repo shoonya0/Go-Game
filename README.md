@@ -1,5 +1,9 @@
 # Pirate Adventure
 
+**▶ [Play in browser](https://go-game-dfjz.onrender.com)** (free hosting: the first load takes about 30 s to wake the server)
+
+[![ci](https://github.com/shoonya0/Go-Game/actions/workflows/ci.yml/badge.svg)](https://github.com/shoonya0/Go-Game/actions/workflows/ci.yml)
+
 A 2D side-scrolling platformer built from scratch in Go on
 [Ebitengine](https://ebitengine.org/). It runs as a native Windows game and in the browser
 (WebAssembly). **Version 1.0.**
@@ -46,6 +50,15 @@ between them.
 | F | Tease the enemies |
 | Esc | Pause |
 | F3 | Show hit boxes |
+
+## Engineering
+
+- **One codebase, two targets:** the same Go code builds a native Windows game and a
+  WebAssembly bundle served by a small stdlib-only server (Docker image on Render).
+- **Quadtree spatial partitioning** for collision checks between the player, enemies and terrain.
+- **Save system behind build tags:** a file in the user's config folder on desktop,
+  `localStorage` in the browser; the game code only (de)serializes.
+- **220+ unit tests**, plus vet, golangci-lint (with layer rules) and native + WASM builds in CI.
 
 ## Run it
 
